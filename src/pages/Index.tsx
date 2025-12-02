@@ -71,7 +71,7 @@ const Index = () => {
               </div>
             </div>
             <div className="hidden md:flex justify-center animate-fade-in" style={{ animationDelay: "0.3s" }}>
-              <img src={logoIcon} alt="" className="w-64 lg:w-80 opacity-20" />
+              <img src={logoIcon} alt="" className="w-72 lg:w-96 opacity-40 drop-shadow-2xl" />
             </div>
           </div>
         </div>
