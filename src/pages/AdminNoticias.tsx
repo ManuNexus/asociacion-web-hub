@@ -55,12 +55,12 @@ const AdminNoticias = () => {
     publicada: false,
   });
 
-  const { user, isAdmin, loading: authLoading, signOut } = useAuth();
+  const { user, isAdmin, loading: authLoading, adminLoading, signOut } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
-    if (!authLoading) {
+    if (!authLoading && !adminLoading) {
       if (!user) {
         navigate("/auth");
       } else if (!isAdmin) {
@@ -72,7 +72,7 @@ const AdminNoticias = () => {
         navigate("/");
       }
     }
-  }, [user, isAdmin, authLoading, navigate, toast]);
+  }, [user, isAdmin, authLoading, adminLoading, navigate, toast]);
 
   useEffect(() => {
     if (user && isAdmin) {
@@ -202,7 +202,7 @@ const AdminNoticias = () => {
     navigate("/");
   };
 
-  if (authLoading || (!isAdmin && user)) {
+  if (authLoading || adminLoading || (!isAdmin && user)) {
     return (
       <Layout>
         <div className="flex justify-center items-center min-h-[50vh]">
