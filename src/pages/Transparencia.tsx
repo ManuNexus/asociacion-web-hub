@@ -54,6 +54,7 @@ const Transparencia = () => {
       </section>
 
       {/* Introducción */}
+      <div className="h-1 bg-secondary" />
       <section className="py-16 md:py-24">
         <div className="container">
           <div className="max-w-3xl mx-auto text-center mb-16">

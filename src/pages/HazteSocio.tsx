@@ -174,6 +174,7 @@ const HazteSocio = () => {
       </section>
 
       {/* Beneficios */}
+      <div className="h-1 bg-secondary" />
       <section className="py-16 bg-muted/50">
         <div className="container">
           <div className="grid gap-6 md:grid-cols-3">
@@ -193,6 +194,7 @@ const HazteSocio = () => {
       </section>
 
       {/* Cuotas */}
+      <div className="h-1 bg-secondary" />
       <section className="py-16 md:py-24">
         <div className="container">
           <div className="max-w-3xl mx-auto text-center mb-12">
@@ -236,6 +238,7 @@ const HazteSocio = () => {
       </section>
 
       {/* Formulario */}
+      <div className="h-1 bg-secondary" />
       <section className="py-16 md:py-24">
         <div className="container">
           <div className="max-w-2xl mx-auto">

@@ -27,6 +27,7 @@ const Nosotros = () => {
       </section>
 
       {/* Introducción */}
+      <div className="h-1 bg-secondary" />
       <section className="py-16 md:py-24">
         <div className="container">
           <div className="grid gap-12 lg:grid-cols-2 items-center">
@@ -63,6 +64,7 @@ const Nosotros = () => {
       </section>
 
       {/* Misión y Visión */}
+      <div className="h-1 bg-secondary" />
       <section className="py-16 md:py-24 bg-muted/50">
         <div className="container">
           <div className="grid gap-8 md:grid-cols-2">
@@ -89,6 +91,7 @@ const Nosotros = () => {
       </section>
 
       {/* Objetivos */}
+      <div className="h-1 bg-secondary" />
       <section className="py-16 md:py-24">
         <div className="container">
           <div className="max-w-3xl mx-auto">
@@ -113,6 +116,7 @@ const Nosotros = () => {
       </section>
 
       {/* Valores */}
+      <div className="h-1 bg-secondary" />
       <section className="py-16 md:py-24 bg-primary">
         <div className="container">
           <h2 className="text-3xl font-bold text-primary-foreground text-center mb-12">
