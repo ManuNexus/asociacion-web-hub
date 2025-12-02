@@ -119,6 +119,7 @@ const Noticias = () => {
       </section>
 
       {/* Filters */}
+      <div className="h-1 bg-secondary" />
       <section className="py-8 border-b border-border">
         <div className="container">
           <div className="flex flex-col md:flex-row gap-4">
@@ -152,6 +153,7 @@ const Noticias = () => {
       </section>
 
       {/* Noticias Grid */}
+      <div className="h-1 bg-secondary" />
       <section className="py-16 md:py-24">
         <div className="container">
           {loading ? (
