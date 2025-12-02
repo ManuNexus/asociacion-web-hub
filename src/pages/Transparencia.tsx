@@ -22,7 +22,7 @@ const documentos = [{
 }];
 const organos = [{
   cargo: "Presidente",
-  nombre: "Manuel Rodríguez Pérez",
+  nombre: "Manuel Rodríguez Ramos",
   descripcion: "Representa legalmente a la asociación y preside los órganos colegiados."
 }, {
   cargo: "Vicepresidenta",
