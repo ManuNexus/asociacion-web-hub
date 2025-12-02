@@ -14,8 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      categorias_noticia: {
+        Row: {
+          color: string | null
+          created_at: string
+          id: string
+          nombre: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          nombre: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          nombre?: string
+        }
+        Relationships: []
+      }
       noticias: {
         Row: {
+          categoria_id: string | null
           contenido: string | null
           created_at: string
           extracto: string | null
@@ -27,6 +49,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          categoria_id?: string | null
           contenido?: string | null
           created_at?: string
           extracto?: string | null
@@ -38,6 +61,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          categoria_id?: string | null
           contenido?: string | null
           created_at?: string
           extracto?: string | null
@@ -48,7 +72,15 @@ export type Database = {
           titulo?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "noticias_categoria_id_fkey"
+            columns: ["categoria_id"]
+            isOneToOne: false
+            referencedRelation: "categorias_noticia"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       solicitudes_socio: {
         Row: {
