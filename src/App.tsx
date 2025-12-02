@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { PageTransition } from "@/components/PageTransition";
+import { LoadingScreen } from "@/components/LoadingScreen";
 import Index from "./pages/Index";
 import Nosotros from "./pages/Nosotros";
 import Noticias from "./pages/Noticias";
@@ -21,6 +22,7 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <AuthProvider>
+        <LoadingScreen />
         <Toaster />
         <Sonner />
         <BrowserRouter>
