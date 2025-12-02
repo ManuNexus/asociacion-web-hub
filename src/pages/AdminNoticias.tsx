@@ -23,11 +23,18 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Pencil, Trash2, Loader2, LogOut, Users, Newspaper, Mail, Phone, Eye } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, LogOut, Users, Newspaper, Mail, Phone, Eye, Search } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 
@@ -68,6 +75,21 @@ const AdminNoticias = () => {
   const [solicitudDialogOpen, setSolicitudDialogOpen] = useState(false);
   const [editingNoticia, setEditingNoticia] = useState<Noticia | null>(null);
   const [viewingSolicitud, setViewingSolicitud] = useState<SolicitudSocio | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filtroEstado, setFiltroEstado] = useState<string>("todos");
+
+  const solicitudesFiltradas = solicitudes.filter((s) => {
+    const matchesSearch = 
+      s.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      s.apellidos.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      s.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (s.telefono && s.telefono.includes(searchTerm)) ||
+      s.dni.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesEstado = filtroEstado === "todos" || s.estado === filtroEstado;
+    
+    return matchesSearch && matchesEstado;
+  });
   
   const [formData, setFormData] = useState({
     titulo: "",
@@ -518,6 +540,31 @@ const AdminNoticias = () => {
                   <CardTitle>Solicitudes de Socio</CardTitle>
                 </CardHeader>
                 <CardContent>
+                  {/* Filtros */}
+                  <div className="flex flex-col sm:flex-row gap-4 mb-6">
+                    <div className="relative flex-1">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        placeholder="Buscar por nombre, email, teléfono o DNI..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-9"
+                      />
+                    </div>
+                    <Select value={filtroEstado} onValueChange={setFiltroEstado}>
+                      <SelectTrigger className="w-full sm:w-[180px]">
+                        <SelectValue placeholder="Filtrar por estado" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="todos">Todos los estados</SelectItem>
+                        <SelectItem value="pendiente">Pendiente</SelectItem>
+                        <SelectItem value="contactado">Contactado</SelectItem>
+                        <SelectItem value="aceptado">Aceptado</SelectItem>
+                        <SelectItem value="rechazado">Rechazado</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
                   {loadingSolicitudes ? (
                     <div className="flex justify-center py-8">
                       <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -525,6 +572,10 @@ const AdminNoticias = () => {
                   ) : solicitudes.length === 0 ? (
                     <p className="text-center text-muted-foreground py-8">
                       No hay solicitudes de socio.
+                    </p>
+                  ) : solicitudesFiltradas.length === 0 ? (
+                    <p className="text-center text-muted-foreground py-8">
+                      No se encontraron solicitudes con esos criterios.
                     </p>
                   ) : (
                     <div className="overflow-x-auto">
@@ -540,7 +591,7 @@ const AdminNoticias = () => {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {solicitudes.map((solicitud) => (
+                          {solicitudesFiltradas.map((solicitud) => (
                             <TableRow key={solicitud.id}>
                               <TableCell className="font-medium">
                                 {solicitud.nombre} {solicitud.apellidos}
