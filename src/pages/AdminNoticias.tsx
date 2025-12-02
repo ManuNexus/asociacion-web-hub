@@ -34,9 +34,15 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Pencil, Trash2, Loader2, LogOut, Users, Newspaper, Mail, Phone, Eye, Search } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, LogOut, Users, Newspaper, Mail, Phone, Eye, Search, Tag } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+
+interface Categoria {
+  id: string;
+  nombre: string;
+  color: string;
+}
 
 interface Noticia {
   id: string;
@@ -47,6 +53,8 @@ interface Noticia {
   publicada: boolean;
   fecha_publicacion: string | null;
   created_at: string;
+  categoria_id: string | null;
+  categorias_noticia: Categoria | null;
 }
 
 interface SolicitudSocio {
@@ -67,11 +75,13 @@ interface SolicitudSocio {
 
 const AdminNoticias = () => {
   const [noticias, setNoticias] = useState<Noticia[]>([]);
+  const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [solicitudes, setSolicitudes] = useState<SolicitudSocio[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingSolicitudes, setLoadingSolicitudes] = useState(true);
   const [saving, setSaving] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [categoriaDialogOpen, setCategoriaDialogOpen] = useState(false);
   const [solicitudDialogOpen, setSolicitudDialogOpen] = useState(false);
   const [editingNoticia, setEditingNoticia] = useState<Noticia | null>(null);
   const [viewingSolicitud, setViewingSolicitud] = useState<SolicitudSocio | null>(null);
@@ -97,6 +107,12 @@ const AdminNoticias = () => {
     contenido: "",
     imagen_url: "",
     publicada: false,
+    categoria_id: "",
+  });
+
+  const [nuevaCategoria, setNuevaCategoria] = useState({
+    nombre: "",
+    color: "#3B82F6",
   });
 
   const { user, isAdmin, loading: authLoading, adminLoading, signOut } = useAuth();
@@ -121,6 +137,7 @@ const AdminNoticias = () => {
   useEffect(() => {
     if (user && isAdmin) {
       fetchNoticias();
+      fetchCategorias();
       fetchSolicitudes();
     }
   }, [user, isAdmin]);
@@ -129,7 +146,7 @@ const AdminNoticias = () => {
     setLoading(true);
     const { data, error } = await supabase
       .from("noticias")
-      .select("*")
+      .select("*, categorias_noticia(*)")
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -143,6 +160,19 @@ const AdminNoticias = () => {
       setNoticias(data || []);
     }
     setLoading(false);
+  };
+
+  const fetchCategorias = async () => {
+    const { data, error } = await supabase
+      .from("categorias_noticia")
+      .select("*")
+      .order("nombre");
+
+    if (error) {
+      console.error("Error fetching categorias:", error);
+    } else {
+      setCategorias(data || []);
+    }
   };
 
   const fetchSolicitudes = async () => {
@@ -188,6 +218,7 @@ const AdminNoticias = () => {
             contenido: formData.contenido || null,
             imagen_url: formData.imagen_url || null,
             publicada: formData.publicada,
+            categoria_id: formData.categoria_id || null,
           })
           .eq("id", editingNoticia.id);
 
@@ -200,6 +231,7 @@ const AdminNoticias = () => {
           contenido: formData.contenido || null,
           imagen_url: formData.imagen_url || null,
           publicada: formData.publicada,
+          categoria_id: formData.categoria_id || null,
           fecha_publicacion: formData.publicada ? new Date().toISOString() : null,
         });
 
@@ -219,6 +251,53 @@ const AdminNoticias = () => {
       });
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleCreateCategoria = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!nuevaCategoria.nombre.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "El nombre de la categoría es requerido",
+      });
+      return;
+    }
+
+    const { error } = await supabase.from("categorias_noticia").insert({
+      nombre: nuevaCategoria.nombre,
+      color: nuevaCategoria.color,
+    });
+
+    if (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message || "No se pudo crear la categoría",
+      });
+    } else {
+      toast({ title: "Categoría creada" });
+      setNuevaCategoria({ nombre: "", color: "#3B82F6" });
+      setCategoriaDialogOpen(false);
+      fetchCategorias();
+    }
+  };
+
+  const handleDeleteCategoria = async (id: string) => {
+    if (!confirm("¿Estás seguro de eliminar esta categoría?")) return;
+
+    const { error } = await supabase.from("categorias_noticia").delete().eq("id", id);
+
+    if (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "No se pudo eliminar la categoría",
+      });
+    } else {
+      toast({ title: "Categoría eliminada" });
+      fetchCategorias();
     }
   };
 
@@ -282,6 +361,7 @@ const AdminNoticias = () => {
       contenido: noticia.contenido || "",
       imagen_url: noticia.imagen_url || "",
       publicada: noticia.publicada,
+      categoria_id: noticia.categoria_id || "",
     });
     setDialogOpen(true);
   };
@@ -294,6 +374,7 @@ const AdminNoticias = () => {
       contenido: "",
       imagen_url: "",
       publicada: false,
+      categoria_id: "",
     });
   };
 
@@ -351,10 +432,14 @@ const AdminNoticias = () => {
       <section className="py-8">
         <div className="container">
           <Tabs defaultValue="noticias" className="w-full">
-            <TabsList className="grid w-full max-w-md grid-cols-2 mb-6">
+            <TabsList className="grid w-full max-w-lg grid-cols-3 mb-6">
               <TabsTrigger value="noticias" className="flex items-center gap-2">
                 <Newspaper className="h-4 w-4" />
                 Noticias
+              </TabsTrigger>
+              <TabsTrigger value="categorias" className="flex items-center gap-2">
+                <Tag className="h-4 w-4" />
+                Categorías
               </TabsTrigger>
               <TabsTrigger value="solicitudes" className="flex items-center gap-2">
                 <Users className="h-4 w-4" />
@@ -399,6 +484,32 @@ const AdminNoticias = () => {
                             }
                             placeholder="Título de la noticia"
                           />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="categoria">Categoría</Label>
+                          <Select
+                            value={formData.categoria_id}
+                            onValueChange={(value) =>
+                              setFormData({ ...formData, categoria_id: value })
+                            }
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Seleccionar categoría" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {categorias.map((cat) => (
+                                <SelectItem key={cat.id} value={cat.id}>
+                                  <div className="flex items-center gap-2">
+                                    <span
+                                      className="w-3 h-3 rounded-full"
+                                      style={{ backgroundColor: cat.color }}
+                                    />
+                                    {cat.nombre}
+                                  </div>
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="extracto">Extracto</Label>
@@ -477,6 +588,7 @@ const AdminNoticias = () => {
                         <TableHeader>
                           <TableRow>
                             <TableHead>Título</TableHead>
+                            <TableHead>Categoría</TableHead>
                             <TableHead>Estado</TableHead>
                             <TableHead>Fecha</TableHead>
                             <TableHead className="text-right">Acciones</TableHead>
@@ -489,6 +601,18 @@ const AdminNoticias = () => {
                                 {noticia.titulo}
                               </TableCell>
                               <TableCell>
+                                {noticia.categorias_noticia ? (
+                                  <span
+                                    className="px-2 py-1 text-xs rounded-full text-white"
+                                    style={{ backgroundColor: noticia.categorias_noticia.color }}
+                                  >
+                                    {noticia.categorias_noticia.nombre}
+                                  </span>
+                                ) : (
+                                  <span className="text-muted-foreground text-xs">Sin categoría</span>
+                                )}
+                              </TableCell>
+                              <TableCell>
                                 <span
                                   className={`px-2 py-1 text-xs rounded-full ${
                                     noticia.publicada
@@ -499,8 +623,8 @@ const AdminNoticias = () => {
                                   {noticia.publicada ? "Publicada" : "Borrador"}
                                 </span>
                               </TableCell>
-                              <TableCell className="text-muted-foreground">
-                                {format(new Date(noticia.created_at), "dd MMM yyyy", {
+                              <TableCell className="text-muted-foreground text-sm">
+                                {format(new Date(noticia.created_at), "dd/MM/yyyy", {
                                   locale: es,
                                 })}
                               </TableCell>
@@ -517,9 +641,8 @@ const AdminNoticias = () => {
                                     variant="ghost"
                                     size="icon"
                                     onClick={() => handleDeleteNoticia(noticia.id)}
-                                    className="text-destructive hover:text-destructive"
                                   >
-                                    <Trash2 className="h-4 w-4" />
+                                    <Trash2 className="h-4 w-4 text-destructive" />
                                   </Button>
                                 </div>
                               </TableCell>
@@ -533,22 +656,117 @@ const AdminNoticias = () => {
               </Card>
             </TabsContent>
 
+            {/* Tab Categorías */}
+            <TabsContent value="categorias">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle>Categorías de noticias</CardTitle>
+                  <Dialog open={categoriaDialogOpen} onOpenChange={setCategoriaDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Nueva Categoría
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Nueva Categoría</DialogTitle>
+                      </DialogHeader>
+                      <form onSubmit={handleCreateCategoria} className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="cat-nombre">Nombre *</Label>
+                          <Input
+                            id="cat-nombre"
+                            value={nuevaCategoria.nombre}
+                            onChange={(e) =>
+                              setNuevaCategoria({ ...nuevaCategoria, nombre: e.target.value })
+                            }
+                            placeholder="Ej: Institucional, Eventos..."
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="cat-color">Color</Label>
+                          <div className="flex gap-2">
+                            <Input
+                              id="cat-color"
+                              type="color"
+                              value={nuevaCategoria.color}
+                              onChange={(e) =>
+                                setNuevaCategoria({ ...nuevaCategoria, color: e.target.value })
+                              }
+                              className="w-16 h-10 p-1 cursor-pointer"
+                            />
+                            <Input
+                              value={nuevaCategoria.color}
+                              onChange={(e) =>
+                                setNuevaCategoria({ ...nuevaCategoria, color: e.target.value })
+                              }
+                              placeholder="#3B82F6"
+                              className="flex-1"
+                            />
+                          </div>
+                        </div>
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setCategoriaDialogOpen(false)}
+                          >
+                            Cancelar
+                          </Button>
+                          <Button type="submit">Crear</Button>
+                        </div>
+                      </form>
+                    </DialogContent>
+                  </Dialog>
+                </CardHeader>
+                <CardContent>
+                  {categorias.length === 0 ? (
+                    <p className="text-center text-muted-foreground py-8">
+                      No hay categorías. Crea la primera.
+                    </p>
+                  ) : (
+                    <div className="grid gap-3">
+                      {categorias.map((cat) => (
+                        <div
+                          key={cat.id}
+                          className="flex items-center justify-between p-3 border rounded-lg"
+                        >
+                          <div className="flex items-center gap-3">
+                            <span
+                              className="w-6 h-6 rounded-full"
+                              style={{ backgroundColor: cat.color }}
+                            />
+                            <span className="font-medium">{cat.nombre}</span>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDeleteCategoria(cat.id)}
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
             {/* Tab Solicitudes */}
             <TabsContent value="solicitudes">
               <Card>
                 <CardHeader>
-                  <CardTitle>Solicitudes de Socio</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {/* Filtros */}
-                  <div className="flex flex-col sm:flex-row gap-4 mb-6">
+                  <CardTitle>Solicitudes de Socios</CardTitle>
+                  <div className="flex flex-col sm:flex-row gap-4 mt-4">
                     <div className="relative flex-1">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                       <Input
                         placeholder="Buscar por nombre, email, teléfono o DNI..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-9"
+                        className="pl-10"
                       />
                     </div>
                     <Select value={filtroEstado} onValueChange={setFiltroEstado}>
@@ -556,7 +774,7 @@ const AdminNoticias = () => {
                         <SelectValue placeholder="Filtrar por estado" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="todos">Todos los estados</SelectItem>
+                        <SelectItem value="todos">Todos</SelectItem>
                         <SelectItem value="pendiente">Pendiente</SelectItem>
                         <SelectItem value="contactado">Contactado</SelectItem>
                         <SelectItem value="aceptado">Aceptado</SelectItem>
@@ -564,18 +782,15 @@ const AdminNoticias = () => {
                       </SelectContent>
                     </Select>
                   </div>
-
+                </CardHeader>
+                <CardContent>
                   {loadingSolicitudes ? (
                     <div className="flex justify-center py-8">
                       <Loader2 className="h-8 w-8 animate-spin text-primary" />
                     </div>
-                  ) : solicitudes.length === 0 ? (
-                    <p className="text-center text-muted-foreground py-8">
-                      No hay solicitudes de socio.
-                    </p>
                   ) : solicitudesFiltradas.length === 0 ? (
                     <p className="text-center text-muted-foreground py-8">
-                      No se encontraron solicitudes con esos criterios.
+                      No hay solicitudes{searchTerm || filtroEstado !== "todos" ? " con los filtros seleccionados" : ""}.
                     </p>
                   ) : (
                     <div className="overflow-x-auto">
@@ -597,20 +812,14 @@ const AdminNoticias = () => {
                                 {solicitud.nombre} {solicitud.apellidos}
                               </TableCell>
                               <TableCell>
-                                <a 
-                                  href={`mailto:${solicitud.email}`} 
-                                  className="text-primary hover:underline flex items-center gap-1"
-                                >
+                                <a href={`mailto:${solicitud.email}`} className="flex items-center gap-1 text-primary hover:underline">
                                   <Mail className="h-3 w-3" />
                                   {solicitud.email}
                                 </a>
                               </TableCell>
                               <TableCell>
                                 {solicitud.telefono ? (
-                                  <a 
-                                    href={`tel:${solicitud.telefono}`} 
-                                    className="text-primary hover:underline flex items-center gap-1"
-                                  >
+                                  <a href={`tel:${solicitud.telefono}`} className="flex items-center gap-1 text-primary hover:underline">
                                     <Phone className="h-3 w-3" />
                                     {solicitud.telefono}
                                   </a>
@@ -618,11 +827,9 @@ const AdminNoticias = () => {
                                   <span className="text-muted-foreground">-</span>
                                 )}
                               </TableCell>
-                              <TableCell>
-                                {getEstadoBadge(solicitud.estado)}
-                              </TableCell>
-                              <TableCell className="text-muted-foreground">
-                                {format(new Date(solicitud.created_at), "dd MMM yyyy", {
+                              <TableCell>{getEstadoBadge(solicitud.estado)}</TableCell>
+                              <TableCell className="text-muted-foreground text-sm">
+                                {format(new Date(solicitud.created_at), "dd/MM/yyyy", {
                                   locale: es,
                                 })}
                               </TableCell>
@@ -642,9 +849,8 @@ const AdminNoticias = () => {
                                     variant="ghost"
                                     size="icon"
                                     onClick={() => handleDeleteSolicitud(solicitud.id)}
-                                    className="text-destructive hover:text-destructive"
                                   >
-                                    <Trash2 className="h-4 w-4" />
+                                    <Trash2 className="h-4 w-4 text-destructive" />
                                   </Button>
                                 </div>
                               </TableCell>
@@ -656,86 +862,98 @@ const AdminNoticias = () => {
                   )}
                 </CardContent>
               </Card>
-
-              {/* Dialog para ver detalle de solicitud */}
-              <Dialog open={solicitudDialogOpen} onOpenChange={setSolicitudDialogOpen}>
-                <DialogContent className="max-w-lg">
-                  <DialogHeader>
-                    <DialogTitle>Detalle de Solicitud</DialogTitle>
-                  </DialogHeader>
-                  {viewingSolicitud && (
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <Label className="text-muted-foreground text-xs">Nombre</Label>
-                          <p className="font-medium">{viewingSolicitud.nombre} {viewingSolicitud.apellidos}</p>
-                        </div>
-                        <div>
-                          <Label className="text-muted-foreground text-xs">DNI</Label>
-                          <p className="font-medium">{viewingSolicitud.dni}</p>
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <Label className="text-muted-foreground text-xs">Email</Label>
-                          <a href={`mailto:${viewingSolicitud.email}`} className="text-primary hover:underline block">
-                            {viewingSolicitud.email}
-                          </a>
-                        </div>
-                        <div>
-                          <Label className="text-muted-foreground text-xs">Teléfono</Label>
-                          {viewingSolicitud.telefono ? (
-                            <a href={`tel:${viewingSolicitud.telefono}`} className="text-primary hover:underline block">
-                              {viewingSolicitud.telefono}
-                            </a>
-                          ) : (
-                            <p className="text-muted-foreground">No proporcionado</p>
-                          )}
-                        </div>
-                      </div>
-                      {(viewingSolicitud.direccion || viewingSolicitud.ciudad) && (
-                        <div>
-                          <Label className="text-muted-foreground text-xs">Dirección</Label>
-                          <p>
-                            {viewingSolicitud.direccion && `${viewingSolicitud.direccion}, `}
-                            {viewingSolicitud.codigo_postal && `${viewingSolicitud.codigo_postal} `}
-                            {viewingSolicitud.ciudad}
-                            {viewingSolicitud.provincia && ` (${viewingSolicitud.provincia})`}
-                          </p>
-                        </div>
-                      )}
-                      {viewingSolicitud.motivacion && (
-                        <div>
-                          <Label className="text-muted-foreground text-xs">Motivación</Label>
-                          <p className="text-sm bg-muted p-3 rounded-md">{viewingSolicitud.motivacion}</p>
-                        </div>
-                      )}
-                      <div>
-                        <Label className="text-muted-foreground text-xs mb-2 block">Estado</Label>
-                        <div className="flex gap-2 flex-wrap">
-                          {["pendiente", "contactado", "aceptado", "rechazado"].map((estado) => (
-                            <Button
-                              key={estado}
-                              variant={viewingSolicitud.estado === estado ? "default" : "outline"}
-                              size="sm"
-                              onClick={() => {
-                                handleUpdateEstado(viewingSolicitud.id, estado);
-                                setViewingSolicitud({ ...viewingSolicitud, estado });
-                              }}
-                            >
-                              {estado.charAt(0).toUpperCase() + estado.slice(1)}
-                            </Button>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </DialogContent>
-              </Dialog>
             </TabsContent>
           </Tabs>
         </div>
       </section>
+
+      {/* Dialog ver solicitud */}
+      <Dialog open={solicitudDialogOpen} onOpenChange={setSolicitudDialogOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Detalle de Solicitud</DialogTitle>
+          </DialogHeader>
+          {viewingSolicitud && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-muted-foreground text-xs">Nombre</Label>
+                  <p className="font-medium">{viewingSolicitud.nombre}</p>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground text-xs">Apellidos</Label>
+                  <p className="font-medium">{viewingSolicitud.apellidos}</p>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground text-xs">DNI</Label>
+                  <p className="font-medium">{viewingSolicitud.dni}</p>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground text-xs">Email</Label>
+                  <a href={`mailto:${viewingSolicitud.email}`} className="block font-medium text-primary hover:underline">
+                    {viewingSolicitud.email}
+                  </a>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground text-xs">Teléfono</Label>
+                  {viewingSolicitud.telefono ? (
+                    <a href={`tel:${viewingSolicitud.telefono}`} className="block font-medium text-primary hover:underline">
+                      {viewingSolicitud.telefono}
+                    </a>
+                  ) : (
+                    <p className="text-muted-foreground">-</p>
+                  )}
+                </div>
+                <div>
+                  <Label className="text-muted-foreground text-xs">Fecha solicitud</Label>
+                  <p className="font-medium">
+                    {format(new Date(viewingSolicitud.created_at), "dd/MM/yyyy HH:mm", { locale: es })}
+                  </p>
+                </div>
+              </div>
+              
+              {(viewingSolicitud.direccion || viewingSolicitud.ciudad || viewingSolicitud.provincia) && (
+                <div>
+                  <Label className="text-muted-foreground text-xs">Dirección</Label>
+                  <p className="font-medium">
+                    {[viewingSolicitud.direccion, viewingSolicitud.codigo_postal, viewingSolicitud.ciudad, viewingSolicitud.provincia]
+                      .filter(Boolean)
+                      .join(", ")}
+                  </p>
+                </div>
+              )}
+              
+              {viewingSolicitud.motivacion && (
+                <div>
+                  <Label className="text-muted-foreground text-xs">Motivación</Label>
+                  <p className="text-sm">{viewingSolicitud.motivacion}</p>
+                </div>
+              )}
+              
+              <div>
+                <Label className="text-muted-foreground text-xs mb-2 block">Estado</Label>
+                <Select
+                  value={viewingSolicitud.estado}
+                  onValueChange={(value) => {
+                    handleUpdateEstado(viewingSolicitud.id, value);
+                    setViewingSolicitud({ ...viewingSolicitud, estado: value });
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pendiente">Pendiente</SelectItem>
+                    <SelectItem value="contactado">Contactado</SelectItem>
+                    <SelectItem value="aceptado">Aceptado</SelectItem>
+                    <SelectItem value="rechazado">Rechazado</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </Layout>
   );
 };
