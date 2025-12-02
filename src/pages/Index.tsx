@@ -70,8 +70,8 @@ const Index = () => {
                 </Button>
               </div>
             </div>
-            <div className="hidden md:flex justify-center animate-fade-in" style={{ animationDelay: "0.3s" }}>
-              <img src={logoIcon} alt="" className="w-72 lg:w-96 opacity-40 drop-shadow-2xl" />
+            <div className="flex justify-center animate-fade-in md:justify-center" style={{ animationDelay: "0.3s" }}>
+              <img src={logoIcon} alt="" className="w-32 md:w-72 lg:w-96 opacity-30 md:opacity-40 drop-shadow-2xl" />
             </div>
           </div>
         </div>
