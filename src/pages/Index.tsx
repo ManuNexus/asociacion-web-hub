@@ -114,13 +114,6 @@ const Index = () => {
               </div>
             </div>
             
-            {/* Scroll indicator */}
-            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 hidden md:flex flex-col items-center gap-2 animate-bounce">
-              <span className="text-primary-foreground/60 text-xs uppercase tracking-widest">Descubre más</span>
-              <div className="w-6 h-10 border-2 border-primary-foreground/30 rounded-full flex justify-center pt-2">
-                <div className="w-1 h-2 bg-primary-foreground/60 rounded-full" />
-              </div>
-            </div>
           </div>
         </div>
       </section>
