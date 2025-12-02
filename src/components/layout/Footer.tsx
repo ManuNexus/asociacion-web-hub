@@ -7,7 +7,7 @@ export function Footer() {
         <div className="grid gap-8 md:grid-cols-3">
           {/* Brand */}
           <div className="space-y-4">
-            <img src={logoAhoraWhite} alt="AHORA" className="h-8" />
+            <img src={logoAhoraWhite} alt="AHORA" className="h-8" width="116" height="32" />
             <p className="text-sm text-primary-foreground/80 max-w-xs">
               Asociación civil de ámbito nacional que defiende los valores constitucionales, el pluralismo ideológico y la convivencia.
             </p>

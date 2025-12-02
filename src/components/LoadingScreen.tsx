@@ -44,7 +44,9 @@ export function LoadingScreen() {
         <img 
           src={logoAhoraWhite} 
           alt="AHORA" 
-          className="h-16 animate-pulse" 
+          className="h-16 animate-pulse"
+          width="232"
+          height="64"
         />
         <div className="flex gap-1">
           <span className="w-2 h-2 bg-secondary rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
