@@ -1,10 +1,8 @@
 import { Link } from "react-router-dom";
 import { Mail, MapPin } from "lucide-react";
 import logoAhora from "@/assets/logo-ahora.png";
-
 export function Footer() {
-  return (
-    <footer className="bg-primary text-primary-foreground">
+  return <footer className="bg-primary text-primary-foreground">
       <div className="container py-12 md:py-16">
         <div className="grid gap-8 md:grid-cols-3">
           {/* Brand */}
@@ -46,7 +44,7 @@ export function Footer() {
               </div>
               <div className="flex items-center gap-2">
                 <Mail className="h-4 w-4 text-secondary" />
-                <a href="mailto:info@asociacionahora.es" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors">
+                <a className="text-primary-foreground/80 hover:text-primary-foreground transition-colors" href="mailto:info@ahoraorg.es">
                   info@asociacionahora.es
                 </a>
               </div>
@@ -61,6 +59,5 @@ export function Footer() {
           </div>
         </div>
       </div>
-    </footer>
-  );
+    </footer>;
 }
