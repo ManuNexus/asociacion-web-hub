@@ -32,7 +32,7 @@ const PoliticaPrivacidad = () => {
                     <strong>Identidad:</strong> ASOCIACIÓN AHORA
                   </p>
                   <p>
-                    <strong>NIF:</strong> Pendiente de aprovación
+                    <strong>NIF:</strong> Pendiente de aprobación
                   </p>
                   <p>
                     <strong>Dirección:</strong> C/ Aragón 578, 08026 Barcelona
