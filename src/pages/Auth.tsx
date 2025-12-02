@@ -7,8 +7,11 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
 import { z } from "zod";
+
+type AuthMode = "login" | "signup" | "reset";
 
 const authSchema = z.object({
   email: z.string().email("Email inválido"),
@@ -16,7 +19,7 @@ const authSchema = z.object({
 });
 
 const Auth = () => {
-  const [isLogin, setIsLogin] = useState(true);
+  const [mode, setMode] = useState<AuthMode>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -36,6 +39,32 @@ const Auth = () => {
     e.preventDefault();
     setErrors({});
 
+    if (mode === "reset") {
+      if (!email) {
+        setErrors({ email: "Email requerido" });
+        return;
+      }
+      setLoading(true);
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth`,
+      });
+      setLoading(false);
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: error.message,
+        });
+      } else {
+        toast({
+          title: "Email enviado",
+          description: "Revisa tu bandeja de entrada para restablecer tu contraseña",
+        });
+        setMode("login");
+      }
+      return;
+    }
+
     const validation = authSchema.safeParse({ email, password });
     if (!validation.success) {
       const fieldErrors: { email?: string; password?: string } = {};
@@ -50,7 +79,7 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      if (isLogin) {
+      if (mode === "login") {
         const { error } = await signIn(email, password);
         if (error) {
           toast({
@@ -86,20 +115,30 @@ const Auth = () => {
     }
   };
 
+  const getTitle = () => {
+    switch (mode) {
+      case "login": return "Iniciar Sesión";
+      case "signup": return "Registrarse";
+      case "reset": return "Restablecer Contraseña";
+    }
+  };
+
+  const getDescription = () => {
+    switch (mode) {
+      case "login": return "Accede al panel de administración";
+      case "signup": return "Crea una cuenta nueva";
+      case "reset": return "Te enviaremos un email para restablecer tu contraseña";
+    }
+  };
+
   return (
     <Layout>
       <section className="py-16 md:py-24">
         <div className="container max-w-md">
           <Card>
             <CardHeader className="text-center">
-              <CardTitle className="text-2xl">
-                {isLogin ? "Iniciar Sesión" : "Registrarse"}
-              </CardTitle>
-              <CardDescription>
-                {isLogin
-                  ? "Accede al panel de administración"
-                  : "Crea una cuenta nueva"}
-              </CardDescription>
+              <CardTitle className="text-2xl">{getTitle()}</CardTitle>
+              <CardDescription>{getDescription()}</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -117,35 +156,64 @@ const Auth = () => {
                     <p className="text-sm text-destructive">{errors.email}</p>
                   )}
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="password">Contraseña</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    disabled={loading}
-                  />
-                  {errors.password && (
-                    <p className="text-sm text-destructive">{errors.password}</p>
-                  )}
-                </div>
+                {mode !== "reset" && (
+                  <div className="space-y-2">
+                    <Label htmlFor="password">Contraseña</Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••"
+                      disabled={loading}
+                    />
+                    {errors.password && (
+                      <p className="text-sm text-destructive">{errors.password}</p>
+                    )}
+                  </div>
+                )}
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  {isLogin ? "Iniciar Sesión" : "Registrarse"}
+                  {mode === "reset" ? "Enviar Email" : getTitle()}
                 </Button>
               </form>
-              <div className="mt-4 text-center text-sm">
-                <button
-                  type="button"
-                  onClick={() => setIsLogin(!isLogin)}
-                  className="text-primary hover:underline"
-                >
-                  {isLogin
-                    ? "¿No tienes cuenta? Regístrate"
-                    : "¿Ya tienes cuenta? Inicia sesión"}
-                </button>
+              <div className="mt-4 text-center text-sm space-y-2">
+                {mode === "login" && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setMode("reset")}
+                      className="text-muted-foreground hover:text-primary hover:underline block w-full"
+                    >
+                      ¿Olvidaste tu contraseña?
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setMode("signup")}
+                      className="text-primary hover:underline block w-full"
+                    >
+                      ¿No tienes cuenta? Regístrate
+                    </button>
+                  </>
+                )}
+                {mode === "signup" && (
+                  <button
+                    type="button"
+                    onClick={() => setMode("login")}
+                    className="text-primary hover:underline"
+                  >
+                    ¿Ya tienes cuenta? Inicia sesión
+                  </button>
+                )}
+                {mode === "reset" && (
+                  <button
+                    type="button"
+                    onClick={() => setMode("login")}
+                    className="text-primary hover:underline"
+                  >
+                    Volver a iniciar sesión
+                  </button>
+                )}
               </div>
             </CardContent>
           </Card>
