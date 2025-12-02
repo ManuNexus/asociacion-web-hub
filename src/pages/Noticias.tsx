@@ -77,8 +77,20 @@ const Noticias = () => {
                   className="group bg-card rounded-xl border border-border overflow-hidden hover:shadow-elevated transition-all duration-300 animate-slide-up"
                   style={{ animationDelay: `${index * 0.1}s` }}
                 >
-                  <div className="grid md:grid-cols-[4px_1fr]">
-                    <div className="bg-secondary hidden md:block" />
+                  <div className="grid md:grid-cols-[300px_1fr]">
+                    {noticia.imagen_url ? (
+                      <div className="h-48 md:h-full overflow-hidden">
+                        <img
+                          src={noticia.imagen_url}
+                          alt={noticia.titulo}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      </div>
+                    ) : (
+                      <div className="h-48 md:h-full bg-secondary/20 flex items-center justify-center">
+                        <span className="text-muted-foreground text-sm">Sin imagen</span>
+                      </div>
+                    )}
                     <div className="p-6 md:p-8">
                       <div className="flex flex-wrap items-center gap-4 mb-4">
                         <span className="px-3 py-1 text-xs font-medium bg-secondary/20 text-secondary-foreground rounded-full">
