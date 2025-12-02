@@ -45,7 +45,7 @@ export function Footer() {
               <div className="flex items-center gap-2">
                 <Mail className="h-4 w-4 text-secondary" />
                 <a className="text-primary-foreground/80 hover:text-primary-foreground transition-colors" href="mailto:info@ahoraorg.es">
-                  info@asociacionahora.es
+                  info@ahoraorg.es
                 </a>
               </div>
             </div>
