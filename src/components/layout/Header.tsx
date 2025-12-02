@@ -19,8 +19,12 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
       <div className="container flex h-16 items-center justify-between md:h-20">
-        <Link to="/" className="flex items-center gap-2">
-          <img src={logoAhora} alt="AHORA" className="h-12 md:h-14" width="203" height="56" />
+        <Link to="/" className="flex items-center">
+          <img 
+            src={logoAhora} 
+            alt="AHORA" 
+            className="h-8 md:h-10 w-auto object-contain" 
+          />
         </Link>
 
         {/* Desktop Navigation */}
