@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -341,7 +342,7 @@ const HazteSocio = () => {
                     }
                   />
                   <Label htmlFor="aceptaPrivacidad" className="text-sm text-muted-foreground leading-relaxed">
-                    Acepto la política de privacidad y el tratamiento de mis datos personales para la gestión de mi condición de socio. *
+                    Acepto la <Link to="/politica-privacidad" className="text-primary hover:underline">política de privacidad</Link> y el tratamiento de mis datos personales para la gestión de mi condición de socio. *
                   </Label>
                 </div>
               </div>

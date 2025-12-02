@@ -12,6 +12,7 @@ import Noticias from "./pages/Noticias";
 import NoticiaDetalle from "./pages/NoticiaDetalle";
 import Transparencia from "./pages/Transparencia";
 import HazteSocio from "./pages/HazteSocio";
+import PoliticaPrivacidad from "./pages/PoliticaPrivacidad";
 import Auth from "./pages/Auth";
 import AdminNoticias from "./pages/AdminNoticias";
 import NotFound from "./pages/NotFound";
@@ -34,6 +35,7 @@ const App = () => (
               <Route path="/noticias/:id" element={<NoticiaDetalle />} />
               <Route path="/transparencia" element={<Transparencia />} />
               <Route path="/hazte-socio" element={<HazteSocio />} />
+              <Route path="/politica-privacidad" element={<PoliticaPrivacidad />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/admin/noticias" element={<AdminNoticias />} />
               <Route path="*" element={<NotFound />} />
