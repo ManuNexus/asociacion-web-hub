@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { CheckCircle2, Users, Heart, Shield } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const beneficios = [
   {
@@ -68,29 +69,51 @@ const HazteSocio = () => {
 
     setIsSubmitting(true);
     
-    // Simular envío
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    
-    toast({
-      title: "¡Solicitud enviada!",
-      description: "Hemos recibido tu solicitud. Nos pondremos en contacto contigo pronto.",
-    });
-    
-    setIsSubmitting(false);
-    setFormData({
-      nombre: "",
-      apellidos: "",
-      dni: "",
-      email: "",
-      telefono: "",
-      direccion: "",
-      codigoPostal: "",
-      ciudad: "",
-      provincia: "",
-      motivacion: "",
-      aceptaEstatutos: false,
-      aceptaPrivacidad: false,
-    });
+    try {
+      const { error } = await supabase.from("solicitudes_socio").insert({
+        nombre: formData.nombre,
+        apellidos: formData.apellidos,
+        dni: formData.dni,
+        email: formData.email,
+        telefono: formData.telefono || null,
+        direccion: formData.direccion || null,
+        codigo_postal: formData.codigoPostal || null,
+        ciudad: formData.ciudad || null,
+        provincia: formData.provincia || null,
+        motivacion: formData.motivacion || null,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "¡Solicitud enviada!",
+        description: "Hemos recibido tu solicitud. Nos pondremos en contacto contigo pronto.",
+      });
+
+      setFormData({
+        nombre: "",
+        apellidos: "",
+        dni: "",
+        email: "",
+        telefono: "",
+        direccion: "",
+        codigoPostal: "",
+        ciudad: "",
+        provincia: "",
+        motivacion: "",
+        aceptaEstatutos: false,
+        aceptaPrivacidad: false,
+      });
+    } catch (error: any) {
+      console.error("Error submitting:", error);
+      toast({
+        title: "Error",
+        description: "No se pudo enviar la solicitud. Inténtalo de nuevo.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (

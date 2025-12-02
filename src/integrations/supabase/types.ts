@@ -50,6 +50,57 @@ export type Database = {
         }
         Relationships: []
       }
+      solicitudes_socio: {
+        Row: {
+          apellidos: string
+          ciudad: string | null
+          codigo_postal: string | null
+          created_at: string
+          direccion: string | null
+          dni: string
+          email: string
+          estado: string
+          id: string
+          motivacion: string | null
+          nombre: string
+          provincia: string | null
+          telefono: string | null
+          updated_at: string
+        }
+        Insert: {
+          apellidos: string
+          ciudad?: string | null
+          codigo_postal?: string | null
+          created_at?: string
+          direccion?: string | null
+          dni: string
+          email: string
+          estado?: string
+          id?: string
+          motivacion?: string | null
+          nombre: string
+          provincia?: string | null
+          telefono?: string | null
+          updated_at?: string
+        }
+        Update: {
+          apellidos?: string
+          ciudad?: string | null
+          codigo_postal?: string | null
+          created_at?: string
+          direccion?: string | null
+          dni?: string
+          email?: string
+          estado?: string
+          id?: string
+          motivacion?: string | null
+          nombre?: string
+          provincia?: string | null
+          telefono?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
