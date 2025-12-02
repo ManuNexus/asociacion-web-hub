@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useLocation } from "react-router-dom";
-import logoAhora from "@/assets/logo-ahora.png";
+import logoAhoraWhite from "@/assets/logo-ahora-white.png";
 
 export function LoadingScreen() {
   const [isLoading, setIsLoading] = useState(true);
@@ -42,9 +42,9 @@ export function LoadingScreen() {
     >
       <div className="flex flex-col items-center gap-6">
         <img 
-          src={logoAhora} 
+          src={logoAhoraWhite} 
           alt="AHORA" 
-          className="h-16 brightness-0 invert animate-pulse" 
+          className="h-16 animate-pulse" 
         />
         <div className="flex gap-1">
           <span className="w-2 h-2 bg-secondary rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />

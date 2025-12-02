@@ -1,13 +1,13 @@
 import { Link } from "react-router-dom";
 import { Mail, MapPin, Twitter } from "lucide-react";
-import logoAhora from "@/assets/logo-ahora.png";
+import logoAhoraWhite from "@/assets/logo-ahora-white.png";
 export function Footer() {
   return <footer className="bg-primary text-primary-foreground">
       <div className="container py-12 md:py-16">
         <div className="grid gap-8 md:grid-cols-3">
           {/* Brand */}
           <div className="space-y-4">
-            <img src={logoAhora} alt="AHORA" className="h-8 brightness-0 invert" />
+            <img src={logoAhoraWhite} alt="AHORA" className="h-8" />
             <p className="text-sm text-primary-foreground/80 max-w-xs">
               Asociación civil de ámbito nacional que defiende los valores constitucionales, el pluralismo ideológico y la convivencia.
             </p>
