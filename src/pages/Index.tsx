@@ -86,7 +86,6 @@ const Index = () => {
                 src={logoIcon} 
                 alt="AHORA" 
                 className="w-24 md:w-32 lg:w-40 drop-shadow-[0_0_30px_rgba(241,196,15,0.3)]" 
-                fetchPriority="high"
               />
             </div>
             
