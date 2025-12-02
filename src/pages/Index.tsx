@@ -152,7 +152,7 @@ const Index = () => {
               {noticias.map((noticia, index) => (
                 <article
                   key={noticia.id}
-                  className="group bg-card rounded-xl border border-border overflow-hidden hover:shadow-elevated transition-all duration-300 animate-slide-up"
+                  className="group bg-card rounded-xl border border-border overflow-hidden hover:shadow-elevated hover:border-ahora-yellow/50 transition-all duration-300 animate-slide-up"
                   style={{ animationDelay: `${index * 0.1}s` }}
                 >
                   {noticia.imagen_url ? (
@@ -168,7 +168,7 @@ const Index = () => {
                   )}
                   <div className="p-6">
                     <time className="text-sm text-muted-foreground">{formatDate(noticia.fecha_publicacion)}</time>
-                    <h3 className="text-lg font-bold text-foreground mt-2 mb-3 group-hover:text-primary transition-colors">
+                    <h3 className="text-lg font-bold text-foreground mt-2 mb-3 group-hover:text-ahora-yellow transition-colors">
                       {noticia.titulo}
                     </h3>
                     <p className="text-muted-foreground text-sm">{noticia.extracto}</p>
