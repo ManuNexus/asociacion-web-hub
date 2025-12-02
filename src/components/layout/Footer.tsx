@@ -61,7 +61,13 @@ export function Footer() {
         <div className="mt-12 pt-8 border-t border-primary-foreground/20">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-primary-foreground/60">
             <p>© {new Date().getFullYear()} Asociación AHORA. Todos los derechos reservados.</p>
-            <p>Registro Nacional de Asociaciones: Nº 631679</p>
+            <div className="flex items-center gap-4">
+              <Link to="/politica-privacidad" className="hover:text-primary-foreground transition-colors">
+                Política de Privacidad
+              </Link>
+              <span>|</span>
+              <p>Registro Nacional de Asociaciones: Nº 631679</p>
+            </div>
           </div>
         </div>
       </div>
