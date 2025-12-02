@@ -1,54 +1,41 @@
 import { Layout } from "@/components/layout/Layout";
 import { FileText, Users, Wallet, Building, Download, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-const documentos = [
-  {
-    title: "Estatutos de la Asociación",
-    description: "Documento fundacional que recoge los fines, organización y funcionamiento de la asociación.",
-    icon: FileText,
-    available: true,
-  },
-  {
-    title: "Acta Fundacional",
-    description: "Acta de constitución de la Asociación AHORA, firmada el 13 de junio de 2025.",
-    icon: FileText,
-    available: true,
-  },
-  {
-    title: "Resolución de Inscripción",
-    description: "Resolución del Ministerio del Interior inscribiendo la asociación en el Registro Nacional.",
-    icon: Building,
-    available: true,
-  },
-];
-
-const organos = [
-  {
-    cargo: "Presidente",
-    nombre: "Pendiente de publicación",
-    descripcion: "Representa legalmente a la asociación y preside los órganos colegiados.",
-  },
-  {
-    cargo: "Vicepresidente",
-    nombre: "Pendiente de publicación",
-    descripcion: "Sustituye al presidente en caso de ausencia y colabora en sus funciones.",
-  },
-  {
-    cargo: "Secretario",
-    nombre: "Pendiente de publicación",
-    descripcion: "Custodia la documentación y certifica los acuerdos de los órganos.",
-  },
-  {
-    cargo: "Tesorero",
-    nombre: "Pendiente de publicación",
-    descripcion: "Gestiona los recursos económicos y elabora los presupuestos.",
-  },
-];
-
+const documentos = [{
+  title: "Estatutos de la Asociación",
+  description: "Documento fundacional que recoge los fines, organización y funcionamiento de la asociación.",
+  icon: FileText,
+  available: true
+}, {
+  title: "Acta Fundacional",
+  description: "Acta de constitución de la Asociación AHORA, firmada el 13 de junio de 2025.",
+  icon: FileText,
+  available: true
+}, {
+  title: "Resolución de Inscripción",
+  description: "Resolución del Ministerio del Interior inscribiendo la asociación en el Registro Nacional.",
+  icon: Building,
+  available: true
+}];
+const organos = [{
+  cargo: "Presidente",
+  nombre: "Pendiente de publicación",
+  descripcion: "Representa legalmente a la asociación y preside los órganos colegiados."
+}, {
+  cargo: "Vicepresidente",
+  nombre: "Pendiente de publicación",
+  descripcion: "Sustituye al presidente en caso de ausencia y colabora en sus funciones."
+}, {
+  cargo: "Secretario",
+  nombre: "Pendiente de publicación",
+  descripcion: "Custodia la documentación y certifica los acuerdos de los órganos."
+}, {
+  cargo: "Tesorero",
+  nombre: "Pendiente de publicación",
+  descripcion: "Gestiona los recursos económicos y elabora los presupuestos."
+}];
 const Transparencia = () => {
-  return (
-    <Layout>
+  return <Layout>
       {/* Hero */}
       <section className="bg-hero py-16 md:py-24">
         <div className="container">
@@ -79,8 +66,7 @@ const Transparencia = () => {
               Documentación Oficial
             </h2>
             <div className="grid gap-6 md:grid-cols-3">
-              {documentos.map((doc) => (
-                <div key={doc.title} className="bg-card rounded-xl border border-border p-6">
+              {documentos.map(doc => <div key={doc.title} className="bg-card rounded-xl border border-border p-6">
                   <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center mb-4">
                     <doc.icon className="h-6 w-6 text-primary" />
                   </div>
@@ -90,8 +76,7 @@ const Transparencia = () => {
                     <Download className="h-4 w-4 mr-2" />
                     Descargar PDF
                   </Button>
-                </div>
-              ))}
+                </div>)}
             </div>
           </div>
 
@@ -106,13 +91,11 @@ const Transparencia = () => {
                 La Asociación AHORA está gobernada por la Asamblea General de socios y la Junta Directiva. A continuación se detallan los miembros de la Junta Directiva:
               </p>
               <div className="grid gap-4 md:grid-cols-2">
-                {organos.map((organo) => (
-                  <div key={organo.cargo} className="bg-card rounded-lg p-4 border border-border">
+                {organos.map(organo => <div key={organo.cargo} className="bg-card rounded-lg p-4 border border-border">
                     <div className="font-semibold text-secondary text-sm mb-1">{organo.cargo}</div>
                     <div className="font-bold text-foreground mb-1">{organo.nombre}</div>
                     <div className="text-sm text-muted-foreground">{organo.descripcion}</div>
-                  </div>
-                ))}
+                  </div>)}
               </div>
             </div>
           </div>
@@ -191,7 +174,7 @@ const Transparencia = () => {
                     <div className="font-medium">C/ Aragón 578, 08026 Barcelona</div>
                   </div>
                   <Button variant="hero" size="sm" asChild>
-                    <a href="https://sede.mir.gob.es" target="_blank" rel="noopener noreferrer">
+                    <a target="_blank" rel="noopener noreferrer" href="https://sede.interior.gob.es/portal/sede/asociaciones/detalle?legacy=true&numeroNacional=631.679&codigoSeccion=1&codigoDenominacion=81.499.831&paginaActual=1">
                       <ExternalLink className="h-4 w-4 mr-2" />
                       Verificar inscripción
                     </a>
@@ -202,8 +185,6 @@ const Transparencia = () => {
           </div>
         </div>
       </section>
-    </Layout>
-  );
+    </Layout>;
 };
-
 export default Transparencia;
