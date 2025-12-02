@@ -22,19 +22,19 @@ const documentos = [{
 }];
 const organos = [{
   cargo: "Presidente",
-  nombre: "Pendiente de publicación",
+  nombre: "Manuel Rodríguez Pérez",
   descripcion: "Representa legalmente a la asociación y preside los órganos colegiados."
 }, {
-  cargo: "Vicepresidente",
-  nombre: "Pendiente de publicación",
+  cargo: "Vicepresidenta",
+  nombre: "Sonia Reina Sánchez",
   descripcion: "Sustituye al presidente en caso de ausencia y colabora en sus funciones."
 }, {
   cargo: "Secretario",
-  nombre: "Pendiente de publicación",
+  nombre: "Aldo Ciprián Rodríguez",
   descripcion: "Custodia la documentación y certifica los acuerdos de los órganos."
 }, {
   cargo: "Tesorero",
-  nombre: "Pendiente de publicación",
+  nombre: "Javier Edrosa Pérez",
   descripcion: "Gestiona los recursos económicos y elabora los presupuestos."
 }];
 const Transparencia = () => {
