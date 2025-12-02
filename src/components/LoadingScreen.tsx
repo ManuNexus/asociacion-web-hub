@@ -1,18 +1,27 @@
 import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import logoAhora from "@/assets/logo-ahora.png";
 
-export function LoadingScreen() {
+interface LoadingScreenProps {
+  initialLoad?: boolean;
+}
+
+export function LoadingScreen({ initialLoad = false }: LoadingScreenProps) {
   const [isLoading, setIsLoading] = useState(true);
+  const location = useLocation();
 
   useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 1000);
+    setIsLoading(true);
+    const timer = setTimeout(() => setIsLoading(false), initialLoad ? 1000 : 400);
     return () => clearTimeout(timer);
-  }, []);
-
-  if (!isLoading) return null;
+  }, [location.pathname, initialLoad]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-primary transition-opacity duration-500">
+    <div 
+      className={`fixed inset-0 z-50 flex items-center justify-center bg-primary transition-opacity duration-300 pointer-events-none ${
+        isLoading ? "opacity-100" : "opacity-0"
+      }`}
+    >
       <div className="flex flex-col items-center gap-6">
         <img 
           src={logoAhora} 
