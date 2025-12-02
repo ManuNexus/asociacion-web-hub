@@ -5,17 +5,20 @@ const documentos = [{
   title: "Estatutos de la Asociación",
   description: "Documento fundacional que recoge los fines, organización y funcionamiento de la asociación.",
   icon: FileText,
-  available: true
+  available: true,
+  url: "/documentos/estatutos-fundacionales.pdf"
 }, {
   title: "Acta Fundacional",
   description: "Acta de constitución de la Asociación AHORA, firmada el 13 de junio de 2025.",
   icon: FileText,
-  available: true
+  available: true,
+  url: "/documentos/acta-constitucion.pdf"
 }, {
   title: "Resolución de Inscripción",
   description: "Resolución del Ministerio del Interior inscribiendo la asociación en el Registro Nacional.",
   icon: Building,
-  available: true
+  available: false,
+  url: null
 }];
 const organos = [{
   cargo: "Presidente",
@@ -72,10 +75,19 @@ const Transparencia = () => {
                   </div>
                   <h3 className="text-lg font-bold text-foreground mb-2">{doc.title}</h3>
                   <p className="text-sm text-muted-foreground mb-4">{doc.description}</p>
-                  <Button variant="outline" size="sm" disabled={!doc.available}>
-                    <Download className="h-4 w-4 mr-2" />
-                    Descargar PDF
-                  </Button>
+                  {doc.available && doc.url ? (
+                    <Button variant="outline" size="sm" asChild>
+                      <a href={doc.url} target="_blank" rel="noopener noreferrer" download>
+                        <Download className="h-4 w-4 mr-2" />
+                        Descargar PDF
+                      </a>
+                    </Button>
+                  ) : (
+                    <Button variant="outline" size="sm" disabled>
+                      <Download className="h-4 w-4 mr-2" />
+                      Próximamente
+                    </Button>
+                  )}
                 </div>)}
             </div>
           </div>
