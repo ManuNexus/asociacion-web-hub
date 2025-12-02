@@ -29,6 +29,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(session?.user ?? null);
         
         if (session?.user) {
+          // Set adminLoading BEFORE scheduling the check to prevent race condition
+          setAdminLoading(true);
           setTimeout(() => {
             checkAdminRole(session.user.id);
           }, 0);
