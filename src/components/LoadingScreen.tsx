@@ -1,24 +1,42 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import logoAhora from "@/assets/logo-ahora.png";
 
-interface LoadingScreenProps {
-  initialLoad?: boolean;
-}
-
-export function LoadingScreen({ initialLoad = false }: LoadingScreenProps) {
+export function LoadingScreen() {
   const [isLoading, setIsLoading] = useState(true);
+  const [isVisible, setIsVisible] = useState(true);
   const location = useLocation();
+  const isFirstLoad = useRef(true);
 
   useEffect(() => {
+    const duration = isFirstLoad.current ? 2000 : 800;
+    isFirstLoad.current = false;
+    
+    // Show immediately
+    setIsVisible(true);
     setIsLoading(true);
-    const timer = setTimeout(() => setIsLoading(false), initialLoad ? 2000 : 800);
-    return () => clearTimeout(timer);
-  }, [location.pathname, initialLoad]);
+    
+    // Start fade out after duration
+    const fadeTimer = setTimeout(() => {
+      setIsLoading(false);
+    }, duration);
+    
+    // Remove from DOM after fade animation
+    const hideTimer = setTimeout(() => {
+      setIsVisible(false);
+    }, duration + 300);
+    
+    return () => {
+      clearTimeout(fadeTimer);
+      clearTimeout(hideTimer);
+    };
+  }, [location.pathname]);
+
+  if (!isVisible) return null;
 
   return (
     <div 
-      className={`fixed inset-0 z-50 flex items-center justify-center bg-primary transition-opacity duration-300 pointer-events-none ${
+      className={`fixed inset-0 z-50 flex items-center justify-center bg-primary transition-opacity duration-300 ${
         isLoading ? "opacity-100" : "opacity-0"
       }`}
     >
