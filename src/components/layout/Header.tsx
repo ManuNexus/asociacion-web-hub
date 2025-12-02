@@ -29,10 +29,10 @@ export function Header() {
             <Link
               key={link.href}
               to={link.href}
-              className={`px-4 py-2 text-sm font-medium transition-colors rounded-md hover:bg-muted ${
+              className={`px-4 py-2 text-sm font-medium transition-colors rounded-md hover:bg-ahora-yellow/20 hover:text-ahora-yellow ${
                 location.pathname === link.href
-                  ? "text-primary bg-muted"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "text-ahora-yellow bg-ahora-yellow/15"
+                  : "text-muted-foreground"
               }`}
             >
               {link.label}
@@ -63,8 +63,8 @@ export function Header() {
                 onClick={() => setIsMenuOpen(false)}
                 className={`px-4 py-3 text-sm font-medium transition-colors rounded-md ${
                   location.pathname === link.href
-                    ? "text-primary bg-muted"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                    ? "text-ahora-yellow bg-ahora-yellow/15"
+                    : "text-muted-foreground hover:text-ahora-yellow hover:bg-ahora-yellow/20"
                 }`}
               >
                 {link.label}
