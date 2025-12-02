@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { z } from "zod";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +10,27 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { CheckCircle2, Users, Heart, Shield } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+
+// Validation schema for membership form
+const membershipSchema = z.object({
+  nombre: z.string().trim().min(1, "El nombre es obligatorio").max(100, "Máximo 100 caracteres"),
+  apellidos: z.string().trim().min(1, "Los apellidos son obligatorios").max(100, "Máximo 100 caracteres"),
+  dni: z.string().trim().min(1, "El DNI/NIE es obligatorio").regex(
+    /^[0-9]{8}[A-Za-z]$|^[XYZ][0-9]{7}[A-Za-z]$/,
+    "Formato de DNI/NIE inválido (ej: 12345678A o X1234567A)"
+  ),
+  email: z.string().trim().min(1, "El email es obligatorio").email("Email inválido").max(255, "Máximo 255 caracteres"),
+  telefono: z.string().trim().max(20, "Máximo 20 caracteres").regex(/^[0-9+\s()-]*$/, "Formato de teléfono inválido").optional().or(z.literal("")),
+  direccion: z.string().trim().max(200, "Máximo 200 caracteres").optional().or(z.literal("")),
+  codigoPostal: z.string().trim().regex(/^[0-9]{5}$|^$/, "El código postal debe tener 5 dígitos").optional().or(z.literal("")),
+  ciudad: z.string().trim().max(100, "Máximo 100 caracteres").optional().or(z.literal("")),
+  provincia: z.string().trim().max(100, "Máximo 100 caracteres").optional().or(z.literal("")),
+  motivacion: z.string().trim().max(2000, "Máximo 2000 caracteres").optional().or(z.literal("")),
+  aceptaEstatutos: z.literal(true, { errorMap: () => ({ message: "Debes aceptar los estatutos" }) }),
+  aceptaPrivacidad: z.literal(true, { errorMap: () => ({ message: "Debes aceptar la política de privacidad" }) }),
+});
+
+type MembershipFormData = z.infer<typeof membershipSchema>;
 
 const beneficios = [
   {
@@ -31,6 +53,7 @@ const beneficios = [
 const HazteSocio = () => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [formData, setFormData] = useState({
     nombre: "",
     apellidos: "",
@@ -49,19 +72,37 @@ const HazteSocio = () => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    // Clear error when user starts typing
+    if (formErrors[name]) {
+      setFormErrors((prev) => ({ ...prev, [name]: "" }));
+    }
   };
 
   const handleCheckboxChange = (name: string, checked: boolean) => {
     setFormData((prev) => ({ ...prev, [name]: checked }));
+    if (formErrors[name]) {
+      setFormErrors((prev) => ({ ...prev, [name]: "" }));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormErrors({});
     
-    if (!formData.aceptaEstatutos || !formData.aceptaPrivacidad) {
+    // Validate form data
+    const validationResult = membershipSchema.safeParse(formData);
+    
+    if (!validationResult.success) {
+      const errors: Record<string, string> = {};
+      validationResult.error.errors.forEach((err) => {
+        if (err.path[0]) {
+          errors[err.path[0] as string] = err.message;
+        }
+      });
+      setFormErrors(errors);
       toast({
-        title: "Error",
-        description: "Debes aceptar los estatutos y la política de privacidad.",
+        title: "Error de validación",
+        description: "Por favor, revisa los campos marcados en rojo.",
         variant: "destructive",
       });
       return;
@@ -70,17 +111,18 @@ const HazteSocio = () => {
     setIsSubmitting(true);
     
     try {
+      const validData = validationResult.data;
       const { error } = await supabase.from("solicitudes_socio").insert({
-        nombre: formData.nombre,
-        apellidos: formData.apellidos,
-        dni: formData.dni,
-        email: formData.email,
-        telefono: formData.telefono || null,
-        direccion: formData.direccion || null,
-        codigo_postal: formData.codigoPostal || null,
-        ciudad: formData.ciudad || null,
-        provincia: formData.provincia || null,
-        motivacion: formData.motivacion || null,
+        nombre: validData.nombre,
+        apellidos: validData.apellidos,
+        dni: validData.dni.toUpperCase(),
+        email: validData.email,
+        telefono: validData.telefono || null,
+        direccion: validData.direccion || null,
+        codigo_postal: validData.codigoPostal || null,
+        ciudad: validData.ciudad || null,
+        provincia: validData.provincia || null,
+        motivacion: validData.motivacion || null,
       });
 
       if (error) throw error;
@@ -104,8 +146,7 @@ const HazteSocio = () => {
         aceptaEstatutos: false,
         aceptaPrivacidad: false,
       });
-    } catch (error: any) {
-      console.error("Error submitting:", error);
+    } catch {
       toast({
         title: "Error",
         description: "No se pudo enviar la solicitud. Inténtalo de nuevo.",
@@ -221,9 +262,11 @@ const HazteSocio = () => {
                       name="nombre"
                       value={formData.nombre}
                       onChange={handleInputChange}
-                      required
                       placeholder="Tu nombre"
+                      maxLength={100}
+                      className={formErrors.nombre ? "border-destructive" : ""}
                     />
+                    {formErrors.nombre && <p className="text-sm text-destructive">{formErrors.nombre}</p>}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="apellidos">Apellidos *</Label>
@@ -232,9 +275,11 @@ const HazteSocio = () => {
                       name="apellidos"
                       value={formData.apellidos}
                       onChange={handleInputChange}
-                      required
                       placeholder="Tus apellidos"
+                      maxLength={100}
+                      className={formErrors.apellidos ? "border-destructive" : ""}
                     />
+                    {formErrors.apellidos && <p className="text-sm text-destructive">{formErrors.apellidos}</p>}
                   </div>
                 </div>
                 <div className="grid gap-4 md:grid-cols-2">
@@ -245,9 +290,11 @@ const HazteSocio = () => {
                       name="dni"
                       value={formData.dni}
                       onChange={handleInputChange}
-                      required
                       placeholder="12345678A"
+                      maxLength={9}
+                      className={formErrors.dni ? "border-destructive" : ""}
                     />
+                    {formErrors.dni && <p className="text-sm text-destructive">{formErrors.dni}</p>}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="telefono">Teléfono</Label>
@@ -258,7 +305,10 @@ const HazteSocio = () => {
                       value={formData.telefono}
                       onChange={handleInputChange}
                       placeholder="600 000 000"
+                      maxLength={20}
+                      className={formErrors.telefono ? "border-destructive" : ""}
                     />
+                    {formErrors.telefono && <p className="text-sm text-destructive">{formErrors.telefono}</p>}
                   </div>
                 </div>
                 <div className="space-y-2">
@@ -269,9 +319,11 @@ const HazteSocio = () => {
                     type="email"
                     value={formData.email}
                     onChange={handleInputChange}
-                    required
                     placeholder="tu@email.com"
+                    maxLength={255}
+                    className={formErrors.email ? "border-destructive" : ""}
                   />
+                  {formErrors.email && <p className="text-sm text-destructive">{formErrors.email}</p>}
                 </div>
               </div>
 
@@ -288,7 +340,10 @@ const HazteSocio = () => {
                     value={formData.direccion}
                     onChange={handleInputChange}
                     placeholder="Calle, número, piso..."
+                    maxLength={200}
+                    className={formErrors.direccion ? "border-destructive" : ""}
                   />
+                  {formErrors.direccion && <p className="text-sm text-destructive">{formErrors.direccion}</p>}
                 </div>
                 <div className="grid gap-4 md:grid-cols-3">
                   <div className="space-y-2">
@@ -299,7 +354,10 @@ const HazteSocio = () => {
                       value={formData.codigoPostal}
                       onChange={handleInputChange}
                       placeholder="08000"
+                      maxLength={5}
+                      className={formErrors.codigoPostal ? "border-destructive" : ""}
                     />
+                    {formErrors.codigoPostal && <p className="text-sm text-destructive">{formErrors.codigoPostal}</p>}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="ciudad">Ciudad</Label>
@@ -309,7 +367,10 @@ const HazteSocio = () => {
                       value={formData.ciudad}
                       onChange={handleInputChange}
                       placeholder="Barcelona"
+                      maxLength={100}
+                      className={formErrors.ciudad ? "border-destructive" : ""}
                     />
+                    {formErrors.ciudad && <p className="text-sm text-destructive">{formErrors.ciudad}</p>}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="provincia">Provincia</Label>
@@ -319,7 +380,10 @@ const HazteSocio = () => {
                       value={formData.provincia}
                       onChange={handleInputChange}
                       placeholder="Barcelona"
+                      maxLength={100}
+                      className={formErrors.provincia ? "border-destructive" : ""}
                     />
+                    {formErrors.provincia && <p className="text-sm text-destructive">{formErrors.provincia}</p>}
                   </div>
                 </div>
               </div>
@@ -338,35 +402,46 @@ const HazteSocio = () => {
                     onChange={handleInputChange}
                     placeholder="Cuéntanos brevemente qué te motiva a formar parte de nuestra asociación..."
                     rows={4}
+                    maxLength={2000}
+                    className={formErrors.motivacion ? "border-destructive" : ""}
                   />
+                  {formErrors.motivacion && <p className="text-sm text-destructive">{formErrors.motivacion}</p>}
                 </div>
               </div>
 
               {/* Aceptaciones */}
               <div className="space-y-4">
-                <div className="flex items-start gap-3">
-                  <Checkbox
-                    id="aceptaEstatutos"
-                    checked={formData.aceptaEstatutos}
-                    onCheckedChange={(checked) =>
-                      handleCheckboxChange("aceptaEstatutos", checked as boolean)
-                    }
-                  />
-                  <Label htmlFor="aceptaEstatutos" className="text-sm text-muted-foreground leading-relaxed">
-                    He leído y acepto los estatutos de la Asociación AHORA y me comprometo a cumplirlos. *
-                  </Label>
+                <div className="space-y-1">
+                  <div className="flex items-start gap-3">
+                    <Checkbox
+                      id="aceptaEstatutos"
+                      checked={formData.aceptaEstatutos}
+                      onCheckedChange={(checked) =>
+                        handleCheckboxChange("aceptaEstatutos", checked as boolean)
+                      }
+                      className={formErrors.aceptaEstatutos ? "border-destructive" : ""}
+                    />
+                    <Label htmlFor="aceptaEstatutos" className="text-sm text-muted-foreground leading-relaxed">
+                      He leído y acepto los estatutos de la Asociación AHORA y me comprometo a cumplirlos. *
+                    </Label>
+                  </div>
+                  {formErrors.aceptaEstatutos && <p className="text-sm text-destructive ml-6">{formErrors.aceptaEstatutos}</p>}
                 </div>
-                <div className="flex items-start gap-3">
-                  <Checkbox
-                    id="aceptaPrivacidad"
-                    checked={formData.aceptaPrivacidad}
-                    onCheckedChange={(checked) =>
-                      handleCheckboxChange("aceptaPrivacidad", checked as boolean)
-                    }
-                  />
-                  <Label htmlFor="aceptaPrivacidad" className="text-sm text-muted-foreground leading-relaxed">
-                    Acepto la <Link to="/politica-privacidad" className="text-primary hover:underline">política de privacidad</Link> y el tratamiento de mis datos personales para la gestión de mi condición de socio. *
-                  </Label>
+                <div className="space-y-1">
+                  <div className="flex items-start gap-3">
+                    <Checkbox
+                      id="aceptaPrivacidad"
+                      checked={formData.aceptaPrivacidad}
+                      onCheckedChange={(checked) =>
+                        handleCheckboxChange("aceptaPrivacidad", checked as boolean)
+                      }
+                      className={formErrors.aceptaPrivacidad ? "border-destructive" : ""}
+                    />
+                    <Label htmlFor="aceptaPrivacidad" className="text-sm text-muted-foreground leading-relaxed">
+                      Acepto la <Link to="/politica-privacidad" className="text-primary hover:underline">política de privacidad</Link> y el tratamiento de mis datos personales para la gestión de mi condición de socio. *
+                    </Label>
+                  </div>
+                  {formErrors.aceptaPrivacidad && <p className="text-sm text-destructive ml-6">{formErrors.aceptaPrivacidad}</p>}
                 </div>
               </div>
 
