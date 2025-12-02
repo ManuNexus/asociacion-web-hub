@@ -422,7 +422,7 @@ const HazteSocio = () => {
                       className={formErrors.aceptaEstatutos ? "border-destructive" : ""}
                     />
                     <Label htmlFor="aceptaEstatutos" className="text-sm text-muted-foreground leading-relaxed">
-                      He leído y acepto los estatutos de la Asociación AHORA y me comprometo a cumplirlos. *
+                      He leído y acepto los <a href="/documentos/estatutos-fundacionales.pdf" download className="text-primary hover:underline">estatutos</a> de la Asociación AHORA y me comprometo a cumplirlos. *
                     </Label>
                   </div>
                   {formErrors.aceptaEstatutos && <p className="text-sm text-destructive ml-6">{formErrors.aceptaEstatutos}</p>}
