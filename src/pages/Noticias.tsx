@@ -153,7 +153,6 @@ const Noticias = () => {
       </section>
 
       {/* Noticias Grid */}
-      <div className="h-1 bg-secondary" />
       <section className="py-16 md:py-24">
         <div className="container">
           {loading ? (
