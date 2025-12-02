@@ -119,6 +119,7 @@ const Index = () => {
       </section>
 
       {/* Valores Section */}
+      <div className="h-1 bg-secondary" />
       <section className="py-20 md:py-28 bg-muted/50">
         <div className="container">
           <div className="text-center max-w-2xl mx-auto mb-16">
@@ -148,6 +149,7 @@ const Index = () => {
       </section>
 
       {/* Noticias Section */}
+      <div className="h-1 bg-secondary" />
       <section className="py-20 md:py-28">
         <div className="container">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-12">
@@ -211,6 +213,7 @@ const Index = () => {
       </section>
 
       {/* CTA Section */}
+      <div className="h-1 bg-secondary" />
       <section className="py-20 md:py-28 bg-primary">
         <div className="container text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-primary-foreground mb-4">
