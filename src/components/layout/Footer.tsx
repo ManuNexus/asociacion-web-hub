@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Mail, MapPin } from "lucide-react";
+import { Mail, MapPin, Twitter } from "lucide-react";
 import logoAhora from "@/assets/logo-ahora.png";
 export function Footer() {
   return <footer className="bg-primary text-primary-foreground">
@@ -46,6 +46,12 @@ export function Footer() {
                 <Mail className="h-4 w-4 text-secondary" />
                 <a className="text-primary-foreground/80 hover:text-primary-foreground transition-colors" href="mailto:info@ahoraorg.es">
                   info@ahoraorg.es
+                </a>
+              </div>
+              <div className="flex items-center gap-2">
+                <Twitter className="h-4 w-4 text-secondary" />
+                <a className="text-primary-foreground/80 hover:text-primary-foreground transition-colors" href="https://x.com/AhoraOrg" target="_blank" rel="noopener noreferrer">
+                  @AhoraOrg
                 </a>
               </div>
             </div>
