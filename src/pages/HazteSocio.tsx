@@ -127,6 +127,49 @@ const HazteSocio = () => {
         </div>
       </section>
 
+      {/* Cuotas */}
+      <section className="py-16 md:py-24">
+        <div className="container">
+          <div className="max-w-3xl mx-auto text-center mb-12">
+            <h2 className="text-3xl font-bold text-foreground mb-4">
+              Cuotas de Socio
+            </h2>
+            <p className="text-muted-foreground">
+              Elige la cuota que mejor se adapte a tu situación
+            </p>
+          </div>
+          
+          <div className="grid gap-6 md:grid-cols-2 max-w-2xl mx-auto">
+            {/* Cuota Normal */}
+            <div className="bg-card rounded-xl border-2 border-primary p-6 relative">
+              <div className="absolute -top-3 left-6 bg-primary text-primary-foreground text-xs font-semibold px-3 py-1 rounded-full">
+                Recomendada
+              </div>
+              <h3 className="text-xl font-bold text-foreground mb-2">Cuota Normal</h3>
+              <div className="flex items-baseline gap-1 mb-4">
+                <span className="text-4xl font-extrabold text-primary">5€</span>
+                <span className="text-muted-foreground">/ mes</span>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Cuota estándar para todos los socios que deseen apoyar la asociación.
+              </p>
+            </div>
+
+            {/* Cuota Reducida */}
+            <div className="bg-card rounded-xl border border-border p-6">
+              <h3 className="text-xl font-bold text-foreground mb-2">Cuota Reducida</h3>
+              <div className="flex items-baseline gap-1 mb-4">
+                <span className="text-4xl font-extrabold text-secondary">2,50€</span>
+                <span className="text-muted-foreground">/ mes</span>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Para <strong>estudiantes</strong> y <strong>personas en situación de desempleo</strong>. Se requerirá acreditación.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Formulario */}
       <section className="py-16 md:py-24">
         <div className="container">
