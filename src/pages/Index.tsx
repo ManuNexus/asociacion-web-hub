@@ -65,36 +65,61 @@ const Index = () => {
   return (
     <Layout>
       {/* Hero Section */}
-      <section className="bg-hero relative overflow-hidden">
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMyI+PHBhdGggZD0iTTM2IDM0djItSDI0di0yaDEyek0zNiAyNHYySDI0di0yaDEyeiIvPjwvZz48L2c+PC9zdmc+')] opacity-50" />
-        <div className="container relative py-20 md:py-32">
-          <div className="grid gap-12 md:grid-cols-2 items-center">
-            <div className="space-y-6 animate-slide-up">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-primary-foreground leading-tight">
-                Actuar en el presente para construir el futuro
+      <section className="relative min-h-[90vh] md:min-h-[85vh] flex items-center overflow-hidden bg-gradient-to-br from-primary via-primary to-primary/90">
+        {/* Decorative elements */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -top-1/2 -right-1/4 w-[800px] h-[800px] rounded-full bg-secondary/10 blur-3xl" />
+          <div className="absolute -bottom-1/4 -left-1/4 w-[600px] h-[600px] rounded-full bg-ahora-yellow/5 blur-3xl" />
+          <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-secondary/40 rounded-full animate-pulse" />
+          <div className="absolute top-1/3 right-1/3 w-3 h-3 bg-secondary/30 rounded-full animate-pulse" style={{ animationDelay: "0.5s" }} />
+          <div className="absolute bottom-1/4 right-1/4 w-2 h-2 bg-secondary/40 rounded-full animate-pulse" style={{ animationDelay: "1s" }} />
+        </div>
+        
+        {/* Yellow accent stripe */}
+        <div className="absolute bottom-0 left-0 right-0 h-2 bg-secondary" />
+        
+        <div className="container relative z-10 py-12 md:py-0">
+          <div className="flex flex-col items-center text-center">
+            {/* Logo - visible and prominent on mobile */}
+            <div className="mb-8 md:mb-10 animate-fade-in">
+              <img 
+                src={logoIcon} 
+                alt="AHORA" 
+                className="w-24 md:w-32 lg:w-40 drop-shadow-[0_0_30px_rgba(241,196,15,0.3)]" 
+                fetchPriority="high"
+              />
+            </div>
+            
+            {/* Main content */}
+            <div className="max-w-4xl animate-slide-up">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-extrabold text-primary-foreground leading-[1.1] mb-6">
+                Actuar en el presente
+                <span className="block mt-2 text-secondary">para construir el futuro</span>
               </h1>
-              <p className="text-lg md:text-xl text-primary-foreground/80 max-w-lg">
-                AHORA es una asociación civil que nace para defender los valores constitucionales, el pluralismo ideológico y los derechos fundamentales en España.
+              
+              <p className="text-base sm:text-lg md:text-xl text-primary-foreground/80 max-w-2xl mx-auto mb-8 md:mb-10 leading-relaxed px-4">
+                Somos una asociación civil que defiende los valores constitucionales, el pluralismo ideológico y los derechos fundamentales en España.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                <Button asChild variant="hero" size="xl">
+              
+              <div className="flex flex-col sm:flex-row gap-4 justify-center px-4">
+                <Button asChild variant="hero" size="xl" className="text-base md:text-lg px-8 py-6 shadow-lg shadow-secondary/20 hover:shadow-secondary/40 transition-shadow">
                   <Link to="/hazte-socio">
                     Únete a nosotros
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Link>
                 </Button>
-                <Button asChild variant="hero-outline" size="xl">
+                <Button asChild variant="hero-outline" size="xl" className="text-base md:text-lg px-8 py-6">
                   <Link to="/nosotros">Conoce más</Link>
                 </Button>
               </div>
             </div>
-            <div className="flex justify-center animate-fade-in md:justify-center" style={{ animationDelay: "0.3s" }}>
-              <img 
-                src={logoIcon} 
-                alt="" 
-                className="w-32 md:w-72 lg:w-96 opacity-30 md:opacity-40 drop-shadow-2xl" 
-                fetchPriority="high"
-              />
+            
+            {/* Scroll indicator */}
+            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 hidden md:flex flex-col items-center gap-2 animate-bounce">
+              <span className="text-primary-foreground/60 text-xs uppercase tracking-widest">Descubre más</span>
+              <div className="w-6 h-10 border-2 border-primary-foreground/30 rounded-full flex justify-center pt-2">
+                <div className="w-1 h-2 bg-primary-foreground/60 rounded-full" />
+              </div>
             </div>
           </div>
         </div>
