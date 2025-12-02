@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
+import { PageTransition } from "@/components/PageTransition";
 import Index from "./pages/Index";
 import Nosotros from "./pages/Nosotros";
 import Noticias from "./pages/Noticias";
@@ -23,17 +24,19 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/nosotros" element={<Nosotros />} />
-            <Route path="/noticias" element={<Noticias />} />
-            <Route path="/noticias/:id" element={<NoticiaDetalle />} />
-            <Route path="/transparencia" element={<Transparencia />} />
-            <Route path="/hazte-socio" element={<HazteSocio />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/admin/noticias" element={<AdminNoticias />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <PageTransition>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/nosotros" element={<Nosotros />} />
+              <Route path="/noticias" element={<Noticias />} />
+              <Route path="/noticias/:id" element={<NoticiaDetalle />} />
+              <Route path="/transparencia" element={<Transparencia />} />
+              <Route path="/hazte-socio" element={<HazteSocio />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/admin/noticias" element={<AdminNoticias />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </PageTransition>
         </BrowserRouter>
       </AuthProvider>
     </TooltipProvider>
