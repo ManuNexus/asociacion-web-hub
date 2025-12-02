@@ -1,8 +1,12 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Users, FileText, Shield, ChevronRight } from "lucide-react";
+import { ArrowRight, Users, FileText, Shield, ChevronRight, Loader2 } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import logoIcon from "@/assets/logo-ahora-icon.png";
+import { supabase } from "@/integrations/supabase/client";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
 
 const valores = [
   {
@@ -22,28 +26,41 @@ const valores = [
   },
 ];
 
-const noticias = [
-  {
-    id: 1,
-    title: "Constitución de la Asociación AHORA",
-    excerpt: "El 13 de junio de 2025 se constituyó formalmente la Asociación AHORA en Barcelona.",
-    date: "13 Jun 2025",
-  },
-  {
-    id: 2,
-    title: "Inscripción en el Registro Nacional",
-    excerpt: "La asociación ha sido inscrita oficialmente en el Registro Nacional de Asociaciones con el número 631679.",
-    date: "03 Oct 2025",
-  },
-  {
-    id: 3,
-    title: "Lanzamiento de la web oficial",
-    excerpt: "Presentamos nuestra nueva página web con toda la información sobre la asociación.",
-    date: "02 Dic 2025",
-  },
-];
+interface Noticia {
+  id: string;
+  titulo: string;
+  extracto: string | null;
+  fecha_publicacion: string | null;
+}
 
 const Index = () => {
+  const [noticias, setNoticias] = useState<Noticia[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchNoticias = async () => {
+      const { data, error } = await supabase
+        .from("noticias")
+        .select("id, titulo, extracto, fecha_publicacion")
+        .order("fecha_publicacion", { ascending: false })
+        .limit(3);
+
+      if (error) {
+        console.error("Error fetching noticias:", error);
+      } else {
+        setNoticias(data || []);
+      }
+      setLoading(false);
+    };
+
+    fetchNoticias();
+  }, []);
+
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return "";
+    return format(new Date(dateString), "dd MMM yyyy", { locale: es });
+  };
+
   return (
     <Layout>
       {/* Hero Section */}
@@ -125,31 +142,37 @@ const Index = () => {
               </Link>
             </Button>
           </div>
-          <div className="grid gap-6 md:grid-cols-3">
-            {noticias.map((noticia, index) => (
-              <article
-                key={noticia.id}
-                className="group bg-card rounded-xl border border-border overflow-hidden hover:shadow-elevated transition-all duration-300 animate-slide-up"
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
-                <div className="h-2 bg-secondary" />
-                <div className="p-6">
-                  <time className="text-sm text-muted-foreground">{noticia.date}</time>
-                  <h3 className="text-lg font-bold text-foreground mt-2 mb-3 group-hover:text-primary transition-colors">
-                    {noticia.title}
-                  </h3>
-                  <p className="text-muted-foreground text-sm">{noticia.excerpt}</p>
-                  <Link
-                    to={`/noticias/${noticia.id}`}
-                    className="inline-flex items-center text-sm font-medium text-primary mt-4 hover:text-primary/80 transition-colors"
-                  >
-                    Leer más
-                    <ChevronRight className="ml-1 h-4 w-4" />
-                  </Link>
-                </div>
-              </article>
-            ))}
-          </div>
+          {loading ? (
+            <div className="flex justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : (
+            <div className="grid gap-6 md:grid-cols-3">
+              {noticias.map((noticia, index) => (
+                <article
+                  key={noticia.id}
+                  className="group bg-card rounded-xl border border-border overflow-hidden hover:shadow-elevated transition-all duration-300 animate-slide-up"
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                >
+                  <div className="h-2 bg-secondary" />
+                  <div className="p-6">
+                    <time className="text-sm text-muted-foreground">{formatDate(noticia.fecha_publicacion)}</time>
+                    <h3 className="text-lg font-bold text-foreground mt-2 mb-3 group-hover:text-primary transition-colors">
+                      {noticia.titulo}
+                    </h3>
+                    <p className="text-muted-foreground text-sm">{noticia.extracto}</p>
+                    <Link
+                      to={`/noticias/${noticia.id}`}
+                      className="inline-flex items-center text-sm font-medium text-primary mt-4 hover:text-primary/80 transition-colors"
+                    >
+                      Leer más
+                      <ChevronRight className="ml-1 h-4 w-4" />
+                    </Link>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
