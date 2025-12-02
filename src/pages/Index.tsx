@@ -31,6 +31,7 @@ interface Noticia {
   titulo: string;
   extracto: string | null;
   fecha_publicacion: string | null;
+  imagen_url: string | null;
 }
 
 const Index = () => {
@@ -41,7 +42,7 @@ const Index = () => {
     const fetchNoticias = async () => {
       const { data, error } = await supabase
         .from("noticias")
-        .select("id, titulo, extracto, fecha_publicacion")
+        .select("id, titulo, extracto, fecha_publicacion, imagen_url")
         .order("fecha_publicacion", { ascending: false })
         .limit(3);
 
@@ -154,7 +155,17 @@ const Index = () => {
                   className="group bg-card rounded-xl border border-border overflow-hidden hover:shadow-elevated transition-all duration-300 animate-slide-up"
                   style={{ animationDelay: `${index * 0.1}s` }}
                 >
-                  <div className="h-2 bg-secondary" />
+                  {noticia.imagen_url ? (
+                    <div className="h-40 overflow-hidden">
+                      <img
+                        src={noticia.imagen_url}
+                        alt={noticia.titulo}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    </div>
+                  ) : (
+                    <div className="h-2 bg-secondary" />
+                  )}
                   <div className="p-6">
                     <time className="text-sm text-muted-foreground">{formatDate(noticia.fecha_publicacion)}</time>
                     <h3 className="text-lg font-bold text-foreground mt-2 mb-3 group-hover:text-primary transition-colors">
