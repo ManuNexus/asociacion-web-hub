@@ -148,6 +148,59 @@ export type Database = {
           },
         ]
       }
+      notificaciones: {
+        Row: {
+          created_at: string
+          id: string
+          mensaje: string
+          solo_junta: boolean
+          titulo: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          mensaje: string
+          solo_junta?: boolean
+          titulo: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          mensaje?: string
+          solo_junta?: boolean
+          titulo?: string
+        }
+        Relationships: []
+      }
+      notificaciones_leidas: {
+        Row: {
+          id: string
+          leida_at: string
+          notificacion_id: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          leida_at?: string
+          notificacion_id: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          leida_at?: string
+          notificacion_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notificaciones_leidas_notificacion_id_fkey"
+            columns: ["notificacion_id"]
+            isOneToOne: false
+            referencedRelation: "notificaciones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       opciones_votacion: {
         Row: {
           created_at: string
