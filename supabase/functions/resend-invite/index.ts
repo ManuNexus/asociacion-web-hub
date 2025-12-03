@@ -12,6 +12,7 @@ const corsHeaders = {
 interface ResendInviteRequest {
   email: string;
   nombre: string;
+  redirect_url?: string;
 }
 
 serve(async (req: Request): Promise<Response> => {
@@ -73,15 +74,16 @@ serve(async (req: Request): Promise<Response> => {
       throw new Error("Only admins can resend invitations");
     }
 
-    const { email, nombre }: ResendInviteRequest = await req.json();
+    const { email, nombre, redirect_url }: ResendInviteRequest = await req.json();
     console.log(`Resending invite to: ${email} (${nombre})`);
+    console.log(`Redirect URL: ${redirect_url}`);
 
     // Generate new password reset link
     const { data: resetData, error: resetError } = await supabaseAdmin.auth.admin.generateLink({
       type: "recovery",
       email,
       options: {
-        redirectTo: `${Deno.env.get("SITE_URL") || supabaseUrl.replace(".supabase.co", ".lovable.app")}/auth`,
+        redirectTo: redirect_url || `${supabaseUrl.replace(".supabase.co", ".lovable.app")}/auth`,
       },
     });
 

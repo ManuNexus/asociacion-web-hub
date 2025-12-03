@@ -378,6 +378,7 @@ const AdminNoticias = () => {
           telefono: solicitud.telefono,
           tipo_cuota: "normal",
           solicitud_id: solicitud.id,
+          redirect_url: `${window.location.origin}/auth`,
         },
       });
 
@@ -410,6 +411,7 @@ const AdminNoticias = () => {
         body: {
           email: solicitud.email,
           nombre: solicitud.nombre,
+          redirect_url: `${window.location.origin}/auth`,
         },
       });
 
