@@ -24,7 +24,8 @@ import {
   Eye,
   EyeOff,
   CreditCard,
-  Shield
+  Shield,
+  Bell
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -80,6 +81,14 @@ interface Documento {
   categoria: string | null;
 }
 
+interface Notificacion {
+  id: string;
+  titulo: string;
+  mensaje: string;
+  solo_junta: boolean;
+  created_at: string;
+}
+
 const PanelSocios = () => {
   const [socios, setSocios] = useState<SocioWithJunta[]>([]);
   const [miSocio, setMiSocio] = useState<Socio | null>(null);
@@ -88,6 +97,8 @@ const PanelSocios = () => {
   const [misVotos, setMisVotos] = useState<string[]>([]);
   const [eventos, setEventos] = useState<Evento[]>([]);
   const [documentos, setDocumentos] = useState<Documento[]>([]);
+  const [notificaciones, setNotificaciones] = useState<Notificacion[]>([]);
+  const [notificacionesLeidas, setNotificacionesLeidas] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [voting, setVoting] = useState<string | null>(null);
   
@@ -133,6 +144,7 @@ const PanelSocios = () => {
       fetchEventos(),
       fetchDocumentos(),
       fetchMisVotos(),
+      fetchNotificaciones(),
     ]);
     setLoading(false);
   };
@@ -230,6 +242,40 @@ const PanelSocios = () => {
     if (!error && data) {
       setDocumentos(data);
     }
+  };
+
+  const fetchNotificaciones = async () => {
+    if (!user) return;
+    
+    const { data, error } = await supabase
+      .from("notificaciones")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (!error && data) {
+      setNotificaciones(data);
+    }
+
+    // Fetch read status
+    const { data: leidas } = await supabase
+      .from("notificaciones_leidas")
+      .select("notificacion_id")
+      .eq("user_id", user.id);
+
+    if (leidas) {
+      setNotificacionesLeidas(leidas.map(l => l.notificacion_id));
+    }
+  };
+
+  const marcarLeida = async (notificacionId: string) => {
+    if (!user || notificacionesLeidas.includes(notificacionId)) return;
+    
+    await supabase.from("notificaciones_leidas").insert({
+      notificacion_id: notificacionId,
+      user_id: user.id,
+    });
+    
+    setNotificacionesLeidas([...notificacionesLeidas, notificacionId]);
   };
 
   const handleVotar = async (votacionId: string, opcionId: string) => {

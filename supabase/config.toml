@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.notify-socios]
 verify_jwt = false
+
+[functions.send-notificacion]
+verify_jwt = false
