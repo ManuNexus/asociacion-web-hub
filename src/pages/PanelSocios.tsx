@@ -419,8 +419,17 @@ const PanelSocios = () => {
             </CardContent>
           </Card>
 
-          <Tabs defaultValue="carnet" className="w-full">
-            <TabsList className="grid w-full max-w-4xl grid-cols-3 sm:grid-cols-6 mb-6 h-auto gap-1">
+          <Tabs defaultValue="avisos" className="w-full">
+            <TabsList className="grid w-full max-w-4xl grid-cols-4 sm:grid-cols-7 mb-6 h-auto gap-1">
+              <TabsTrigger value="avisos" className="flex items-center gap-2 py-2 relative">
+                <Bell className="h-4 w-4" />
+                <span className="hidden sm:inline">Avisos</span>
+                {notificaciones.filter(n => !notificacionesLeidas.includes(n.id)).length > 0 && (
+                  <span className="absolute -top-1 -right-1 h-4 w-4 bg-destructive rounded-full text-[10px] text-destructive-foreground flex items-center justify-center">
+                    {notificaciones.filter(n => !notificacionesLeidas.includes(n.id)).length}
+                  </span>
+                )}
+              </TabsTrigger>
               <TabsTrigger value="carnet" className="flex items-center gap-2 py-2">
                 <CreditCard className="h-4 w-4" />
                 <span className="hidden sm:inline">Carnet</span>
@@ -446,6 +455,70 @@ const PanelSocios = () => {
                 <span className="hidden sm:inline">Mi cuenta</span>
               </TabsTrigger>
             </TabsList>
+
+            {/* Tab Avisos */}
+            <TabsContent value="avisos">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Bell className="h-5 w-5" />
+                    Comunicados de la Junta
+                  </CardTitle>
+                  <CardDescription>
+                    Avisos y comunicaciones oficiales de la Junta Directiva
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {loading ? (
+                    <div className="flex justify-center py-8">
+                      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    </div>
+                  ) : notificaciones.length === 0 ? (
+                    <p className="text-center text-muted-foreground py-8">
+                      No hay comunicados disponibles
+                    </p>
+                  ) : (
+                    <div className="space-y-4">
+                      {notificaciones.map((notificacion) => {
+                        const isLeida = notificacionesLeidas.includes(notificacion.id);
+                        return (
+                          <Card 
+                            key={notificacion.id} 
+                            className={`cursor-pointer transition-all ${!isLeida ? 'border-primary/50 bg-primary/5' : ''}`}
+                            onClick={() => marcarLeida(notificacion.id)}
+                          >
+                            <CardContent className="p-4">
+                              <div className="flex items-start justify-between gap-4">
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    {!isLeida && (
+                                      <span className="h-2 w-2 bg-primary rounded-full" />
+                                    )}
+                                    <h3 className="font-semibold">{notificacion.titulo}</h3>
+                                    {notificacion.solo_junta && (
+                                      <Badge variant="outline" className="border-primary text-primary text-xs">
+                                        <Shield className="h-3 w-3 mr-1" />
+                                        Junta
+                                      </Badge>
+                                    )}
+                                  </div>
+                                  <p className="text-muted-foreground text-sm whitespace-pre-wrap">
+                                    {notificacion.mensaje}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground mt-2">
+                                    {format(new Date(notificacion.created_at), "d 'de' MMMM 'de' yyyy, HH:mm", { locale: es })}
+                                  </p>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        );
+                      })}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
 
             {/* Tab Carnet Digital */}
             <TabsContent value="carnet">
