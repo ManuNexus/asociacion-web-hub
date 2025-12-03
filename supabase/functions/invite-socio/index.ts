@@ -145,7 +145,7 @@ serve(async (req: Request): Promise<Response> => {
 
     // Send welcome email with password setup link
     const emailResponse = await resend.emails.send({
-      from: "AHORA <onboarding@resend.dev>", // Change this to your verified domain
+      from: "AHORA <socios@ahoraorg.es>",
       to: [email],
       subject: "¡Bienvenido a AHORA! Configura tu cuenta",
       html: `
