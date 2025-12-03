@@ -473,27 +473,25 @@ const PanelSocios = () => {
                     <div className="flex justify-center py-8">
                       <Loader2 className="h-8 w-8 animate-spin text-primary" />
                     </div>
-                  ) : notificaciones.length === 0 ? (
+                  ) : notificaciones.filter(n => !notificacionesLeidas.includes(n.id)).length === 0 ? (
                     <p className="text-center text-muted-foreground py-8">
-                      No hay comunicados disponibles
+                      No hay comunicados pendientes de leer
                     </p>
                   ) : (
                     <div className="space-y-4">
-                      {notificaciones.map((notificacion) => {
-                        const isLeida = notificacionesLeidas.includes(notificacion.id);
-                        return (
+                      {notificaciones
+                        .filter(n => !notificacionesLeidas.includes(n.id))
+                        .map((notificacion) => (
                           <Card 
                             key={notificacion.id} 
-                            className={`cursor-pointer transition-all ${!isLeida ? 'border-primary/50 bg-primary/5' : ''}`}
+                            className="cursor-pointer transition-all border-primary/50 bg-primary/5 hover:bg-primary/10"
                             onClick={() => marcarLeida(notificacion.id)}
                           >
                             <CardContent className="p-4">
                               <div className="flex items-start justify-between gap-4">
                                 <div className="flex-1">
                                   <div className="flex items-center gap-2 mb-1">
-                                    {!isLeida && (
-                                      <span className="h-2 w-2 bg-primary rounded-full" />
-                                    )}
+                                    <span className="h-2 w-2 bg-primary rounded-full" />
                                     <h3 className="font-semibold">{notificacion.titulo}</h3>
                                     {notificacion.solo_junta && (
                                       <Badge variant="outline" className="border-primary text-primary text-xs">
@@ -512,8 +510,7 @@ const PanelSocios = () => {
                               </div>
                             </CardContent>
                           </Card>
-                        );
-                      })}
+                        ))}
                     </div>
                   )}
                 </CardContent>
