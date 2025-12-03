@@ -40,6 +40,7 @@ interface Socio {
   nombre: string;
   apellidos: string;
   email: string;
+  telefono: string | null;
   activo: boolean;
   tipo_cuota: string;
   fecha_alta: string;
@@ -102,6 +103,13 @@ const PanelSocios = () => {
   const [loading, setLoading] = useState(true);
   const [voting, setVoting] = useState<string | null>(null);
   
+  // Profile edit states
+  const [editNombre, setEditNombre] = useState("");
+  const [editApellidos, setEditApellidos] = useState("");
+  const [editEmail, setEditEmail] = useState("");
+  const [editTelefono, setEditTelefono] = useState("");
+  const [savingProfile, setSavingProfile] = useState(false);
+  
   // Password change states
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -159,6 +167,52 @@ const PanelSocios = () => {
 
     if (!error && data) {
       setMiSocio(data);
+      // Populate edit fields
+      setEditNombre(data.nombre);
+      setEditApellidos(data.apellidos);
+      setEditEmail(data.email);
+      setEditTelefono(data.telefono || "");
+    }
+  };
+
+  const handleUpdateProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user || !miSocio) return;
+    
+    if (!editNombre.trim() || !editApellidos.trim() || !editEmail.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Nombre, apellidos y email son obligatorios",
+      });
+      return;
+    }
+    
+    setSavingProfile(true);
+    
+    try {
+      const { error } = await supabase
+        .from("socios")
+        .update({
+          nombre: editNombre.trim(),
+          apellidos: editApellidos.trim(),
+          email: editEmail.trim(),
+          telefono: editTelefono.trim() || null,
+        })
+        .eq("id", miSocio.id);
+      
+      if (error) throw error;
+      
+      toast({ title: "Datos actualizados correctamente" });
+      fetchMiSocio();
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message || "No se pudieron actualizar los datos",
+      });
+    } finally {
+      setSavingProfile(false);
     }
   };
 
@@ -419,17 +473,8 @@ const PanelSocios = () => {
             </CardContent>
           </Card>
 
-          <Tabs defaultValue="avisos" className="w-full">
+          <Tabs defaultValue="carnet" className="w-full">
             <TabsList className="grid w-full max-w-4xl grid-cols-4 sm:grid-cols-7 mb-6 h-auto gap-1">
-              <TabsTrigger value="avisos" className="flex items-center gap-2 py-2 relative">
-                <Bell className="h-4 w-4" />
-                <span className="hidden sm:inline">Avisos</span>
-                {notificaciones.filter(n => !notificacionesLeidas.includes(n.id)).length > 0 && (
-                  <span className="absolute -top-1 -right-1 h-4 w-4 bg-destructive rounded-full text-[10px] text-destructive-foreground flex items-center justify-center">
-                    {notificaciones.filter(n => !notificacionesLeidas.includes(n.id)).length}
-                  </span>
-                )}
-              </TabsTrigger>
               <TabsTrigger value="carnet" className="flex items-center gap-2 py-2">
                 <CreditCard className="h-4 w-4" />
                 <span className="hidden sm:inline">Carnet</span>
@@ -454,68 +499,16 @@ const PanelSocios = () => {
                 <Key className="h-4 w-4" />
                 <span className="hidden sm:inline">Mi cuenta</span>
               </TabsTrigger>
+              <TabsTrigger value="avisos" className="flex items-center gap-2 py-2 relative">
+                <Bell className="h-4 w-4" />
+                <span className="hidden sm:inline">Avisos</span>
+                {notificaciones.filter(n => !notificacionesLeidas.includes(n.id)).length > 0 && (
+                  <span className="absolute -top-1 -right-1 h-4 w-4 bg-destructive rounded-full text-[10px] text-destructive-foreground flex items-center justify-center">
+                    {notificaciones.filter(n => !notificacionesLeidas.includes(n.id)).length}
+                  </span>
+                )}
+              </TabsTrigger>
             </TabsList>
-
-            {/* Tab Avisos */}
-            <TabsContent value="avisos">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Bell className="h-5 w-5" />
-                    Comunicados de la Junta
-                  </CardTitle>
-                  <CardDescription>
-                    Avisos y comunicaciones oficiales de la Junta Directiva
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {loading ? (
-                    <div className="flex justify-center py-8">
-                      <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                    </div>
-                  ) : notificaciones.filter(n => !notificacionesLeidas.includes(n.id)).length === 0 ? (
-                    <p className="text-center text-muted-foreground py-8">
-                      No hay comunicados pendientes de leer
-                    </p>
-                  ) : (
-                    <div className="space-y-4">
-                      {notificaciones
-                        .filter(n => !notificacionesLeidas.includes(n.id))
-                        .map((notificacion) => (
-                          <Card 
-                            key={notificacion.id} 
-                            className="cursor-pointer transition-all border-primary/50 bg-primary/5 hover:bg-primary/10"
-                            onClick={() => marcarLeida(notificacion.id)}
-                          >
-                            <CardContent className="p-4">
-                              <div className="flex items-start justify-between gap-4">
-                                <div className="flex-1">
-                                  <div className="flex items-center gap-2 mb-1">
-                                    <span className="h-2 w-2 bg-primary rounded-full" />
-                                    <h3 className="font-semibold">{notificacion.titulo}</h3>
-                                    {notificacion.solo_junta && (
-                                      <Badge variant="outline" className="border-primary text-primary text-xs">
-                                        <Shield className="h-3 w-3 mr-1" />
-                                        Junta
-                                      </Badge>
-                                    )}
-                                  </div>
-                                  <p className="text-muted-foreground text-sm whitespace-pre-wrap">
-                                    {notificacion.mensaje}
-                                  </p>
-                                  <p className="text-xs text-muted-foreground mt-2">
-                                    {format(new Date(notificacion.created_at), "d 'de' MMMM 'de' yyyy, HH:mm", { locale: es })}
-                                  </p>
-                                </div>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
 
             {/* Tab Carnet Digital */}
             <TabsContent value="carnet">
@@ -862,54 +855,180 @@ const PanelSocios = () => {
 
             {/* Tab Mi Cuenta */}
             <TabsContent value="cuenta">
+              <div className="space-y-6">
+                {/* Editar Datos Personales */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <User className="h-5 w-5" />
+                      Mis Datos
+                    </CardTitle>
+                    <CardDescription>
+                      Actualiza tu información personal
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <form onSubmit={handleUpdateProfile} className="space-y-4 max-w-md">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="edit-nombre">Nombre</Label>
+                          <Input
+                            id="edit-nombre"
+                            value={editNombre}
+                            onChange={(e) => setEditNombre(e.target.value)}
+                            disabled={savingProfile}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="edit-apellidos">Apellidos</Label>
+                          <Input
+                            id="edit-apellidos"
+                            value={editApellidos}
+                            onChange={(e) => setEditApellidos(e.target.value)}
+                            disabled={savingProfile}
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="edit-email">Email</Label>
+                        <Input
+                          id="edit-email"
+                          type="email"
+                          value={editEmail}
+                          onChange={(e) => setEditEmail(e.target.value)}
+                          disabled={savingProfile}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="edit-telefono">Teléfono</Label>
+                        <Input
+                          id="edit-telefono"
+                          type="tel"
+                          value={editTelefono}
+                          onChange={(e) => setEditTelefono(e.target.value)}
+                          placeholder="Opcional"
+                          disabled={savingProfile}
+                        />
+                      </div>
+                      <Button type="submit" disabled={savingProfile}>
+                        {savingProfile && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        Guardar cambios
+                      </Button>
+                    </form>
+                  </CardContent>
+                </Card>
+
+                {/* Cambiar Contraseña */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Key className="h-5 w-5" />
+                      Cambiar Contraseña
+                    </CardTitle>
+                    <CardDescription>
+                      Actualiza tu contraseña de acceso
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <form onSubmit={handleChangePassword} className="space-y-4 max-w-md">
+                      <div className="space-y-2">
+                        <Label htmlFor="new-password">Nueva contraseña</Label>
+                        <div className="relative">
+                          <Input
+                            id="new-password"
+                            type={showNewPassword ? "text" : "password"}
+                            value={newPassword}
+                            onChange={(e) => setNewPassword(e.target.value)}
+                            placeholder="Mínimo 6 caracteres"
+                            disabled={changingPassword}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowNewPassword(!showNewPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                          >
+                            {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          </button>
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="confirm-password">Confirmar contraseña</Label>
+                        <Input
+                          id="confirm-password"
+                          type="password"
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                          placeholder="Repite la contraseña"
+                          disabled={changingPassword}
+                        />
+                      </div>
+                      <Button type="submit" disabled={changingPassword || !newPassword || !confirmPassword}>
+                        {changingPassword && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        Cambiar contraseña
+                      </Button>
+                    </form>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+
+            {/* Tab Avisos */}
+            <TabsContent value="avisos">
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Key className="h-5 w-5" />
-                    Cambiar Contraseña
+                    <Bell className="h-5 w-5" />
+                    Comunicados de la Junta
                   </CardTitle>
                   <CardDescription>
-                    Actualiza tu contraseña de acceso
+                    Avisos y comunicaciones oficiales de la Junta Directiva
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <form onSubmit={handleChangePassword} className="space-y-4 max-w-md">
-                    <div className="space-y-2">
-                      <Label htmlFor="new-password">Nueva contraseña</Label>
-                      <div className="relative">
-                        <Input
-                          id="new-password"
-                          type={showNewPassword ? "text" : "password"}
-                          value={newPassword}
-                          onChange={(e) => setNewPassword(e.target.value)}
-                          placeholder="Mínimo 6 caracteres"
-                          disabled={changingPassword}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowNewPassword(!showNewPassword)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                        >
-                          {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                        </button>
-                      </div>
+                  {loading ? (
+                    <div className="flex justify-center py-8">
+                      <Loader2 className="h-8 w-8 animate-spin text-primary" />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="confirm-password">Confirmar contraseña</Label>
-                      <Input
-                        id="confirm-password"
-                        type="password"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        placeholder="Repite la contraseña"
-                        disabled={changingPassword}
-                      />
+                  ) : notificaciones.filter(n => !notificacionesLeidas.includes(n.id)).length === 0 ? (
+                    <p className="text-center text-muted-foreground py-8">
+                      No hay comunicados pendientes de leer
+                    </p>
+                  ) : (
+                    <div className="space-y-4">
+                      {notificaciones
+                        .filter(n => !notificacionesLeidas.includes(n.id))
+                        .map((notificacion) => (
+                          <Card 
+                            key={notificacion.id} 
+                            className="cursor-pointer transition-all border-primary/50 bg-primary/5 hover:bg-primary/10"
+                            onClick={() => marcarLeida(notificacion.id)}
+                          >
+                            <CardContent className="p-4">
+                              <div className="flex items-start justify-between gap-4">
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <span className="h-2 w-2 bg-primary rounded-full" />
+                                    <h3 className="font-semibold">{notificacion.titulo}</h3>
+                                    {notificacion.solo_junta && (
+                                      <Badge variant="outline" className="border-primary text-primary text-xs">
+                                        <Shield className="h-3 w-3 mr-1" />
+                                        Junta
+                                      </Badge>
+                                    )}
+                                  </div>
+                                  <p className="text-muted-foreground text-sm whitespace-pre-wrap">
+                                    {notificacion.mensaje}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground mt-2">
+                                    {format(new Date(notificacion.created_at), "d 'de' MMMM 'de' yyyy, HH:mm", { locale: es })}
+                                  </p>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
                     </div>
-                    <Button type="submit" disabled={changingPassword || !newPassword || !confirmPassword}>
-                      {changingPassword && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                      Cambiar contraseña
-                    </Button>
-                  </form>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
