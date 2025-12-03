@@ -9,6 +9,9 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Default redirect URL for production
+const DEFAULT_REDIRECT_URL = "https://ahoraorg.es/auth";
+
 interface InviteSocioRequest {
   email: string;
   nombre: string;
@@ -79,7 +82,7 @@ serve(async (req: Request): Promise<Response> => {
     const { email, nombre, apellidos, telefono, tipo_cuota, solicitud_id, redirect_url }: InviteSocioRequest = await req.json();
 
     console.log(`Inviting socio: ${email} (${nombre} ${apellidos})`);
-    console.log(`Redirect URL: ${redirect_url}`);
+    console.log(`Redirect URL: ${redirect_url || DEFAULT_REDIRECT_URL}`);
 
     // Generate a secure temporary password
     const tempPassword = crypto.randomUUID().slice(0, 16) + "Aa1!";
@@ -146,7 +149,7 @@ serve(async (req: Request): Promise<Response> => {
       type: "recovery",
       email,
       options: {
-        redirectTo: redirect_url || `${supabaseUrl.replace(".supabase.co", ".lovable.app")}/auth`,
+        redirectTo: redirect_url || DEFAULT_REDIRECT_URL,
       },
     });
 

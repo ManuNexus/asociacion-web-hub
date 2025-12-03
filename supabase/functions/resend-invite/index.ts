@@ -9,6 +9,9 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Default redirect URL for production
+const DEFAULT_REDIRECT_URL = "https://ahoraorg.es/auth";
+
 interface ResendInviteRequest {
   email: string;
   nombre: string;
@@ -76,14 +79,14 @@ serve(async (req: Request): Promise<Response> => {
 
     const { email, nombre, redirect_url }: ResendInviteRequest = await req.json();
     console.log(`Resending invite to: ${email} (${nombre})`);
-    console.log(`Redirect URL: ${redirect_url}`);
+    console.log(`Redirect URL: ${redirect_url || DEFAULT_REDIRECT_URL}`);
 
     // Generate new password reset link
     const { data: resetData, error: resetError } = await supabaseAdmin.auth.admin.generateLink({
       type: "recovery",
       email,
       options: {
-        redirectTo: redirect_url || `${supabaseUrl.replace(".supabase.co", ".lovable.app")}/auth`,
+        redirectTo: redirect_url || DEFAULT_REDIRECT_URL,
       },
     });
 
