@@ -27,13 +27,26 @@ serve(async (req: Request): Promise<Response> => {
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
-    
-    // Extract the JWT token
     const token = authHeader.replace("Bearer ", "");
-    console.log("Token received, length:", token.length);
-    
-    // Create admin client with service role
+
+    // Verify the token using REST API directly
+    const userResponse = await fetch(`${supabaseUrl}/auth/v1/user`, {
+      headers: {
+        Authorization: authHeader,
+        apikey: supabaseServiceKey,
+      },
+    });
+
+    if (!userResponse.ok) {
+      const errorText = await userResponse.text();
+      console.error("Auth verification failed:", errorText);
+      throw new Error("Unauthorized: Invalid token");
+    }
+
+    const user = await userResponse.json();
+    console.log("User verified:", user.id);
+
+    // Create admin client for other operations
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
       auth: {
         autoRefreshToken: false,
@@ -41,19 +54,11 @@ serve(async (req: Request): Promise<Response> => {
       },
     });
 
-    // Verify the user using the admin client with the token
-    const { data: userData, error: userError } = await supabaseAdmin.auth.getUser(token);
-    console.log("getUser result:", { userId: userData?.user?.id, error: userError?.message });
-    
-    if (userError || !userData.user) {
-      throw new Error("Unauthorized: " + (userError?.message || "Invalid token"));
-    }
-
     // Check if user is admin
     const { data: roleData, error: roleError } = await supabaseAdmin
       .from("user_roles")
       .select("role")
-      .eq("user_id", userData.user.id)
+      .eq("user_id", user.id)
       .eq("role", "admin")
       .maybeSingle();
 
@@ -81,7 +86,6 @@ serve(async (req: Request): Promise<Response> => {
     }
 
     const resetLink = resetData?.properties?.action_link || "";
-    console.log("Reset link generated:", resetLink ? "success" : "empty");
 
     // Send email
     const emailResponse = await resend.emails.send({
