@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Pencil, Search } from "lucide-react";
@@ -40,6 +41,7 @@ interface Socio {
   tipo_cuota: string;
   fecha_alta: string;
   numero_socio: string | null;
+  al_corriente_pago: boolean;
 }
 
 export const AdminSocios = () => {
@@ -50,6 +52,8 @@ export const AdminSocios = () => {
   const [editingSocio, setEditingSocio] = useState<Socio | null>(null);
   const [numeroSocio, setNumeroSocio] = useState("");
   const [tipoCuota, setTipoCuota] = useState("normal");
+  const [activo, setActivo] = useState(true);
+  const [alCorrientePago, setAlCorrientePago] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
 
@@ -74,6 +78,8 @@ export const AdminSocios = () => {
     setEditingSocio(socio);
     setNumeroSocio(socio.numero_socio || "");
     setTipoCuota(socio.tipo_cuota || "normal");
+    setActivo(socio.activo);
+    setAlCorrientePago(socio.al_corriente_pago);
     setDialogOpen(true);
   };
 
@@ -86,7 +92,9 @@ export const AdminSocios = () => {
       .from("socios")
       .update({ 
         numero_socio: numeroSocio || null,
-        tipo_cuota: tipoCuota
+        tipo_cuota: tipoCuota,
+        activo: activo,
+        al_corriente_pago: alCorrientePago
       })
       .eq("id", editingSocio.id);
 
@@ -94,10 +102,10 @@ export const AdminSocios = () => {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "No se pudo actualizar el número de socio",
+        description: "No se pudo actualizar el socio",
       });
     } else {
-      toast({ title: "Número de socio actualizado" });
+      toast({ title: "Socio actualizado correctamente" });
       setDialogOpen(false);
       fetchSocios();
     }
@@ -144,6 +152,7 @@ export const AdminSocios = () => {
                   <TableHead>Nombre</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>Cuota</TableHead>
+                  <TableHead>Pago</TableHead>
                   <TableHead>Estado</TableHead>
                   <TableHead>Alta</TableHead>
                   <TableHead className="text-right">Acciones</TableHead>
@@ -174,10 +183,18 @@ export const AdminSocios = () => {
                     </TableCell>
                     <TableCell>
                       <Badge
+                        variant={socio.al_corriente_pago ? "default" : "destructive"}
+                        className={socio.al_corriente_pago ? "bg-green-600" : ""}
+                      >
+                        {socio.al_corriente_pago ? "Al día" : "Pendiente"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
                         variant={socio.activo ? "default" : "destructive"}
                         className={socio.activo ? "bg-green-500" : ""}
                       >
-                        {socio.activo ? "Activo" : "Inactivo"}
+                        {socio.activo ? "Activo" : "Baja"}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-muted-foreground text-sm">
@@ -239,6 +256,32 @@ export const AdminSocios = () => {
                 <p className="text-xs text-muted-foreground">
                   Cuota reducida para estudiantes y desempleados
                 </p>
+              </div>
+              <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
+                <div>
+                  <Label htmlFor="al_corriente_pago">Al corriente de pago</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Indica si el socio tiene los pagos al día
+                  </p>
+                </div>
+                <Switch
+                  id="al_corriente_pago"
+                  checked={alCorrientePago}
+                  onCheckedChange={setAlCorrientePago}
+                />
+              </div>
+              <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
+                <div>
+                  <Label htmlFor="activo">Socio activo</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Desactiva para dar de baja al socio
+                  </p>
+                </div>
+                <Switch
+                  id="activo"
+                  checked={activo}
+                  onCheckedChange={setActivo}
+                />
               </div>
               <div className="flex justify-end gap-2">
                 <Button
