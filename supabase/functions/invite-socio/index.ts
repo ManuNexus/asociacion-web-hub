@@ -33,6 +33,27 @@ serve(async (req: Request): Promise<Response> => {
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const token = authHeader.replace("Bearer ", "");
+    
+    // Decode JWT to extract user_id (sub claim)
+    const parts = token.split(".");
+    if (parts.length !== 3) {
+      throw new Error("Invalid JWT format");
+    }
+    
+    const payload = JSON.parse(atob(parts[1]));
+    const userId = payload.sub;
+    
+    if (!userId) {
+      throw new Error("Invalid JWT: no user_id");
+    }
+    
+    console.log("User ID from JWT:", userId);
+    
+    // Check if token is expired
+    if (payload.exp && payload.exp * 1000 < Date.now()) {
+      throw new Error("Token expired");
+    }
     
     // Create admin client with service role
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
@@ -42,21 +63,11 @@ serve(async (req: Request): Promise<Response> => {
       },
     });
 
-    // Create regular client to verify the requester is admin
-    const supabaseClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
-      global: { headers: { Authorization: authHeader } },
-    });
-
-    const { data: userData, error: userError } = await supabaseClient.auth.getUser();
-    if (userError || !userData.user) {
-      throw new Error("Unauthorized");
-    }
-
     // Check if user is admin
-    const { data: roleData, error: roleError } = await supabaseClient
+    const { data: roleData, error: roleError } = await supabaseAdmin
       .from("user_roles")
       .select("role")
-      .eq("user_id", userData.user.id)
+      .eq("user_id", userId)
       .eq("role", "admin")
       .maybeSingle();
 
