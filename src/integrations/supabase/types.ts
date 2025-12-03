@@ -35,6 +35,66 @@ export type Database = {
         }
         Relationships: []
       }
+      documentos_internos: {
+        Row: {
+          archivo_url: string
+          categoria: string | null
+          created_at: string
+          descripcion: string | null
+          id: string
+          titulo: string
+          updated_at: string
+        }
+        Insert: {
+          archivo_url: string
+          categoria?: string | null
+          created_at?: string
+          descripcion?: string | null
+          id?: string
+          titulo: string
+          updated_at?: string
+        }
+        Update: {
+          archivo_url?: string
+          categoria?: string | null
+          created_at?: string
+          descripcion?: string | null
+          id?: string
+          titulo?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      eventos: {
+        Row: {
+          created_at: string
+          descripcion: string | null
+          fecha: string
+          id: string
+          titulo: string
+          ubicacion: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          descripcion?: string | null
+          fecha: string
+          id?: string
+          titulo: string
+          ubicacion?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          descripcion?: string | null
+          fecha?: string
+          id?: string
+          titulo?: string
+          ubicacion?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       noticias: {
         Row: {
           categoria_id: string | null
@@ -81,6 +141,77 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      opciones_votacion: {
+        Row: {
+          created_at: string
+          id: string
+          texto: string
+          votacion_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          texto: string
+          votacion_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          texto?: string
+          votacion_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "opciones_votacion_votacion_id_fkey"
+            columns: ["votacion_id"]
+            isOneToOne: false
+            referencedRelation: "votaciones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      socios: {
+        Row: {
+          activo: boolean
+          apellidos: string
+          created_at: string
+          email: string
+          fecha_alta: string
+          id: string
+          nombre: string
+          telefono: string | null
+          tipo_cuota: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          activo?: boolean
+          apellidos: string
+          created_at?: string
+          email: string
+          fecha_alta?: string
+          id?: string
+          nombre: string
+          telefono?: string | null
+          tipo_cuota?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          activo?: boolean
+          apellidos?: string
+          created_at?: string
+          email?: string
+          fecha_alta?: string
+          id?: string
+          nombre?: string
+          telefono?: string | null
+          tipo_cuota?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       solicitudes_socio: {
         Row: {
@@ -153,6 +284,78 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      votaciones: {
+        Row: {
+          activa: boolean
+          created_at: string
+          descripcion: string | null
+          fecha_fin: string
+          fecha_inicio: string
+          id: string
+          titulo: string
+          updated_at: string
+        }
+        Insert: {
+          activa?: boolean
+          created_at?: string
+          descripcion?: string | null
+          fecha_fin: string
+          fecha_inicio?: string
+          id?: string
+          titulo: string
+          updated_at?: string
+        }
+        Update: {
+          activa?: boolean
+          created_at?: string
+          descripcion?: string | null
+          fecha_fin?: string
+          fecha_inicio?: string
+          id?: string
+          titulo?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      votos: {
+        Row: {
+          created_at: string
+          id: string
+          opcion_id: string
+          user_id: string
+          votacion_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          opcion_id: string
+          user_id: string
+          votacion_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          opcion_id?: string
+          user_id?: string
+          votacion_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "votos_opcion_id_fkey"
+            columns: ["opcion_id"]
+            isOneToOne: false
+            referencedRelation: "opciones_votacion"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "votos_votacion_id_fkey"
+            columns: ["votacion_id"]
+            isOneToOne: false
+            referencedRelation: "votaciones"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

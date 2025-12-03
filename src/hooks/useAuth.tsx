@@ -8,6 +8,8 @@ interface AuthContextType {
   loading: boolean;
   isAdmin: boolean;
   adminLoading: boolean;
+  isSocio: boolean;
+  socioLoading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
@@ -21,6 +23,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [adminLoading, setAdminLoading] = useState(true);
+  const [isSocio, setIsSocio] = useState(false);
+  const [socioLoading, setSocioLoading] = useState(true);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -29,14 +33,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Set adminLoading BEFORE scheduling the check to prevent race condition
+          // Set loading states BEFORE scheduling the check to prevent race condition
           setAdminLoading(true);
+          setSocioLoading(true);
           setTimeout(() => {
             checkAdminRole(session.user.id);
+            checkSocioRole(session.user.id);
           }, 0);
         } else {
           setIsAdmin(false);
           setAdminLoading(false);
+          setIsSocio(false);
+          setSocioLoading(false);
         }
       }
     );
@@ -46,8 +54,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(session?.user ?? null);
       if (session?.user) {
         checkAdminRole(session.user.id);
+        checkSocioRole(session.user.id);
       } else {
         setAdminLoading(false);
+        setSocioLoading(false);
       }
       setLoading(false);
     });
@@ -72,6 +82,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAdminLoading(false);
   };
 
+  const checkSocioRole = async (userId: string) => {
+    setSocioLoading(true);
+    const { data, error } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId)
+      .eq("role", "socio")
+      .maybeSingle();
+    
+    if (!error && data) {
+      setIsSocio(true);
+    } else {
+      setIsSocio(false);
+    }
+    setSocioLoading(false);
+  };
+
   const signIn = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     return { error: error as Error | null };
@@ -90,10 +117,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signOut = async () => {
     await supabase.auth.signOut();
     setIsAdmin(false);
+    setIsSocio(false);
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, isAdmin, adminLoading, signIn, signUp, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, isAdmin, adminLoading, isSocio, socioLoading, signIn, signUp, signOut }}>
       {children}
     </AuthContext.Provider>
   );
