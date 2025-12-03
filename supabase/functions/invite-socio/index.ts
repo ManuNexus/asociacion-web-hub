@@ -16,6 +16,7 @@ interface InviteSocioRequest {
   telefono?: string;
   tipo_cuota?: string;
   solicitud_id: string;
+  redirect_url?: string;
 }
 
 serve(async (req: Request): Promise<Response> => {
@@ -75,9 +76,10 @@ serve(async (req: Request): Promise<Response> => {
       throw new Error("Only admins can invite socios");
     }
 
-    const { email, nombre, apellidos, telefono, tipo_cuota, solicitud_id }: InviteSocioRequest = await req.json();
+    const { email, nombre, apellidos, telefono, tipo_cuota, solicitud_id, redirect_url }: InviteSocioRequest = await req.json();
 
     console.log(`Inviting socio: ${email} (${nombre} ${apellidos})`);
+    console.log(`Redirect URL: ${redirect_url}`);
 
     // Generate a secure temporary password
     const tempPassword = crypto.randomUUID().slice(0, 16) + "Aa1!";
@@ -144,7 +146,7 @@ serve(async (req: Request): Promise<Response> => {
       type: "recovery",
       email,
       options: {
-        redirectTo: `${Deno.env.get("SITE_URL") || supabaseUrl.replace(".supabase.co", ".lovable.app")}/auth`,
+        redirectTo: redirect_url || `${supabaseUrl.replace(".supabase.co", ".lovable.app")}/auth`,
       },
     });
 
