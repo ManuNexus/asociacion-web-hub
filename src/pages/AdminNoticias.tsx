@@ -34,7 +34,7 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Pencil, Trash2, Loader2, LogOut, Users, Newspaper, Mail, Phone, Eye, Search, Tag } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, LogOut, Users, Newspaper, Mail, Phone, Eye, Search, Tag, UserCheck, Send } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 
@@ -87,6 +87,7 @@ const AdminNoticias = () => {
   const [viewingSolicitud, setViewingSolicitud] = useState<SolicitudSocio | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filtroEstado, setFiltroEstado] = useState<string>("todos");
+  const [invitingId, setInvitingId] = useState<string | null>(null);
 
   const solicitudesFiltradas = solicitudes.filter((s) => {
     const matchesSearch = 
@@ -350,6 +351,53 @@ const AdminNoticias = () => {
     } else {
       toast({ title: "Estado actualizado" });
       fetchSolicitudes();
+    }
+  };
+
+  const handleInviteSocio = async (solicitud: SolicitudSocio) => {
+    if (solicitud.estado === "aceptado") {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Esta solicitud ya fue aceptada",
+      });
+      return;
+    }
+
+    setInvitingId(solicitud.id);
+
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      
+      const { data, error } = await supabase.functions.invoke("invite-socio", {
+        body: {
+          email: solicitud.email,
+          nombre: solicitud.nombre,
+          apellidos: solicitud.apellidos,
+          telefono: solicitud.telefono,
+          tipo_cuota: "normal",
+          solicitud_id: solicitud.id,
+        },
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Invitación enviada",
+        description: `Se ha enviado un correo a ${solicitud.email} para configurar su cuenta`,
+      });
+      
+      setSolicitudDialogOpen(false);
+      fetchSolicitudes();
+    } catch (error: any) {
+      console.error("Error inviting socio:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message || "No se pudo enviar la invitación",
+      });
+    } finally {
+      setInvitingId(null);
     }
   };
 
@@ -950,6 +998,38 @@ const AdminNoticias = () => {
                   </SelectContent>
                 </Select>
               </div>
+
+              {viewingSolicitud.estado !== "aceptado" && (
+                <div className="pt-4 border-t">
+                  <Button
+                    onClick={() => handleInviteSocio(viewingSolicitud)}
+                    disabled={invitingId === viewingSolicitud.id}
+                    className="w-full bg-green-600 hover:bg-green-700"
+                  >
+                    {invitingId === viewingSolicitud.id ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <UserCheck className="h-4 w-4 mr-2" />
+                    )}
+                    Aprobar y enviar invitación
+                  </Button>
+                  <p className="text-xs text-muted-foreground mt-2 text-center">
+                    Se creará la cuenta y se enviará un correo para configurar la contraseña
+                  </p>
+                </div>
+              )}
+
+              {viewingSolicitud.estado === "aceptado" && (
+                <div className="pt-4 border-t">
+                  <div className="flex items-center gap-2 text-green-600 justify-center">
+                    <UserCheck className="h-5 w-5" />
+                    <span className="font-medium">Solicitud aprobada</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2 text-center">
+                    Este socio ya tiene acceso a la plataforma
+                  </p>
+                </div>
+              )}
             </div>
           )}
         </DialogContent>
