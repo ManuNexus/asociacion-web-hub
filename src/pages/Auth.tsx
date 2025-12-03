@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,6 +25,7 @@ const Auth = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
+  const [isRecoveryMode, setIsRecoveryMode] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string; confirmPassword?: string }>({});
   
   const { user, signIn } = useAuth();
@@ -33,50 +34,57 @@ const Auth = () => {
 
   // Check for recovery flow on mount
   useEffect(() => {
-    const checkRecoverySession = async () => {
-      // Check if we're in a password recovery flow
+    const checkAuthState = async () => {
+      // Check URL hash for recovery parameters
       const hashParams = new URLSearchParams(window.location.hash.substring(1));
       const type = hashParams.get("type");
       const accessToken = hashParams.get("access_token");
       
-      if (type === "recovery" && accessToken) {
-        // User is in password recovery mode
+      // Also check URL search params (some Supabase versions use this)
+      const searchParams = new URLSearchParams(window.location.search);
+      const searchType = searchParams.get("type");
+      
+      console.log("Hash params:", { type, accessToken: !!accessToken });
+      console.log("Search params:", { searchType });
+      
+      if (type === "recovery" || searchType === "recovery") {
+        console.log("Recovery mode detected from URL");
+        setIsRecoveryMode(true);
         setMode("set-password");
         setCheckingSession(false);
         return;
       }
 
-      // Check if user has a session from recovery
+      // If no recovery token in URL, check if user is already logged in
       const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        // Check the event that created this session
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          // User is logged in, redirect based on role
-          await redirectBasedOnRole(user.id);
-          return;
-        }
+      if (session?.user && !isRecoveryMode) {
+        // User is logged in normally, redirect based on role
+        await redirectBasedOnRole(session.user.id);
+        return;
       }
       
       setCheckingSession(false);
     };
 
-    checkRecoverySession();
+    checkAuthState();
 
-    // Listen for auth state changes (including password recovery)
+    // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Auth event:", event);
       
       if (event === "PASSWORD_RECOVERY") {
+        console.log("PASSWORD_RECOVERY event received");
+        setIsRecoveryMode(true);
         setMode("set-password");
         setCheckingSession(false);
-      } else if (event === "SIGNED_IN" && session?.user) {
-        await redirectBasedOnRole(session.user.id);
+      } else if (event === "SIGNED_IN" && session?.user && !isRecoveryMode) {
+        // Only redirect if NOT in recovery mode
+        // This prevents auto-redirect when user clicks recovery link
       }
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [isRecoveryMode]);
 
   const redirectBasedOnRole = async (userId: string) => {
     try {
@@ -126,8 +134,11 @@ const Auth = () => {
       } else {
         toast({
           title: "Contraseña configurada",
-          description: "Tu contraseña ha sido configurada correctamente",
+          description: "Tu contraseña ha sido configurada correctamente. Ya puedes acceder.",
         });
+        
+        // Clear recovery mode
+        setIsRecoveryMode(false);
         
         // Get current user and redirect based on role
         const { data: { user } } = await supabase.auth.getUser();
@@ -226,7 +237,7 @@ const Auth = () => {
     );
   }
 
-  // Password setup form for new members
+  // Password setup form for new members or password recovery
   if (mode === "set-password") {
     return (
       <Layout>
@@ -236,7 +247,7 @@ const Auth = () => {
               <CardHeader className="text-center">
                 <CardTitle className="text-2xl">Configura tu contraseña</CardTitle>
                 <CardDescription>
-                  Crea una contraseña para acceder a tu cuenta de socio
+                  Crea una contraseña segura para acceder a tu cuenta
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -250,6 +261,7 @@ const Auth = () => {
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="••••••••"
                       disabled={loading}
+                      autoComplete="new-password"
                     />
                     {errors.password && (
                       <p className="text-sm text-destructive">{errors.password}</p>
@@ -264,6 +276,7 @@ const Auth = () => {
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       placeholder="••••••••"
                       disabled={loading}
+                      autoComplete="new-password"
                     />
                     {errors.confirmPassword && (
                       <p className="text-sm text-destructive">{errors.confirmPassword}</p>
@@ -271,7 +284,7 @@ const Auth = () => {
                   </div>
                   <Button type="submit" className="w-full" disabled={loading}>
                     {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Configurar contraseña
+                    Guardar contraseña
                   </Button>
                 </form>
               </CardContent>
