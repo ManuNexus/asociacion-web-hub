@@ -174,6 +174,7 @@ export type Database = {
       socios: {
         Row: {
           activo: boolean
+          al_corriente_pago: boolean
           apellidos: string
           created_at: string
           email: string
@@ -188,6 +189,7 @@ export type Database = {
         }
         Insert: {
           activo?: boolean
+          al_corriente_pago?: boolean
           apellidos: string
           created_at?: string
           email: string
@@ -202,6 +204,7 @@ export type Database = {
         }
         Update: {
           activo?: boolean
+          al_corriente_pago?: boolean
           apellidos?: string
           created_at?: string
           email?: string
