@@ -28,7 +28,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import logoIcon from "@/assets/logo-ahora-icon.png";
+
 
 interface Socio {
   id: string;
@@ -328,18 +328,13 @@ const PanelSocios = () => {
           {/* Welcome Card */}
           <Card className="mb-8 bg-gradient-to-r from-primary/5 to-secondary/5 border-primary/20">
             <CardContent className="py-6">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-primary/10 rounded-full">
-                  <img src={logoIcon} alt="AHORA" className="h-12 w-12" />
-                </div>
-                <div>
-                  <h2 className="text-2xl font-bold text-foreground">
-                    ¡Hola, {miSocio?.nombre || "socio"}!
-                  </h2>
-                  <p className="text-muted-foreground">
-                    Gracias por ser parte de AHORA. Aquí tienes acceso a toda la información y herramientas exclusivas para socios.
-                  </p>
-                </div>
+              <div>
+                <h2 className="text-2xl font-bold text-foreground">
+                  ¡Hola, {miSocio?.nombre || "socio"}!
+                </h2>
+                <p className="text-muted-foreground">
+                  Gracias por ser parte de AHORA. Aquí tienes acceso a toda la información y herramientas exclusivas para socios.
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -377,7 +372,7 @@ const PanelSocios = () => {
                     Socios Activos
                   </CardTitle>
                   <CardDescription>
-                    Lista de todos los socios activos de la asociación
+                    Comunidad de miembros de la asociación
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -385,33 +380,23 @@ const PanelSocios = () => {
                     <div className="flex justify-center py-8">
                       <Loader2 className="h-8 w-8 animate-spin text-primary" />
                     </div>
-                  ) : socios.length === 0 ? (
-                    <p className="text-center text-muted-foreground py-8">
-                      No hay socios activos registrados
-                    </p>
                   ) : (
-                    <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-                      {socios.map((socio) => (
-                        <div 
-                          key={socio.id} 
-                          className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-muted/50 transition-colors"
-                        >
-                          <div className="p-2 bg-primary/10 rounded-full">
-                            <User className="h-5 w-5 text-primary" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium truncate">
-                              {socio.nombre} {socio.apellidos}
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                              Socio desde {format(new Date(socio.fecha_alta), "MMM yyyy", { locale: es })}
-                            </p>
-                          </div>
-                          <Badge variant="outline" className="bg-secondary/20 text-secondary-foreground">
-                            {socio.tipo_cuota === "reducida" ? "Reducida" : "Normal"}
-                          </Badge>
+                    <div className="flex flex-col items-center justify-center py-12">
+                      <div className="relative">
+                        <div className="absolute inset-0 bg-primary/20 rounded-full blur-2xl animate-pulse" />
+                        <div className="relative bg-gradient-to-br from-primary to-primary/80 rounded-full p-8 shadow-lg">
+                          <Users className="h-12 w-12 text-primary-foreground" />
                         </div>
-                      ))}
+                      </div>
+                      <div className="mt-6 text-center">
+                        <p className="text-6xl font-bold text-primary">{socios.length}</p>
+                        <p className="text-xl text-muted-foreground mt-2">
+                          {socios.length === 1 ? "socio activo" : "socios activos"}
+                        </p>
+                      </div>
+                      <p className="text-sm text-muted-foreground mt-4 text-center max-w-md">
+                        Juntos construimos el futuro de AHORA. Gracias por formar parte de nuestra comunidad.
+                      </p>
                     </div>
                   )}
                 </CardContent>
