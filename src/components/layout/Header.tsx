@@ -42,6 +42,12 @@ export function Header() {
               {link.label}
             </Link>
           ))}
+          <Link
+            to="/socios"
+            className="ml-2 px-4 py-2 text-sm font-semibold uppercase tracking-wide border-2 border-ahora-yellow text-ahora-yellow rounded-md hover:bg-ahora-yellow hover:text-background transition-colors"
+          >
+            Espacio Socio
+          </Link>
         </nav>
 
         {/* Mobile Menu Button */}
@@ -74,6 +80,13 @@ export function Header() {
                 {link.label}
               </Link>
             ))}
+            <Link
+              to="/socios"
+              onClick={() => setIsMenuOpen(false)}
+              className="mx-4 mt-2 px-4 py-3 text-sm font-semibold uppercase tracking-wide text-center border-2 border-ahora-yellow text-ahora-yellow rounded-md hover:bg-ahora-yellow hover:text-background transition-colors"
+            >
+              Espacio Socio
+            </Link>
           </div>
         </nav>
       )}
