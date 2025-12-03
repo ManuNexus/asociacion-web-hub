@@ -27,25 +27,29 @@ serve(async (req: Request): Promise<Response> => {
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const token = authHeader.replace("Bearer ", "");
 
-    // Verify the token using REST API directly with anon key
-    const userResponse = await fetch(`${supabaseUrl}/auth/v1/user`, {
-      headers: {
-        Authorization: authHeader,
-        apikey: supabaseAnonKey,
-      },
-    });
-
-    if (!userResponse.ok) {
-      const errorText = await userResponse.text();
-      console.error("Auth verification failed:", errorText);
-      throw new Error("Unauthorized: Invalid token");
+    // Decode JWT to extract user_id (sub claim)
+    const parts = token.split(".");
+    if (parts.length !== 3) {
+      throw new Error("Invalid JWT format");
     }
-
-    const user = await userResponse.json();
-    console.log("User verified:", user.id);
+    
+    // Decode the payload (second part)
+    const payload = JSON.parse(atob(parts[1]));
+    const userId = payload.sub;
+    
+    if (!userId) {
+      throw new Error("Invalid JWT: no user_id");
+    }
+    
+    console.log("User ID from JWT:", userId);
+    console.log("JWT exp:", new Date(payload.exp * 1000).toISOString());
+    
+    // Check if token is expired
+    if (payload.exp && payload.exp * 1000 < Date.now()) {
+      throw new Error("Token expired");
+    }
 
     // Create admin client for other operations
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
@@ -59,7 +63,7 @@ serve(async (req: Request): Promise<Response> => {
     const { data: roleData, error: roleError } = await supabaseAdmin
       .from("user_roles")
       .select("role")
-      .eq("user_id", user.id)
+      .eq("user_id", userId)
       .eq("role", "admin")
       .maybeSingle();
 
