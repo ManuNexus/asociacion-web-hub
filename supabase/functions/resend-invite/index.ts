@@ -40,8 +40,11 @@ serve(async (req: Request): Promise<Response> => {
     });
 
     const { data: userData, error: userError } = await supabaseClient.auth.getUser();
+    console.log("User auth result:", { userData, userError });
+    
     if (userError || !userData.user) {
-      throw new Error("Unauthorized");
+      console.error("Auth error:", userError);
+      throw new Error("Unauthorized: " + (userError?.message || "No user found"));
     }
 
     const { data: roleData, error: roleError } = await supabaseClient
