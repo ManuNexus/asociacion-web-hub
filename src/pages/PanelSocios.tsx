@@ -343,28 +343,28 @@ const PanelSocios = () => {
           </Card>
 
           <Tabs defaultValue="carnet" className="w-full">
-            <TabsList className="grid w-full max-w-4xl grid-cols-6 mb-6">
-              <TabsTrigger value="carnet" className="flex items-center gap-2">
+            <TabsList className="grid w-full max-w-4xl grid-cols-3 sm:grid-cols-6 mb-6 h-auto gap-1">
+              <TabsTrigger value="carnet" className="flex items-center gap-2 py-2">
                 <CreditCard className="h-4 w-4" />
                 <span className="hidden sm:inline">Carnet</span>
               </TabsTrigger>
-              <TabsTrigger value="socios" className="flex items-center gap-2">
+              <TabsTrigger value="socios" className="flex items-center gap-2 py-2">
                 <Users className="h-4 w-4" />
                 <span className="hidden sm:inline">Socios</span>
               </TabsTrigger>
-              <TabsTrigger value="votaciones" className="flex items-center gap-2">
+              <TabsTrigger value="votaciones" className="flex items-center gap-2 py-2">
                 <Vote className="h-4 w-4" />
                 <span className="hidden sm:inline">Votaciones</span>
               </TabsTrigger>
-              <TabsTrigger value="eventos" className="flex items-center gap-2">
+              <TabsTrigger value="eventos" className="flex items-center gap-2 py-2">
                 <Calendar className="h-4 w-4" />
                 <span className="hidden sm:inline">Eventos</span>
               </TabsTrigger>
-              <TabsTrigger value="documentos" className="flex items-center gap-2">
+              <TabsTrigger value="documentos" className="flex items-center gap-2 py-2">
                 <FileText className="h-4 w-4" />
                 <span className="hidden sm:inline">Documentos</span>
               </TabsTrigger>
-              <TabsTrigger value="cuenta" className="flex items-center gap-2">
+              <TabsTrigger value="cuenta" className="flex items-center gap-2 py-2">
                 <Key className="h-4 w-4" />
                 <span className="hidden sm:inline">Mi cuenta</span>
               </TabsTrigger>
@@ -501,8 +501,8 @@ const PanelSocios = () => {
                             key={votacion.id} 
                             className={`p-4 rounded-lg border ${activa ? 'border-primary/30 bg-primary/5' : 'bg-muted/30'}`}
                           >
-                            <div className="flex items-start justify-between mb-3">
-                              <div>
+                            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-3">
+                              <div className="flex-1 min-w-0">
                                 <h3 className="font-semibold text-lg">{votacion.titulo}</h3>
                                 {votacion.descripcion && (
                                   <p className="text-muted-foreground text-sm mt-1">
@@ -510,7 +510,7 @@ const PanelSocios = () => {
                                   </p>
                                 )}
                               </div>
-                              <div className="flex flex-col items-end gap-1">
+                              <div className="flex flex-wrap gap-1">
                                 {activa ? (
                                   <Badge className="bg-green-500">Activa</Badge>
                                 ) : new Date(votacion.fecha_fin) < new Date() ? (
@@ -589,7 +589,7 @@ const PanelSocios = () => {
                           key={evento.id} 
                           className="p-4 rounded-lg border bg-card hover:shadow-md transition-shadow"
                         >
-                          <div className="flex items-start gap-4">
+                          <div className="flex flex-col sm:flex-row sm:items-start gap-4">
                             <div className="flex-shrink-0 w-14 h-14 bg-primary/10 rounded-lg flex flex-col items-center justify-center">
                               <span className="text-xl font-bold text-primary">
                                 {format(new Date(evento.fecha), "d", { locale: es })}
@@ -598,22 +598,22 @@ const PanelSocios = () => {
                                 {format(new Date(evento.fecha), "MMM", { locale: es })}
                               </span>
                             </div>
-                            <div className="flex-1">
+                            <div className="flex-1 min-w-0">
                               <h3 className="font-semibold text-lg">{evento.titulo}</h3>
                               {evento.descripcion && (
                                 <p className="text-muted-foreground text-sm mt-1">
                                   {evento.descripcion}
                                 </p>
                               )}
-                              <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
+                              <div className="flex flex-wrap items-center gap-3 mt-2 text-sm text-muted-foreground">
                                 <span className="flex items-center gap-1">
                                   <Clock className="h-4 w-4" />
                                   {format(new Date(evento.fecha), "HH:mm", { locale: es })}
                                 </span>
                                 {evento.ubicacion && (
                                   <span className="flex items-center gap-1">
-                                    <MapPin className="h-4 w-4" />
-                                    {evento.ubicacion}
+                                    <MapPin className="h-4 w-4 shrink-0" />
+                                    <span className="truncate">{evento.ubicacion}</span>
                                   </span>
                                 )}
                               </div>
@@ -653,28 +653,31 @@ const PanelSocios = () => {
                       {documentos.map((documento) => (
                         <div 
                           key={documento.id} 
-                          className="flex items-center gap-4 p-4 rounded-lg border bg-card hover:bg-muted/50 transition-colors"
+                          className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 rounded-lg border bg-card hover:bg-muted/50 transition-colors"
                         >
-                          <div className="p-3 bg-primary/10 rounded-lg">
-                            <FileText className="h-6 w-6 text-primary" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <h3 className="font-medium truncate">{documento.titulo}</h3>
-                            {documento.descripcion && (
-                              <p className="text-sm text-muted-foreground truncate">
-                                {documento.descripcion}
-                              </p>
-                            )}
-                            {documento.categoria && (
-                              <Badge variant="outline" className="mt-1">
-                                {documento.categoria}
-                              </Badge>
-                            )}
+                          <div className="flex items-center gap-4 flex-1 min-w-0">
+                            <div className="p-3 bg-primary/10 rounded-lg shrink-0">
+                              <FileText className="h-6 w-6 text-primary" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-medium truncate">{documento.titulo}</h3>
+                              {documento.descripcion && (
+                                <p className="text-sm text-muted-foreground line-clamp-2">
+                                  {documento.descripcion}
+                                </p>
+                              )}
+                              {documento.categoria && (
+                                <Badge variant="outline" className="mt-1">
+                                  {documento.categoria}
+                                </Badge>
+                              )}
+                            </div>
                           </div>
                           <Button
                             variant="outline"
                             size="sm"
                             asChild
+                            className="w-full sm:w-auto"
                           >
                             <a href={documento.archivo_url} target="_blank" rel="noopener noreferrer">
                               <Download className="h-4 w-4 mr-2" />
