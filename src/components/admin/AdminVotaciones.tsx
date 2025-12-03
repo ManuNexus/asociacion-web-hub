@@ -164,7 +164,21 @@ export const AdminVotaciones = () => {
 
         if (opcionesError) throw opcionesError;
         
-        toast({ title: "Votación creada" });
+        // Send notification to socios
+        try {
+          await supabase.functions.invoke("notify-socios", {
+            body: {
+              tipo: "votacion",
+              titulo: formData.titulo,
+              descripcion: formData.descripcion || null,
+              solo_junta: formData.solo_junta,
+            },
+          });
+          toast({ title: "Votación creada y notificaciones enviadas" });
+        } catch (notifyError) {
+          console.error("Error sending notifications:", notifyError);
+          toast({ title: "Votación creada (notificaciones fallidas)" });
+        }
       }
 
       setDialogOpen(false);

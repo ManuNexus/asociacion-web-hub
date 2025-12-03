@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.baja-socio]
 verify_jwt = false
+
+[functions.notify-socios]
+verify_jwt = false
