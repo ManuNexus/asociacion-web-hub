@@ -19,8 +19,13 @@ import {
   Clock,
   MapPin,
   CheckCircle2,
-  Download
+  Download,
+  Key,
+  Eye,
+  EyeOff
 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import logoIcon from "@/assets/logo-ahora-icon.png";
@@ -75,6 +80,14 @@ const PanelSocios = () => {
   const [documentos, setDocumentos] = useState<Documento[]>([]);
   const [loading, setLoading] = useState(true);
   const [voting, setVoting] = useState<string | null>(null);
+  
+  // Password change states
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [changingPassword, setChangingPassword] = useState(false);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
 
   const { user, isSocio, loading: authLoading, socioLoading, signOut } = useAuth();
   const navigate = useNavigate();
@@ -210,6 +223,51 @@ const PanelSocios = () => {
     navigate("/");
   };
 
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (newPassword.length < 6) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "La nueva contraseña debe tener al menos 6 caracteres",
+      });
+      return;
+    }
+    
+    if (newPassword !== confirmPassword) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Las contraseñas no coinciden",
+      });
+      return;
+    }
+    
+    setChangingPassword(true);
+    
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      
+      if (error) {
+        throw error;
+      }
+      
+      toast({ title: "Contraseña actualizada correctamente" });
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message || "No se pudo cambiar la contraseña",
+      });
+    } finally {
+      setChangingPassword(false);
+    }
+  };
+
   const isVotacionActiva = (votacion: Votacion) => {
     const now = new Date();
     return votacion.activa && 
@@ -272,7 +330,7 @@ const PanelSocios = () => {
           </Card>
 
           <Tabs defaultValue="socios" className="w-full">
-            <TabsList className="grid w-full max-w-2xl grid-cols-4 mb-6">
+            <TabsList className="grid w-full max-w-3xl grid-cols-5 mb-6">
               <TabsTrigger value="socios" className="flex items-center gap-2">
                 <Users className="h-4 w-4" />
                 <span className="hidden sm:inline">Socios</span>
@@ -288,6 +346,10 @@ const PanelSocios = () => {
               <TabsTrigger value="documentos" className="flex items-center gap-2">
                 <FileText className="h-4 w-4" />
                 <span className="hidden sm:inline">Documentos</span>
+              </TabsTrigger>
+              <TabsTrigger value="cuenta" className="flex items-center gap-2">
+                <Key className="h-4 w-4" />
+                <span className="hidden sm:inline">Mi cuenta</span>
               </TabsTrigger>
             </TabsList>
 
@@ -558,6 +620,60 @@ const PanelSocios = () => {
                       ))}
                     </div>
                   )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Tab Mi Cuenta */}
+            <TabsContent value="cuenta">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Key className="h-5 w-5" />
+                    Cambiar Contraseña
+                  </CardTitle>
+                  <CardDescription>
+                    Actualiza tu contraseña de acceso
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={handleChangePassword} className="space-y-4 max-w-md">
+                    <div className="space-y-2">
+                      <Label htmlFor="new-password">Nueva contraseña</Label>
+                      <div className="relative">
+                        <Input
+                          id="new-password"
+                          type={showNewPassword ? "text" : "password"}
+                          value={newPassword}
+                          onChange={(e) => setNewPassword(e.target.value)}
+                          placeholder="Mínimo 6 caracteres"
+                          disabled={changingPassword}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowNewPassword(!showNewPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                        >
+                          {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="confirm-password">Confirmar contraseña</Label>
+                      <Input
+                        id="confirm-password"
+                        type="password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        placeholder="Repite la contraseña"
+                        disabled={changingPassword}
+                      />
+                    </div>
+                    <Button type="submit" disabled={changingPassword || !newPassword || !confirmPassword}>
+                      {changingPassword && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      Cambiar contraseña
+                    </Button>
+                  </form>
                 </CardContent>
               </Card>
             </TabsContent>

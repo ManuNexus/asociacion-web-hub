@@ -34,9 +34,12 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Pencil, Trash2, Loader2, LogOut, Users, Newspaper, Mail, Phone, Eye, Search, Tag, UserCheck, Send, RefreshCw } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, LogOut, Users, Newspaper, Mail, Phone, Eye, Search, Tag, UserCheck, Send, RefreshCw, Vote, Calendar, FileText } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { AdminVotaciones } from "@/components/admin/AdminVotaciones";
+import { AdminEventos } from "@/components/admin/AdminEventos";
+import { AdminDocumentos } from "@/components/admin/AdminDocumentos";
 
 interface Categoria {
   id: string;
@@ -368,8 +371,6 @@ const AdminNoticias = () => {
     setInvitingId(solicitud.id);
 
     try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      
       const { data, error } = await supabase.functions.invoke("invite-socio", {
         body: {
           email: solicitud.email,
@@ -378,7 +379,7 @@ const AdminNoticias = () => {
           telefono: solicitud.telefono,
           tipo_cuota: "normal",
           solicitud_id: solicitud.id,
-          redirect_url: `${window.location.origin}/auth`,
+          dni: solicitud.dni,
         },
       });
 
@@ -512,23 +513,35 @@ const AdminNoticias = () => {
       <section className="py-8">
         <div className="container">
           <Tabs defaultValue="noticias" className="w-full">
-            <TabsList className="grid w-full max-w-lg grid-cols-3 mb-6">
+            <TabsList className="grid w-full max-w-3xl grid-cols-6 mb-6">
               <TabsTrigger value="noticias" className="flex items-center gap-2">
                 <Newspaper className="h-4 w-4" />
-                Noticias
+                <span className="hidden sm:inline">Noticias</span>
               </TabsTrigger>
               <TabsTrigger value="categorias" className="flex items-center gap-2">
                 <Tag className="h-4 w-4" />
-                Categorías
+                <span className="hidden sm:inline">Categorías</span>
               </TabsTrigger>
               <TabsTrigger value="solicitudes" className="flex items-center gap-2">
                 <Users className="h-4 w-4" />
-                Solicitudes
+                <span className="hidden sm:inline">Solicitudes</span>
                 {solicitudes.filter(s => s.estado === "pendiente").length > 0 && (
                   <Badge variant="destructive" className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-xs">
                     {solicitudes.filter(s => s.estado === "pendiente").length}
                   </Badge>
                 )}
+              </TabsTrigger>
+              <TabsTrigger value="votaciones" className="flex items-center gap-2">
+                <Vote className="h-4 w-4" />
+                <span className="hidden sm:inline">Votaciones</span>
+              </TabsTrigger>
+              <TabsTrigger value="eventos" className="flex items-center gap-2">
+                <Calendar className="h-4 w-4" />
+                <span className="hidden sm:inline">Eventos</span>
+              </TabsTrigger>
+              <TabsTrigger value="documentos" className="flex items-center gap-2">
+                <FileText className="h-4 w-4" />
+                <span className="hidden sm:inline">Documentos</span>
               </TabsTrigger>
             </TabsList>
 
@@ -942,6 +955,21 @@ const AdminNoticias = () => {
                   )}
                 </CardContent>
               </Card>
+            </TabsContent>
+
+            {/* Tab Votaciones */}
+            <TabsContent value="votaciones">
+              <AdminVotaciones />
+            </TabsContent>
+
+            {/* Tab Eventos */}
+            <TabsContent value="eventos">
+              <AdminEventos />
+            </TabsContent>
+
+            {/* Tab Documentos */}
+            <TabsContent value="documentos">
+              <AdminDocumentos />
             </TabsContent>
           </Tabs>
         </div>
