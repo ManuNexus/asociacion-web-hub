@@ -25,6 +25,9 @@ serve(async (req: Request): Promise<Response> => {
       throw new Error("No authorization header");
     }
 
+    // Extract JWT token from Bearer header
+    const token = authHeader.replace("Bearer ", "");
+
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     
@@ -35,19 +38,16 @@ serve(async (req: Request): Promise<Response> => {
       },
     });
 
-    const supabaseClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
-      global: { headers: { Authorization: authHeader } },
-    });
-
-    const { data: userData, error: userError } = await supabaseClient.auth.getUser();
-    console.log("User auth result:", { userData, userError });
+    // Get user from the JWT token
+    const { data: userData, error: userError } = await supabaseAdmin.auth.getUser(token);
     
     if (userError || !userData.user) {
       console.error("Auth error:", userError);
       throw new Error("Unauthorized: " + (userError?.message || "No user found"));
     }
 
-    const { data: roleData, error: roleError } = await supabaseClient
+    // Check admin role using admin client
+    const { data: roleData, error: roleError } = await supabaseAdmin
       .from("user_roles")
       .select("role")
       .eq("user_id", userData.user.id)
