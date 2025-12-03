@@ -15,7 +15,18 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   Select,
   SelectContent,
@@ -28,7 +39,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Pencil, Search } from "lucide-react";
+import { Loader2, Pencil, Search, Trash2, UserX } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 
@@ -49,7 +60,11 @@ export const AdminSocios = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [bajaDialogOpen, setBajaDialogOpen] = useState(false);
   const [editingSocio, setEditingSocio] = useState<Socio | null>(null);
+  const [socioToDelete, setSocioToDelete] = useState<Socio | null>(null);
+  const [socioToBaja, setSocioToBaja] = useState<Socio | null>(null);
   const [numeroSocio, setNumeroSocio] = useState("");
   const [tipoCuota, setTipoCuota] = useState("normal");
   const [activo, setActivo] = useState(true);
@@ -87,6 +102,10 @@ export const AdminSocios = () => {
     e.preventDefault();
     if (!editingSocio) return;
 
+    // Check if we're deactivating
+    const wasActive = editingSocio.activo;
+    const isBeingDeactivated = wasActive && !activo;
+
     setSaving(true);
     const { error } = await supabase
       .from("socios")
@@ -104,11 +123,91 @@ export const AdminSocios = () => {
         title: "Error",
         description: "No se pudo actualizar el socio",
       });
-    } else {
-      toast({ title: "Socio actualizado correctamente" });
-      setDialogOpen(false);
-      fetchSocios();
+      setSaving(false);
+      return;
     }
+
+    // If being deactivated, send baja email
+    if (isBeingDeactivated) {
+      await sendBajaEmail(editingSocio, false);
+    }
+
+    toast({ title: "Socio actualizado correctamente" });
+    setDialogOpen(false);
+    fetchSocios();
+    setSaving(false);
+  };
+
+  const sendBajaEmail = async (socio: Socio, eliminarDatos: boolean) => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error("No hay sesión activa");
+      }
+
+      const response = await supabase.functions.invoke("baja-socio", {
+        body: {
+          socio_id: socio.id,
+          email: socio.email,
+          nombre: socio.nombre,
+          apellidos: socio.apellidos,
+          eliminar_datos: eliminarDatos,
+        },
+      });
+
+      if (response.error) {
+        console.error("Error sending baja email:", response.error);
+        toast({
+          variant: "destructive",
+          title: "Aviso",
+          description: "Socio procesado pero no se pudo enviar el correo",
+        });
+      } else {
+        toast({ 
+          title: eliminarDatos 
+            ? "Datos eliminados y correo enviado" 
+            : "Baja procesada y correo enviado" 
+        });
+      }
+    } catch (error) {
+      console.error("Error in sendBajaEmail:", error);
+    }
+  };
+
+  const openBajaDialog = (socio: Socio) => {
+    setSocioToBaja(socio);
+    setBajaDialogOpen(true);
+  };
+
+  const handleBaja = async () => {
+    if (!socioToBaja) return;
+    
+    setSaving(true);
+    await supabase
+      .from("socios")
+      .update({ activo: false })
+      .eq("id", socioToBaja.id);
+    
+    await sendBajaEmail(socioToBaja, false);
+    setBajaDialogOpen(false);
+    setSocioToBaja(null);
+    fetchSocios();
+    setSaving(false);
+  };
+
+  const openDeleteDialog = (socio: Socio) => {
+    setSocioToDelete(socio);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!socioToDelete) return;
+    
+    setSaving(true);
+    await sendBajaEmail(socioToDelete, true);
+    setDeleteDialogOpen(false);
+    setSocioToDelete(null);
+    fetchSocios();
     setSaving(false);
   };
 
@@ -203,13 +302,36 @@ export const AdminSocios = () => {
                       })}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => openEditDialog(socio)}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
+                      <div className="flex justify-end gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => openEditDialog(socio)}
+                          title="Editar"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        {socio.activo && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => openBajaDialog(socio)}
+                            title="Dar de baja"
+                            className="text-orange-500 hover:text-orange-600"
+                          >
+                            <UserX className="h-4 w-4" />
+                          </Button>
+                        )}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => openDeleteDialog(socio)}
+                          title="Eliminar datos"
+                          className="text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -219,6 +341,7 @@ export const AdminSocios = () => {
         )}
       </CardContent>
 
+      {/* Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -300,6 +423,68 @@ export const AdminSocios = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Baja Dialog */}
+      <AlertDialog open={bajaDialogOpen} onOpenChange={setBajaDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Dar de baja a este socio?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {socioToBaja && (
+                <>
+                  <strong>{socioToBaja.nombre} {socioToBaja.apellidos}</strong> perderá acceso al área de socios.
+                  Se le enviará un correo informándole de la baja.
+                  <br /><br />
+                  Los datos del socio se conservarán en el sistema. Para eliminar los datos completamente, usa el botón de eliminar.
+                </>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleBaja}
+              disabled={saving}
+              className="bg-orange-500 hover:bg-orange-600"
+            >
+              {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Dar de baja
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Eliminar datos del socio?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {socioToDelete && (
+                <>
+                  Esta acción <strong>eliminará permanentemente</strong> todos los datos de{" "}
+                  <strong>{socioToDelete.nombre} {socioToDelete.apellidos}</strong>, incluyendo su cuenta de usuario.
+                  <br /><br />
+                  Se enviará un correo confirmando la eliminación de datos conforme al RGPD.
+                  <br /><br />
+                  <span className="text-destructive font-medium">Esta acción no se puede deshacer.</span>
+                </>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDelete}
+              disabled={saving}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Eliminar datos
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 };
