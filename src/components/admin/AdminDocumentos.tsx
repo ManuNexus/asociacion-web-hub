@@ -20,9 +20,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Pencil, Trash2, Loader2, FileText, ExternalLink } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, FileText, ExternalLink, Shield } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 
@@ -33,6 +34,7 @@ interface Documento {
   archivo_url: string;
   categoria: string | null;
   created_at: string;
+  solo_junta: boolean;
 }
 
 export const AdminDocumentos = () => {
@@ -47,6 +49,7 @@ export const AdminDocumentos = () => {
     descripcion: "",
     archivo_url: "",
     categoria: "",
+    solo_junta: false,
   });
 
   const { toast } = useToast();
@@ -97,6 +100,7 @@ export const AdminDocumentos = () => {
             descripcion: formData.descripcion || null,
             archivo_url: formData.archivo_url,
             categoria: formData.categoria || null,
+            solo_junta: formData.solo_junta,
           })
           .eq("id", editingDocumento.id);
 
@@ -108,6 +112,7 @@ export const AdminDocumentos = () => {
           descripcion: formData.descripcion || null,
           archivo_url: formData.archivo_url,
           categoria: formData.categoria || null,
+          solo_junta: formData.solo_junta,
         });
 
         if (error) throw error;
@@ -153,6 +158,7 @@ export const AdminDocumentos = () => {
       descripcion: documento.descripcion || "",
       archivo_url: documento.archivo_url,
       categoria: documento.categoria || "",
+      solo_junta: documento.solo_junta,
     });
     setDialogOpen(true);
   };
@@ -164,6 +170,7 @@ export const AdminDocumentos = () => {
       descripcion: "",
       archivo_url: "",
       categoria: "",
+      solo_junta: false,
     });
   };
 
@@ -231,6 +238,22 @@ export const AdminDocumentos = () => {
                   placeholder="Ej: Actas, Normativa, Informes..."
                 />
               </div>
+              <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
+                <div className="flex items-center gap-2">
+                  <Shield className="h-4 w-4 text-primary" />
+                  <div>
+                    <Label htmlFor="solo_junta">Solo Junta Directiva</Label>
+                    <p className="text-xs text-muted-foreground">
+                      Solo visible para miembros de la junta
+                    </p>
+                  </div>
+                </div>
+                <Switch
+                  id="solo_junta"
+                  checked={formData.solo_junta}
+                  onCheckedChange={(checked) => setFormData({ ...formData, solo_junta: checked })}
+                />
+              </div>
               <div className="flex justify-end gap-2">
                 <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
                   Cancelar
@@ -260,6 +283,7 @@ export const AdminDocumentos = () => {
                 <TableRow>
                   <TableHead>Título</TableHead>
                   <TableHead>Categoría</TableHead>
+                  <TableHead>Acceso</TableHead>
                   <TableHead>Fecha</TableHead>
                   <TableHead className="text-right">Acciones</TableHead>
                 </TableRow>
@@ -285,6 +309,16 @@ export const AdminDocumentos = () => {
                         <Badge variant="outline">{documento.categoria}</Badge>
                       ) : (
                         <span className="text-muted-foreground text-xs">Sin categoría</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {documento.solo_junta ? (
+                        <Badge variant="outline" className="border-primary text-primary">
+                          <Shield className="h-3 w-3 mr-1" />
+                          Junta
+                        </Badge>
+                      ) : (
+                        <Badge variant="secondary">Todos</Badge>
                       )}
                     </TableCell>
                     <TableCell className="text-muted-foreground text-sm">
