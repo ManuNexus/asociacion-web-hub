@@ -12,14 +12,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -443,77 +435,64 @@ export const AdminVotaciones = () => {
             No hay votaciones. Crea la primera.
           </p>
         ) : (
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Título</TableHead>
-                  <TableHead>Opciones</TableHead>
-                  <TableHead>Acceso</TableHead>
-                  <TableHead>Estado</TableHead>
-                  <TableHead>Fecha fin</TableHead>
-                  <TableHead className="text-right">Acciones</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {votaciones.map((votacion) => {
-                  const activa = isVotacionActiva(votacion);
-                  const opcionesVotacion = getVotacionOpciones(votacion.id);
-                  
-                  return (
-                    <TableRow key={votacion.id}>
-                      <TableCell className="font-medium max-w-xs truncate">
-                        {votacion.titulo}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-wrap gap-1">
-                          {opcionesVotacion.map(o => (
-                            <Badge key={o.id} variant="outline" className="text-xs">
-                              {o.texto}
-                            </Badge>
-                          ))}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {votacion.solo_junta ? (
-                          <Badge variant="outline" className="border-primary text-primary">
-                            <Shield className="h-3 w-3 mr-1" />
-                            Junta
-                          </Badge>
-                        ) : (
-                          <Badge variant="secondary">Todos</Badge>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {activa ? (
-                          <Badge className="bg-green-500">Activa</Badge>
-                        ) : new Date(votacion.fecha_fin) < new Date() ? (
-                          <Badge variant="secondary">Finalizada</Badge>
-                        ) : (
-                          <Badge variant="outline">Próximamente</Badge>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-muted-foreground text-sm">
-                        {format(new Date(votacion.fecha_fin), "dd/MM/yyyy HH:mm", { locale: es })}
-                      </TableCell>
-                        <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button variant="ghost" size="icon" onClick={() => openResultsDialog(votacion)} title="Ver resultados">
-                            <BarChart3 className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon" onClick={() => openEditDialog(votacion)}>
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon" onClick={() => handleDelete(votacion.id)}>
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
+          <div className="space-y-3">
+            {votaciones.map((votacion) => {
+              const activa = isVotacionActiva(votacion);
+              const opcionesVotacion = getVotacionOpciones(votacion.id);
+              
+              return (
+                <div key={votacion.id} className="border rounded-lg p-4 space-y-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-medium truncate">{votacion.titulo}</h3>
+                      {votacion.descripcion && (
+                        <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                          {votacion.descripcion}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex gap-1 shrink-0">
+                      <Button variant="ghost" size="icon" onClick={() => openResultsDialog(votacion)} title="Ver resultados">
+                        <BarChart3 className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" onClick={() => openEditDialog(votacion)}>
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" onClick={() => handleDelete(votacion.id)}>
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-1">
+                    {opcionesVotacion.map(o => (
+                      <Badge key={o.id} variant="outline" className="text-xs">
+                        {o.texto}
+                      </Badge>
+                    ))}
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    {votacion.solo_junta ? (
+                      <Badge variant="outline" className="border-primary text-primary">
+                        <Shield className="h-3 w-3 mr-1" />
+                        Junta
+                      </Badge>
+                    ) : (
+                      <Badge variant="secondary">Todos</Badge>
+                    )}
+                    {activa ? (
+                      <Badge className="bg-green-500">Activa</Badge>
+                    ) : new Date(votacion.fecha_fin) < new Date() ? (
+                      <Badge variant="secondary">Finalizada</Badge>
+                    ) : (
+                      <Badge variant="outline">Próximamente</Badge>
+                    )}
+                    <span className="text-sm text-muted-foreground">
+                      Fin: {format(new Date(votacion.fecha_fin), "dd/MM/yyyy HH:mm", { locale: es })}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
 

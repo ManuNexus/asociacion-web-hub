@@ -11,14 +11,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
@@ -275,68 +267,48 @@ export const AdminEventos = () => {
             No hay eventos. Crea el primero.
           </p>
         ) : (
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Título</TableHead>
-                  <TableHead>Ubicación</TableHead>
-                  <TableHead>Acceso</TableHead>
-                  <TableHead>Estado</TableHead>
-                  <TableHead>Fecha</TableHead>
-                  <TableHead className="text-right">Acciones</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {eventos.map((evento) => (
-                  <TableRow key={evento.id}>
-                    <TableCell className="font-medium max-w-xs truncate">
-                      {evento.titulo}
-                    </TableCell>
-                    <TableCell>
-                      {evento.ubicacion ? (
-                        <span className="flex items-center gap-1 text-muted-foreground">
-                          <MapPin className="h-3 w-3" />
-                          {evento.ubicacion}
-                        </span>
-                      ) : (
-                        <span className="text-muted-foreground text-xs">Sin ubicación</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {evento.solo_junta ? (
-                        <Badge variant="outline" className="border-primary text-primary">
-                          <Shield className="h-3 w-3 mr-1" />
-                          Junta
-                        </Badge>
-                      ) : (
-                        <Badge variant="secondary">Todos</Badge>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {isPastEvent(evento.fecha) ? (
-                        <Badge variant="secondary">Pasado</Badge>
-                      ) : (
-                        <Badge className="bg-green-500">Próximo</Badge>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground text-sm">
-                      {format(new Date(evento.fecha), "dd/MM/yyyy HH:mm", { locale: es })}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button variant="ghost" size="icon" onClick={() => openEditDialog(evento)}>
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" onClick={() => handleDelete(evento.id)}>
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+          <div className="space-y-3">
+            {eventos.map((evento) => (
+              <div key={evento.id} className="border rounded-lg p-4 space-y-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-medium truncate">{evento.titulo}</h3>
+                    {evento.ubicacion && (
+                      <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
+                        <MapPin className="h-3 w-3 shrink-0" />
+                        <span className="truncate">{evento.ubicacion}</span>
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex gap-1 shrink-0">
+                    <Button variant="ghost" size="icon" onClick={() => openEditDialog(evento)}>
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={() => handleDelete(evento.id)}>
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  </div>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  {evento.solo_junta ? (
+                    <Badge variant="outline" className="border-primary text-primary">
+                      <Shield className="h-3 w-3 mr-1" />
+                      Junta
+                    </Badge>
+                  ) : (
+                    <Badge variant="secondary">Todos</Badge>
+                  )}
+                  {isPastEvent(evento.fecha) ? (
+                    <Badge variant="secondary">Pasado</Badge>
+                  ) : (
+                    <Badge className="bg-green-500">Próximo</Badge>
+                  )}
+                  <span className="text-sm text-muted-foreground">
+                    {format(new Date(evento.fecha), "dd/MM/yyyy HH:mm", { locale: es })}
+                  </span>
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </CardContent>
