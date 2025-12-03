@@ -23,7 +23,8 @@ import {
   Key,
   Eye,
   EyeOff,
-  CreditCard
+  CreditCard,
+  Shield
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -34,6 +35,7 @@ import logoWhite from "@/assets/logo-ahora-white.png";
 
 interface Socio {
   id: string;
+  user_id: string;
   nombre: string;
   apellidos: string;
   email: string;
@@ -41,6 +43,10 @@ interface Socio {
   tipo_cuota: string;
   fecha_alta: string;
   numero_socio: string | null;
+}
+
+interface SocioWithJunta extends Socio {
+  es_junta: boolean;
 }
 
 interface Votacion {
@@ -75,7 +81,7 @@ interface Documento {
 }
 
 const PanelSocios = () => {
-  const [socios, setSocios] = useState<Socio[]>([]);
+  const [socios, setSocios] = useState<SocioWithJunta[]>([]);
   const [miSocio, setMiSocio] = useState<Socio | null>(null);
   const [votaciones, setVotaciones] = useState<Votacion[]>([]);
   const [opciones, setOpciones] = useState<OpcionVotacion[]>([]);
@@ -93,7 +99,7 @@ const PanelSocios = () => {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
 
-  const { user, isSocio, loading: authLoading, socioLoading, signOut } = useAuth();
+  const { user, isSocio, isJunta, loading: authLoading, socioLoading, signOut } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -152,7 +158,22 @@ const PanelSocios = () => {
       .order("apellidos");
 
     if (!error && data) {
-      setSocios(data);
+      // Fetch junta roles for all socios
+      const userIds = data.map(s => s.user_id);
+      const { data: juntaRoles } = await supabase
+        .from("user_roles")
+        .select("user_id")
+        .eq("role", "junta")
+        .in("user_id", userIds);
+
+      const juntaUserIds = new Set(juntaRoles?.map(r => r.user_id) || []);
+      
+      const sociosWithJunta: SocioWithJunta[] = data.map(s => ({
+        ...s,
+        es_junta: juntaUserIds.has(s.user_id)
+      }));
+      
+      setSocios(sociosWithJunta);
     }
   };
 
@@ -331,13 +352,23 @@ const PanelSocios = () => {
           {/* Welcome Card */}
           <Card className="mb-8 bg-gradient-to-r from-primary/5 to-secondary/5 border-primary/20">
             <CardContent className="py-6">
-              <div>
-                <h2 className="text-2xl font-bold text-foreground">
-                  ¡Hola, {miSocio?.nombre || "socio"}!
-                </h2>
-                <p className="text-muted-foreground">
-                  Gracias por ser parte de AHORA. Aquí tienes acceso a toda la información y herramientas exclusivas para socios.
-                </p>
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <h2 className="text-2xl font-bold text-foreground">
+                      ¡Hola, {miSocio?.nombre || "socio"}!
+                    </h2>
+                    {isJunta && (
+                      <Badge variant="outline" className="border-primary text-primary">
+                        <Shield className="h-3 w-3 mr-1" />
+                        Junta Directiva
+                      </Badge>
+                    )}
+                  </div>
+                  <p className="text-muted-foreground">
+                    Gracias por ser parte de AHORA. Aquí tienes acceso a toda la información y herramientas exclusivas para socios.
+                  </p>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -446,22 +477,43 @@ const PanelSocios = () => {
                       <Loader2 className="h-8 w-8 animate-spin text-primary" />
                     </div>
                   ) : (
-                    <div className="flex flex-col items-center justify-center py-12">
-                      <div className="relative">
-                        <div className="absolute inset-0 bg-primary/20 rounded-full blur-2xl animate-pulse" />
-                        <div className="relative bg-gradient-to-br from-primary to-primary/80 rounded-full p-8 shadow-lg">
-                          <Users className="h-12 w-12 text-primary-foreground" />
+                    <div className="space-y-6">
+                      {/* Stats */}
+                      <div className="flex items-center justify-center gap-8 py-4 border-b">
+                        <div className="text-center">
+                          <p className="text-3xl font-bold text-primary">{socios.length}</p>
+                          <p className="text-sm text-muted-foreground">socios activos</p>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-3xl font-bold text-primary">{socios.filter(s => s.es_junta).length}</p>
+                          <p className="text-sm text-muted-foreground">junta directiva</p>
                         </div>
                       </div>
-                      <div className="mt-6 text-center">
-                        <p className="text-6xl font-bold text-primary">{socios.length}</p>
-                        <p className="text-xl text-muted-foreground mt-2">
-                          {socios.length === 1 ? "socio activo" : "socios activos"}
-                        </p>
+                      
+                      {/* List */}
+                      <div className="grid gap-3">
+                        {socios.map((socio) => (
+                          <div key={socio.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                            <div className="flex items-center gap-3">
+                              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                                <User className="h-5 w-5 text-primary" />
+                              </div>
+                              <div>
+                                <p className="font-medium">{socio.nombre} {socio.apellidos}</p>
+                                {socio.numero_socio && (
+                                  <p className="text-xs text-muted-foreground">Nº {socio.numero_socio}</p>
+                                )}
+                              </div>
+                            </div>
+                            {socio.es_junta && (
+                              <Badge variant="outline" className="border-primary text-primary">
+                                <Shield className="h-3 w-3 mr-1" />
+                                Junta
+                              </Badge>
+                            )}
+                          </div>
+                        ))}
                       </div>
-                      <p className="text-sm text-muted-foreground mt-4 text-center max-w-md">
-                        Juntos construimos el futuro de AHORA. Gracias por formar parte de nuestra comunidad.
-                      </p>
                     </div>
                   )}
                 </CardContent>

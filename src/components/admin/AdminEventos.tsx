@@ -98,16 +98,33 @@ export const AdminEventos = () => {
         if (error) throw error;
         toast({ title: "Evento actualizado" });
       } else {
-        const { error } = await supabase.from("eventos").insert({
+        const { data: newEvento, error } = await supabase.from("eventos").insert({
           titulo: formData.titulo,
           descripcion: formData.descripcion || null,
           fecha: formData.fecha,
           ubicacion: formData.ubicacion || null,
           solo_junta: formData.solo_junta,
-        });
+        }).select().single();
 
         if (error) throw error;
-        toast({ title: "Evento creado" });
+        
+        // Send notification to socios
+        try {
+          await supabase.functions.invoke("notify-socios", {
+            body: {
+              tipo: "evento",
+              titulo: formData.titulo,
+              descripcion: formData.descripcion || null,
+              fecha: formData.fecha,
+              ubicacion: formData.ubicacion || null,
+              solo_junta: formData.solo_junta,
+            },
+          });
+          toast({ title: "Evento creado y notificaciones enviadas" });
+        } catch (notifyError) {
+          console.error("Error sending notifications:", notifyError);
+          toast({ title: "Evento creado (notificaciones fallidas)" });
+        }
       }
 
       setDialogOpen(false);
