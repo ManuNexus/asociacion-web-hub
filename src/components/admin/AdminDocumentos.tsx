@@ -11,14 +11,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
@@ -277,67 +269,55 @@ export const AdminDocumentos = () => {
             No hay documentos. Crea el primero.
           </p>
         ) : (
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Título</TableHead>
-                  <TableHead>Categoría</TableHead>
-                  <TableHead>Acceso</TableHead>
-                  <TableHead>Fecha</TableHead>
-                  <TableHead className="text-right">Acciones</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {documentos.map((documento) => (
-                  <TableRow key={documento.id}>
-                    <TableCell className="font-medium max-w-xs truncate">
-                      <div className="flex items-center gap-2">
-                        {documento.titulo}
-                        <a
-                          href={documento.archivo_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-primary hover:text-primary/80"
-                        >
-                          <ExternalLink className="h-3 w-3" />
-                        </a>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {documento.categoria ? (
-                        <Badge variant="outline">{documento.categoria}</Badge>
-                      ) : (
-                        <span className="text-muted-foreground text-xs">Sin categoría</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {documento.solo_junta ? (
-                        <Badge variant="outline" className="border-primary text-primary">
-                          <Shield className="h-3 w-3 mr-1" />
-                          Junta
-                        </Badge>
-                      ) : (
-                        <Badge variant="secondary">Todos</Badge>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground text-sm">
-                      {format(new Date(documento.created_at), "dd/MM/yyyy", { locale: es })}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button variant="ghost" size="icon" onClick={() => openEditDialog(documento)}>
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" onClick={() => handleDelete(documento.id)}>
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+          <div className="space-y-3">
+            {documentos.map((documento) => (
+              <div key={documento.id} className="border rounded-lg p-4 space-y-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-medium truncate">{documento.titulo}</h3>
+                      <a
+                        href={documento.archivo_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:text-primary/80 shrink-0"
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                      </a>
+                    </div>
+                    {documento.descripcion && (
+                      <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                        {documento.descripcion}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex gap-1 shrink-0">
+                    <Button variant="ghost" size="icon" onClick={() => openEditDialog(documento)}>
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={() => handleDelete(documento.id)}>
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  </div>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  {documento.categoria && (
+                    <Badge variant="outline">{documento.categoria}</Badge>
+                  )}
+                  {documento.solo_junta ? (
+                    <Badge variant="outline" className="border-primary text-primary">
+                      <Shield className="h-3 w-3 mr-1" />
+                      Junta
+                    </Badge>
+                  ) : (
+                    <Badge variant="secondary">Todos</Badge>
+                  )}
+                  <span className="text-sm text-muted-foreground">
+                    {format(new Date(documento.created_at), "dd/MM/yyyy", { locale: es })}
+                  </span>
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </CardContent>
