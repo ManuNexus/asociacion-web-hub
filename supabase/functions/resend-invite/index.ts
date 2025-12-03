@@ -27,13 +27,14 @@ serve(async (req: Request): Promise<Response> => {
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const token = authHeader.replace("Bearer ", "");
 
-    // Verify the token using REST API directly
+    // Verify the token using REST API directly with anon key
     const userResponse = await fetch(`${supabaseUrl}/auth/v1/user`, {
       headers: {
         Authorization: authHeader,
-        apikey: supabaseServiceKey,
+        apikey: supabaseAnonKey,
       },
     });
 
