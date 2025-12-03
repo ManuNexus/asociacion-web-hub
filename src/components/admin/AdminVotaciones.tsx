@@ -23,7 +23,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Pencil, Trash2, Loader2, Vote, X } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, Vote, X, BarChart3 } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 
@@ -42,6 +43,11 @@ interface OpcionVotacion {
   texto: string;
 }
 
+interface VotoCount {
+  opcion_id: string;
+  count: number;
+}
+
 export const AdminVotaciones = () => {
   const [votaciones, setVotaciones] = useState<Votacion[]>([]);
   const [opciones, setOpciones] = useState<OpcionVotacion[]>([]);
@@ -58,6 +64,10 @@ export const AdminVotaciones = () => {
     fecha_fin: "",
     activa: true,
   });
+  const [resultsDialogOpen, setResultsDialogOpen] = useState(false);
+  const [selectedVotacionResults, setSelectedVotacionResults] = useState<Votacion | null>(null);
+  const [votosCount, setVotosCount] = useState<VotoCount[]>([]);
+  const [loadingResults, setLoadingResults] = useState(false);
 
   const { toast } = useToast();
 
@@ -248,6 +258,45 @@ export const AdminVotaciones = () => {
            new Date(votacion.fecha_fin) >= now;
   };
 
+  const openResultsDialog = async (votacion: Votacion) => {
+    setSelectedVotacionResults(votacion);
+    setResultsDialogOpen(true);
+    setLoadingResults(true);
+
+    const { data: votos, error } = await supabase
+      .from("votos")
+      .select("opcion_id")
+      .eq("votacion_id", votacion.id);
+
+    if (error) {
+      console.error("Error fetching votes:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "No se pudieron cargar los resultados",
+      });
+    } else {
+      // Count votes per option
+      const counts: Record<string, number> = {};
+      votos?.forEach(v => {
+        counts[v.opcion_id] = (counts[v.opcion_id] || 0) + 1;
+      });
+      
+      setVotosCount(
+        Object.entries(counts).map(([opcion_id, count]) => ({ opcion_id, count }))
+      );
+    }
+    setLoadingResults(false);
+  };
+
+  const getVotoCountForOpcion = (opcionId: string) => {
+    return votosCount.find(v => v.opcion_id === opcionId)?.count || 0;
+  };
+
+  const getTotalVotos = () => {
+    return votosCount.reduce((sum, v) => sum + v.count, 0);
+  };
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
@@ -414,8 +463,11 @@ export const AdminVotaciones = () => {
                       <TableCell className="text-muted-foreground text-sm">
                         {format(new Date(votacion.fecha_fin), "dd/MM/yyyy HH:mm", { locale: es })}
                       </TableCell>
-                      <TableCell className="text-right">
+                        <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
+                          <Button variant="ghost" size="icon" onClick={() => openResultsDialog(votacion)} title="Ver resultados">
+                            <BarChart3 className="h-4 w-4" />
+                          </Button>
                           <Button variant="ghost" size="icon" onClick={() => openEditDialog(votacion)}>
                             <Pencil className="h-4 w-4" />
                           </Button>
@@ -431,6 +483,49 @@ export const AdminVotaciones = () => {
             </Table>
           </div>
         )}
+
+        {/* Results Dialog */}
+        <Dialog open={resultsDialogOpen} onOpenChange={setResultsDialogOpen}>
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <BarChart3 className="h-5 w-5" />
+                Resultados: {selectedVotacionResults?.titulo}
+              </DialogTitle>
+            </DialogHeader>
+            {loadingResults ? (
+              <div className="flex justify-center py-8">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {selectedVotacionResults && getVotacionOpciones(selectedVotacionResults.id).map(opcion => {
+                  const count = getVotoCountForOpcion(opcion.id);
+                  const total = getTotalVotos();
+                  const percentage = total > 0 ? Math.round((count / total) * 100) : 0;
+                  
+                  return (
+                    <div key={opcion.id} className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="font-medium">{opcion.texto}</span>
+                        <span className="text-muted-foreground">
+                          {count} voto{count !== 1 ? "s" : ""} ({percentage}%)
+                        </span>
+                      </div>
+                      <Progress value={percentage} className="h-3" />
+                    </div>
+                  );
+                })}
+                
+                <div className="pt-4 border-t">
+                  <p className="text-sm text-muted-foreground text-center">
+                    Total de votos: <strong>{getTotalVotos()}</strong>
+                  </p>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </CardContent>
     </Card>
   );
