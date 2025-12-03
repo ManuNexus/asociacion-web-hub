@@ -25,12 +25,15 @@ serve(async (req: Request): Promise<Response> => {
       throw new Error("No authorization header");
     }
 
-    // Extract JWT token from Bearer header
-    const token = authHeader.replace("Bearer ", "");
-
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     
+    // Extract the JWT token
+    const token = authHeader.replace("Bearer ", "");
+    console.log("Token received, length:", token.length);
+    
+    // Create admin client with service role
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
       auth: {
         autoRefreshToken: false,
@@ -38,15 +41,15 @@ serve(async (req: Request): Promise<Response> => {
       },
     });
 
-    // Get user from the JWT token
+    // Verify the user using the admin client with the token
     const { data: userData, error: userError } = await supabaseAdmin.auth.getUser(token);
+    console.log("getUser result:", { userId: userData?.user?.id, error: userError?.message });
     
     if (userError || !userData.user) {
-      console.error("Auth error:", userError);
-      throw new Error("Unauthorized: " + (userError?.message || "No user found"));
+      throw new Error("Unauthorized: " + (userError?.message || "Invalid token"));
     }
 
-    // Check admin role using admin client
+    // Check if user is admin
     const { data: roleData, error: roleError } = await supabaseAdmin
       .from("user_roles")
       .select("role")
@@ -54,13 +57,14 @@ serve(async (req: Request): Promise<Response> => {
       .eq("role", "admin")
       .maybeSingle();
 
+    console.log("Role check:", { roleData, roleError: roleError?.message });
+
     if (roleError || !roleData) {
       throw new Error("Only admins can resend invitations");
     }
 
     const { email, nombre }: ResendInviteRequest = await req.json();
-
-    console.log(`Resending invite to: ${email}`);
+    console.log(`Resending invite to: ${email} (${nombre})`);
 
     // Generate new password reset link
     const { data: resetData, error: resetError } = await supabaseAdmin.auth.admin.generateLink({
@@ -77,6 +81,7 @@ serve(async (req: Request): Promise<Response> => {
     }
 
     const resetLink = resetData?.properties?.action_link || "";
+    console.log("Reset link generated:", resetLink ? "success" : "empty");
 
     // Send email
     const emailResponse = await resend.emails.send({
@@ -129,7 +134,7 @@ serve(async (req: Request): Promise<Response> => {
       `,
     });
 
-    console.log("Resend email sent successfully:", emailResponse);
+    console.log("Email sent successfully:", emailResponse);
 
     return new Response(
       JSON.stringify({ 
