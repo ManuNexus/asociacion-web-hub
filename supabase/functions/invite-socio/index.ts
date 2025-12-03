@@ -43,13 +43,13 @@ serve(async (req: Request): Promise<Response> => {
     }
     
     const payload = JSON.parse(atob(parts[1]));
-    const userId = payload.sub;
+    const adminUserId = payload.sub;
     
-    if (!userId) {
+    if (!adminUserId) {
       throw new Error("Invalid JWT: no user_id");
     }
     
-    console.log("User ID from JWT:", userId);
+    console.log("Admin User ID from JWT:", adminUserId);
     
     // Check if token is expired
     if (payload.exp && payload.exp * 1000 < Date.now()) {
@@ -68,7 +68,7 @@ serve(async (req: Request): Promise<Response> => {
     const { data: roleData, error: roleError } = await supabaseAdmin
       .from("user_roles")
       .select("role")
-      .eq("user_id", userId)
+      .eq("user_id", adminUserId)
       .eq("role", "admin")
       .maybeSingle();
 
@@ -87,11 +87,13 @@ serve(async (req: Request): Promise<Response> => {
     // Use DNI as the default password (cleaned, uppercase)
     const defaultPassword = dni.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
 
-    // Create user account with admin API using DNI as password
+    let socioUserId: string;
+
+    // Try to create user account with admin API using DNI as password
     const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password: defaultPassword,
-      email_confirm: true, // Auto-confirm email since we're inviting them
+      email_confirm: true,
       user_metadata: {
         nombre,
         apellidos,
@@ -99,36 +101,64 @@ serve(async (req: Request): Promise<Response> => {
     });
 
     if (createError) {
-      console.error("Error creating user:", createError);
-      throw new Error(`Error creating user: ${createError.message}`);
+      // If user already exists, get their ID and update their password
+      if (createError.message.includes("already been registered")) {
+        console.log("User already exists, fetching existing user...");
+        
+        const { data: existingUsers, error: listError } = await supabaseAdmin.auth.admin.listUsers();
+        
+        if (listError) {
+          throw new Error(`Error listing users: ${listError.message}`);
+        }
+        
+        const existingUser = existingUsers.users.find(u => u.email === email);
+        
+        if (!existingUser) {
+          throw new Error("User exists but could not be found");
+        }
+        
+        socioUserId = existingUser.id;
+        
+        // Update their password to DNI
+        await supabaseAdmin.auth.admin.updateUserById(socioUserId, {
+          password: defaultPassword,
+          email_confirm: true,
+        });
+        
+        console.log(`Existing user updated with ID: ${socioUserId}`);
+      } else {
+        console.error("Error creating user:", createError);
+        throw new Error(`Error creating user: ${createError.message}`);
+      }
+    } else {
+      socioUserId = newUser.user.id;
+      console.log(`User created with ID: ${socioUserId}`);
     }
 
-    console.log(`User created with ID: ${newUser.user.id}`);
-
-    // Add socio role
+    // Add socio role (upsert to handle existing)
     const { error: roleInsertError } = await supabaseAdmin
       .from("user_roles")
-      .insert({
-        user_id: newUser.user.id,
+      .upsert({
+        user_id: socioUserId,
         role: "socio",
-      });
+      }, { onConflict: 'user_id,role' });
 
     if (roleInsertError) {
       console.error("Error adding socio role:", roleInsertError);
     }
 
-    // Create socio record
+    // Create or update socio record
     const { error: socioError } = await supabaseAdmin
       .from("socios")
-      .insert({
-        user_id: newUser.user.id,
+      .upsert({
+        user_id: socioUserId,
         nombre,
         apellidos,
         email,
         telefono: telefono || null,
         tipo_cuota: tipo_cuota || "normal",
         activo: true,
-      });
+      }, { onConflict: 'user_id' });
 
     if (socioError) {
       console.error("Error creating socio record:", socioError);
@@ -215,7 +245,7 @@ serve(async (req: Request): Promise<Response> => {
     return new Response(
       JSON.stringify({ 
         success: true, 
-        user_id: newUser.user.id,
+        user_id: socioUserId,
         message: "Socio invitado correctamente" 
       }),
       {
