@@ -78,18 +78,10 @@ serve(async (req: Request): Promise<Response> => {
     const tipoLabel = tipo === "evento" ? "Nuevo Evento" : "Nueva Votación";
     const subject = `${solo_junta ? "[JUNTA] " : ""}${tipoLabel}: ${titulo}`;
 
-    let htmlContent = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <div style="background: linear-gradient(135deg, #1e3a8a, #3b82f6); padding: 24px; text-align: center;">
-          <h1 style="color: white; margin: 0; font-size: 24px;">AHORA</h1>
-        </div>
-        <div style="padding: 24px; background: #f9fafb;">
-          <h2 style="color: #1e3a8a; margin-top: 0;">${tipoLabel}</h2>
-          <h3 style="color: #333; font-size: 20px;">${titulo}</h3>
-    `;
-
+    let detallesContent = "";
+    
     if (descripcion) {
-      htmlContent += `<p style="color: #666;">${descripcion}</p>`;
+      detallesContent += `<p>${descripcion}</p>`;
     }
 
     if (tipo === "evento" && fecha) {
@@ -97,39 +89,61 @@ serve(async (req: Request): Promise<Response> => {
         dateStyle: "long",
         timeStyle: "short",
       });
-      htmlContent += `
-        <p style="color: #333;"><strong>📅 Fecha:</strong> ${fechaFormatted}</p>
-      `;
+      detallesContent += `<p><strong>📅 Fecha:</strong> ${fechaFormatted}</p>`;
       if (ubicacion) {
-        htmlContent += `<p style="color: #333;"><strong>📍 Lugar:</strong> ${ubicacion}</p>`;
+        detallesContent += `<p><strong>📍 Lugar:</strong> ${ubicacion}</p>`;
       }
     }
 
     if (tipo === "votacion") {
-      htmlContent += `
-        <p style="color: #333;">Se ha abierto una nueva votación. Accede al panel de socios para participar.</p>
-      `;
+      detallesContent += `<p>Se ha abierto una nueva votación. Accede al panel de socios para participar.</p>`;
     }
 
-    htmlContent += `
-          <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid #e5e7eb;">
-            <a href="https://ahoraorg.es/socios" style="background: #eab308; color: #1e3a8a; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
-              Acceder al Panel de Socios
-            </a>
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+          .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+          .button { display: inline-block; background: #f1c40f; color: #1e3a5f; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; margin: 20px 0; }
+          .footer { text-align: center; margin-top: 20px; color: #666; font-size: 12px; }
+          .info-box { background: #fff; border: 1px solid #ddd; padding: 15px; border-radius: 5px; margin: 20px 0; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1 style="margin: 0;">${tipoLabel}${solo_junta ? " (Junta)" : ""}</h1>
+          </div>
+          <div class="content">
+            <h2 style="color: #1e3a5f; margin-top: 0;">${titulo}</h2>
+            
+            <div class="info-box">
+              ${detallesContent}
+            </div>
+            
+            <p style="text-align: center;">
+              <a href="https://ahoraorg.es/socios" class="button">Acceder al Panel de Socios</a>
+            </p>
+            
+            <p>Un cordial saludo,<br><em>El equipo de AHORA</em></p>
+          </div>
+          <div class="footer">
+            <p>AHORA - Actuar en el presente para construir el futuro</p>
           </div>
         </div>
-        <div style="background: #1e3a8a; padding: 16px; text-align: center;">
-          <p style="color: #94a3b8; margin: 0; font-size: 12px;">
-            Este correo se ha enviado automáticamente desde AHORA
-          </p>
-        </div>
-      </div>
+      </body>
+      </html>
     `;
 
     // Send emails to all recipients
     const emailPromises = recipients.map(recipient =>
       resend.emails.send({
-        from: "AHORA <noreply@ahoraorg.es>",
+        from: "AHORA <socios@ahoraorg.es>",
         to: [recipient.email],
         subject: subject,
         html: htmlContent,
