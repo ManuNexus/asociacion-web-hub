@@ -39,12 +39,13 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Pencil, Search, Trash2, UserX } from "lucide-react";
+import { Loader2, Pencil, Search, Trash2, UserX, Shield } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 
 interface Socio {
   id: string;
+  user_id: string;
   nombre: string;
   apellidos: string;
   email: string;
@@ -55,20 +56,25 @@ interface Socio {
   al_corriente_pago: boolean;
 }
 
+interface SocioWithJunta extends Socio {
+  es_junta: boolean;
+}
+
 export const AdminSocios = () => {
-  const [socios, setSocios] = useState<Socio[]>([]);
+  const [socios, setSocios] = useState<SocioWithJunta[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [bajaDialogOpen, setBajaDialogOpen] = useState(false);
-  const [editingSocio, setEditingSocio] = useState<Socio | null>(null);
-  const [socioToDelete, setSocioToDelete] = useState<Socio | null>(null);
-  const [socioToBaja, setSocioToBaja] = useState<Socio | null>(null);
+  const [editingSocio, setEditingSocio] = useState<SocioWithJunta | null>(null);
+  const [socioToDelete, setSocioToDelete] = useState<SocioWithJunta | null>(null);
+  const [socioToBaja, setSocioToBaja] = useState<SocioWithJunta | null>(null);
   const [numeroSocio, setNumeroSocio] = useState("");
   const [tipoCuota, setTipoCuota] = useState("normal");
   const [activo, setActivo] = useState(true);
   const [alCorrientePago, setAlCorrientePago] = useState(true);
+  const [esJunta, setEsJunta] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
 
@@ -84,17 +90,33 @@ export const AdminSocios = () => {
       .order("apellidos");
 
     if (!error && data) {
-      setSocios(data);
+      // Fetch junta roles for all socios
+      const userIds = data.map(s => s.user_id);
+      const { data: juntaRoles } = await supabase
+        .from("user_roles")
+        .select("user_id")
+        .eq("role", "junta")
+        .in("user_id", userIds);
+
+      const juntaUserIds = new Set(juntaRoles?.map(r => r.user_id) || []);
+      
+      const sociosWithJunta: SocioWithJunta[] = data.map(s => ({
+        ...s,
+        es_junta: juntaUserIds.has(s.user_id)
+      }));
+      
+      setSocios(sociosWithJunta);
     }
     setLoading(false);
   };
 
-  const openEditDialog = (socio: Socio) => {
+  const openEditDialog = (socio: SocioWithJunta) => {
     setEditingSocio(socio);
     setNumeroSocio(socio.numero_socio || "");
     setTipoCuota(socio.tipo_cuota || "normal");
     setActivo(socio.activo);
     setAlCorrientePago(socio.al_corriente_pago);
+    setEsJunta(socio.es_junta);
     setDialogOpen(true);
   };
 
@@ -125,6 +147,22 @@ export const AdminSocios = () => {
       });
       setSaving(false);
       return;
+    }
+
+    // Handle junta role change
+    const wasJunta = editingSocio.es_junta;
+    if (esJunta && !wasJunta) {
+      // Add junta role
+      await supabase.from("user_roles").insert({
+        user_id: editingSocio.user_id,
+        role: "junta" as any
+      });
+    } else if (!esJunta && wasJunta) {
+      // Remove junta role
+      await supabase.from("user_roles")
+        .delete()
+        .eq("user_id", editingSocio.user_id)
+        .eq("role", "junta");
     }
 
     // If being deactivated, send baja email
@@ -174,7 +212,7 @@ export const AdminSocios = () => {
     }
   };
 
-  const openBajaDialog = (socio: Socio) => {
+  const openBajaDialog = (socio: SocioWithJunta) => {
     setSocioToBaja(socio);
     setBajaDialogOpen(true);
   };
@@ -195,7 +233,7 @@ export const AdminSocios = () => {
     setSaving(false);
   };
 
-  const openDeleteDialog = (socio: Socio) => {
+  const openDeleteDialog = (socio: SocioWithJunta) => {
     setSocioToDelete(socio);
     setDeleteDialogOpen(true);
   };
@@ -250,6 +288,7 @@ export const AdminSocios = () => {
                   <TableHead>Nº Socio</TableHead>
                   <TableHead>Nombre</TableHead>
                   <TableHead>Email</TableHead>
+                  <TableHead>Rol</TableHead>
                   <TableHead>Cuota</TableHead>
                   <TableHead>Pago</TableHead>
                   <TableHead>Estado</TableHead>
@@ -274,6 +313,16 @@ export const AdminSocios = () => {
                     </TableCell>
                     <TableCell className="text-muted-foreground">
                       {socio.email}
+                    </TableCell>
+                    <TableCell>
+                      {socio.es_junta ? (
+                        <Badge variant="outline" className="border-primary text-primary">
+                          <Shield className="h-3 w-3 mr-1" />
+                          Junta
+                        </Badge>
+                      ) : (
+                        <Badge variant="secondary">Socio</Badge>
+                      )}
                     </TableCell>
                     <TableCell>
                       <Badge variant="secondary">
@@ -391,6 +440,22 @@ export const AdminSocios = () => {
                   id="al_corriente_pago"
                   checked={alCorrientePago}
                   onCheckedChange={setAlCorrientePago}
+                />
+              </div>
+              <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
+                <div className="flex items-center gap-2">
+                  <Shield className="h-4 w-4 text-primary" />
+                  <div>
+                    <Label htmlFor="es_junta">Miembro de la Junta</Label>
+                    <p className="text-xs text-muted-foreground">
+                      Acceso a contenido exclusivo de la junta directiva
+                    </p>
+                  </div>
+                </div>
+                <Switch
+                  id="es_junta"
+                  checked={esJunta}
+                  onCheckedChange={setEsJunta}
                 />
               </div>
               <div className="flex items-center justify-between p-4 bg-muted rounded-lg">

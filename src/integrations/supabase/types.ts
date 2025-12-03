@@ -42,6 +42,7 @@ export type Database = {
           created_at: string
           descripcion: string | null
           id: string
+          solo_junta: boolean
           titulo: string
           updated_at: string
         }
@@ -51,6 +52,7 @@ export type Database = {
           created_at?: string
           descripcion?: string | null
           id?: string
+          solo_junta?: boolean
           titulo: string
           updated_at?: string
         }
@@ -60,6 +62,7 @@ export type Database = {
           created_at?: string
           descripcion?: string | null
           id?: string
+          solo_junta?: boolean
           titulo?: string
           updated_at?: string
         }
@@ -71,6 +74,7 @@ export type Database = {
           descripcion: string | null
           fecha: string
           id: string
+          solo_junta: boolean
           titulo: string
           ubicacion: string | null
           updated_at: string
@@ -80,6 +84,7 @@ export type Database = {
           descripcion?: string | null
           fecha: string
           id?: string
+          solo_junta?: boolean
           titulo: string
           ubicacion?: string | null
           updated_at?: string
@@ -89,6 +94,7 @@ export type Database = {
           descripcion?: string | null
           fecha?: string
           id?: string
+          solo_junta?: boolean
           titulo?: string
           ubicacion?: string | null
           updated_at?: string
@@ -299,6 +305,7 @@ export type Database = {
           fecha_fin: string
           fecha_inicio: string
           id: string
+          solo_junta: boolean
           titulo: string
           updated_at: string
         }
@@ -309,6 +316,7 @@ export type Database = {
           fecha_fin: string
           fecha_inicio?: string
           id?: string
+          solo_junta?: boolean
           titulo: string
           updated_at?: string
         }
@@ -319,6 +327,7 @@ export type Database = {
           fecha_fin?: string
           fecha_inicio?: string
           id?: string
+          solo_junta?: boolean
           titulo?: string
           updated_at?: string
         }

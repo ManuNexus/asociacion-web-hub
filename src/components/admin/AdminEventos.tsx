@@ -20,9 +20,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Pencil, Trash2, Loader2, Calendar, MapPin } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, Calendar, MapPin, Shield } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 
@@ -32,6 +33,7 @@ interface Evento {
   descripcion: string | null;
   fecha: string;
   ubicacion: string | null;
+  solo_junta: boolean;
 }
 
 export const AdminEventos = () => {
@@ -46,6 +48,7 @@ export const AdminEventos = () => {
     descripcion: "",
     fecha: "",
     ubicacion: "",
+    solo_junta: false,
   });
 
   const { toast } = useToast();
@@ -96,6 +99,7 @@ export const AdminEventos = () => {
             descripcion: formData.descripcion || null,
             fecha: formData.fecha,
             ubicacion: formData.ubicacion || null,
+            solo_junta: formData.solo_junta,
           })
           .eq("id", editingEvento.id);
 
@@ -107,6 +111,7 @@ export const AdminEventos = () => {
           descripcion: formData.descripcion || null,
           fecha: formData.fecha,
           ubicacion: formData.ubicacion || null,
+          solo_junta: formData.solo_junta,
         });
 
         if (error) throw error;
@@ -152,6 +157,7 @@ export const AdminEventos = () => {
       descripcion: evento.descripcion || "",
       fecha: evento.fecha ? evento.fecha.slice(0, 16) : "",
       ubicacion: evento.ubicacion || "",
+      solo_junta: evento.solo_junta,
     });
     setDialogOpen(true);
   };
@@ -163,6 +169,7 @@ export const AdminEventos = () => {
       descripcion: "",
       fecha: "",
       ubicacion: "",
+      solo_junta: false,
     });
   };
 
@@ -229,6 +236,22 @@ export const AdminEventos = () => {
                   placeholder="Dirección o lugar"
                 />
               </div>
+              <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
+                <div className="flex items-center gap-2">
+                  <Shield className="h-4 w-4 text-primary" />
+                  <div>
+                    <Label htmlFor="solo_junta">Solo Junta Directiva</Label>
+                    <p className="text-xs text-muted-foreground">
+                      Solo visible para miembros de la junta
+                    </p>
+                  </div>
+                </div>
+                <Switch
+                  id="solo_junta"
+                  checked={formData.solo_junta}
+                  onCheckedChange={(checked) => setFormData({ ...formData, solo_junta: checked })}
+                />
+              </div>
               <div className="flex justify-end gap-2">
                 <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
                   Cancelar
@@ -258,6 +281,7 @@ export const AdminEventos = () => {
                 <TableRow>
                   <TableHead>Título</TableHead>
                   <TableHead>Ubicación</TableHead>
+                  <TableHead>Acceso</TableHead>
                   <TableHead>Estado</TableHead>
                   <TableHead>Fecha</TableHead>
                   <TableHead className="text-right">Acciones</TableHead>
@@ -277,6 +301,16 @@ export const AdminEventos = () => {
                         </span>
                       ) : (
                         <span className="text-muted-foreground text-xs">Sin ubicación</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {evento.solo_junta ? (
+                        <Badge variant="outline" className="border-primary text-primary">
+                          <Shield className="h-3 w-3 mr-1" />
+                          Junta
+                        </Badge>
+                      ) : (
+                        <Badge variant="secondary">Todos</Badge>
                       )}
                     </TableCell>
                     <TableCell>

@@ -23,7 +23,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Pencil, Trash2, Loader2, Vote, X, BarChart3 } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, Vote, X, BarChart3, Shield } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -35,6 +35,7 @@ interface Votacion {
   fecha_inicio: string;
   fecha_fin: string;
   activa: boolean;
+  solo_junta: boolean;
 }
 
 interface OpcionVotacion {
@@ -63,6 +64,7 @@ export const AdminVotaciones = () => {
     fecha_inicio: "",
     fecha_fin: "",
     activa: true,
+    solo_junta: false,
   });
   const [resultsDialogOpen, setResultsDialogOpen] = useState(false);
   const [selectedVotacionResults, setSelectedVotacionResults] = useState<Votacion | null>(null);
@@ -136,6 +138,7 @@ export const AdminVotaciones = () => {
             fecha_inicio: formData.fecha_inicio || new Date().toISOString(),
             fecha_fin: formData.fecha_fin,
             activa: formData.activa,
+            solo_junta: formData.solo_junta,
           })
           .eq("id", editingVotacion.id);
 
@@ -150,6 +153,7 @@ export const AdminVotaciones = () => {
             fecha_inicio: formData.fecha_inicio || new Date().toISOString(),
             fecha_fin: formData.fecha_fin,
             activa: formData.activa,
+            solo_junta: formData.solo_junta,
           })
           .select()
           .single();
@@ -214,6 +218,7 @@ export const AdminVotaciones = () => {
       fecha_inicio: votacion.fecha_inicio ? votacion.fecha_inicio.slice(0, 16) : "",
       fecha_fin: votacion.fecha_fin ? votacion.fecha_fin.slice(0, 16) : "",
       activa: votacion.activa,
+      solo_junta: votacion.solo_junta,
     });
     setNuevasOpciones(["", ""]);
     setDialogOpen(true);
@@ -227,6 +232,7 @@ export const AdminVotaciones = () => {
       fecha_inicio: "",
       fecha_fin: "",
       activa: true,
+      solo_junta: false,
     });
     setNuevasOpciones(["", ""]);
   };
@@ -398,6 +404,22 @@ export const AdminVotaciones = () => {
                 />
                 <Label htmlFor="activa">Activa</Label>
               </div>
+              <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
+                <div className="flex items-center gap-2">
+                  <Shield className="h-4 w-4 text-primary" />
+                  <div>
+                    <Label htmlFor="solo_junta">Solo Junta Directiva</Label>
+                    <p className="text-xs text-muted-foreground">
+                      Solo visible para miembros de la junta
+                    </p>
+                  </div>
+                </div>
+                <Switch
+                  id="solo_junta"
+                  checked={formData.solo_junta}
+                  onCheckedChange={(checked) => setFormData({ ...formData, solo_junta: checked })}
+                />
+              </div>
               <div className="flex justify-end gap-2">
                 <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
                   Cancelar
@@ -427,6 +449,7 @@ export const AdminVotaciones = () => {
                 <TableRow>
                   <TableHead>Título</TableHead>
                   <TableHead>Opciones</TableHead>
+                  <TableHead>Acceso</TableHead>
                   <TableHead>Estado</TableHead>
                   <TableHead>Fecha fin</TableHead>
                   <TableHead className="text-right">Acciones</TableHead>
@@ -450,6 +473,16 @@ export const AdminVotaciones = () => {
                             </Badge>
                           ))}
                         </div>
+                      </TableCell>
+                      <TableCell>
+                        {votacion.solo_junta ? (
+                          <Badge variant="outline" className="border-primary text-primary">
+                            <Shield className="h-3 w-3 mr-1" />
+                            Junta
+                          </Badge>
+                        ) : (
+                          <Badge variant="secondary">Todos</Badge>
+                        )}
                       </TableCell>
                       <TableCell>
                         {activa ? (
