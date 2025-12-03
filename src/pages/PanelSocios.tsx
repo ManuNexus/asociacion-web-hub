@@ -73,6 +73,7 @@ interface Documento {
 
 const PanelSocios = () => {
   const [socios, setSocios] = useState<Socio[]>([]);
+  const [miSocio, setMiSocio] = useState<Socio | null>(null);
   const [votaciones, setVotaciones] = useState<Votacion[]>([]);
   const [opciones, setOpciones] = useState<OpcionVotacion[]>([]);
   const [misVotos, setMisVotos] = useState<string[]>([]);
@@ -117,6 +118,7 @@ const PanelSocios = () => {
   const fetchAllData = async () => {
     setLoading(true);
     await Promise.all([
+      fetchMiSocio(),
       fetchSocios(),
       fetchVotaciones(),
       fetchEventos(),
@@ -124,6 +126,19 @@ const PanelSocios = () => {
       fetchMisVotos(),
     ]);
     setLoading(false);
+  };
+
+  const fetchMiSocio = async () => {
+    if (!user) return;
+    const { data, error } = await supabase
+      .from("socios")
+      .select("*")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (!error && data) {
+      setMiSocio(data);
+    }
   };
 
   const fetchSocios = async () => {
@@ -319,7 +334,7 @@ const PanelSocios = () => {
                 </div>
                 <div>
                   <h2 className="text-2xl font-bold text-foreground">
-                    ¡Hola, socio!
+                    ¡Hola, {miSocio?.nombre || "socio"}!
                   </h2>
                   <p className="text-muted-foreground">
                     Gracias por ser parte de AHORA. Aquí tienes acceso a toda la información y herramientas exclusivas para socios.
