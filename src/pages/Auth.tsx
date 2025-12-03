@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
@@ -18,73 +18,100 @@ const authSchema = z.object({
   password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"),
 });
 
+// Helper function to check if URL indicates recovery mode - runs synchronously
+function checkIsRecoveryFromURL(): boolean {
+  // Check hash params
+  const hashParams = new URLSearchParams(window.location.hash.substring(1));
+  const hashType = hashParams.get("type");
+  const hasAccessToken = hashParams.has("access_token");
+  
+  // Check search params  
+  const searchParams = new URLSearchParams(window.location.search);
+  const searchType = searchParams.get("type");
+  
+  const isRecovery = hashType === "recovery" || searchType === "recovery" || 
+    (hasAccessToken && hashType === "recovery");
+  
+  console.log("URL Recovery Check:", { hashType, searchType, hasAccessToken, isRecovery });
+  
+  return isRecovery;
+}
+
 const Auth = () => {
-  const [mode, setMode] = useState<AuthMode>("login");
+  // Check recovery mode SYNCHRONOUSLY before any state initialization
+  const initialRecoveryMode = useMemo(() => checkIsRecoveryFromURL(), []);
+  
+  // Use ref to persist recovery state across all callbacks
+  const isRecoveryModeRef = useRef(initialRecoveryMode);
+  
+  const [mode, setMode] = useState<AuthMode>(initialRecoveryMode ? "set-password" : "login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [checkingSession, setCheckingSession] = useState(true);
+  const [checkingSession, setCheckingSession] = useState(!initialRecoveryMode); // Skip session check if recovery
   const [errors, setErrors] = useState<{ email?: string; password?: string; confirmPassword?: string }>({});
-  
-  // Use ref to track recovery mode across renders and in callbacks
-  const isRecoveryModeRef = useRef(false);
   
   const { signIn } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  // Log initial state
   useEffect(() => {
-    // FIRST: Check URL for recovery parameters BEFORE anything else
-    const hashParams = new URLSearchParams(window.location.hash.substring(1));
-    const type = hashParams.get("type");
-    const accessToken = hashParams.get("access_token");
-    
-    const searchParams = new URLSearchParams(window.location.search);
-    const searchType = searchParams.get("type");
-    
-    console.log("URL check - Hash type:", type, "Search type:", searchType, "Has token:", !!accessToken);
-    
-    // If recovery token detected, set mode immediately and don't redirect
-    if (type === "recovery" || searchType === "recovery") {
-      console.log("Recovery mode detected - showing password form");
-      isRecoveryModeRef.current = true;
-      setMode("set-password");
+    console.log("Auth component mounted - Recovery mode:", isRecoveryModeRef.current, "Mode:", mode);
+  }, []);
+
+  useEffect(() => {
+    // If already in recovery mode, don't do anything else
+    if (isRecoveryModeRef.current) {
+      console.log("Recovery mode active - skipping session checks");
       setCheckingSession(false);
-      return; // Don't do anything else
+      return;
     }
 
     // Only check session if NOT in recovery mode
     const checkExistingSession = async () => {
-      if (isRecoveryModeRef.current) {
-        setCheckingSession(false);
-        return;
-      }
-      
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        await redirectBasedOnRole(session.user.id);
-      } else {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user && !isRecoveryModeRef.current) {
+          console.log("Existing session found, redirecting...");
+          await redirectBasedOnRole(session.user.id);
+        } else {
+          setCheckingSession(false);
+        }
+      } catch (error) {
+        console.error("Error checking session:", error);
         setCheckingSession(false);
       }
     };
 
     checkExistingSession();
 
-    // Listen for PASSWORD_RECOVERY event
+    // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth event:", event, "Recovery mode:", isRecoveryModeRef.current);
+      console.log("Auth event:", event, "Recovery mode ref:", isRecoveryModeRef.current);
       
       if (event === "PASSWORD_RECOVERY") {
-        console.log("PASSWORD_RECOVERY event - showing password form");
+        console.log("PASSWORD_RECOVERY event received");
         isRecoveryModeRef.current = true;
         setMode("set-password");
         setCheckingSession(false);
-      } else if (event === "SIGNED_IN" && session?.user) {
-        // Only auto-redirect if NOT in recovery mode
-        if (!isRecoveryModeRef.current) {
-          await redirectBasedOnRole(session.user.id);
+        return; // Don't do anything else
+      }
+      
+      // For SIGNED_IN event, only redirect if NOT in recovery mode
+      if (event === "SIGNED_IN" && session?.user) {
+        // Double-check URL again in case we missed it
+        if (checkIsRecoveryFromURL() || isRecoveryModeRef.current) {
+          console.log("SIGNED_IN during recovery - staying on password form");
+          isRecoveryModeRef.current = true;
+          setMode("set-password");
+          setCheckingSession(false);
+          return;
         }
+        
+        console.log("SIGNED_IN - redirecting based on role");
+        await redirectBasedOnRole(session.user.id);
       }
     });
 
@@ -92,9 +119,9 @@ const Auth = () => {
   }, []);
 
   const redirectBasedOnRole = async (userId: string) => {
-    // Double check we're not in recovery mode
-    if (isRecoveryModeRef.current) {
-      console.log("Skipping redirect - in recovery mode");
+    // Final safety check
+    if (isRecoveryModeRef.current || checkIsRecoveryFromURL()) {
+      console.log("Blocking redirect - recovery mode active");
       return;
     }
     
@@ -148,15 +175,17 @@ const Auth = () => {
           description: "Tu contraseña ha sido configurada correctamente.",
         });
         
-        // Clear recovery mode and redirect
+        // Clear recovery mode AFTER successful password update
         isRecoveryModeRef.current = false;
+        
+        // Clean up URL hash
+        window.history.replaceState(null, '', window.location.pathname);
         
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
           await redirectBasedOnRole(user.id);
         } else {
           setMode("login");
-          setCheckingSession(false);
         }
       }
     } catch (error: any) {
@@ -235,7 +264,8 @@ const Auth = () => {
     }
   };
 
-  if (checkingSession) {
+  // Show loading only if checking session AND not in recovery mode
+  if (checkingSession && !isRecoveryModeRef.current) {
     return (
       <Layout>
         <section className="py-16 md:py-24">
@@ -247,7 +277,7 @@ const Auth = () => {
     );
   }
 
-  // Password setup form
+  // Password setup form - shown when in recovery mode
   if (mode === "set-password") {
     return (
       <Layout>
