@@ -34,7 +34,7 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Pencil, Trash2, Loader2, LogOut, Users, Newspaper, Mail, Phone, Eye, Search, Tag, UserCheck, Send } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, LogOut, Users, Newspaper, Mail, Phone, Eye, Search, Tag, UserCheck, Send, RefreshCw } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 
@@ -88,6 +88,7 @@ const AdminNoticias = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filtroEstado, setFiltroEstado] = useState<string>("todos");
   const [invitingId, setInvitingId] = useState<string | null>(null);
+  const [resendingId, setResendingId] = useState<string | null>(null);
 
   const solicitudesFiltradas = solicitudes.filter((s) => {
     const matchesSearch = 
@@ -398,6 +399,35 @@ const AdminNoticias = () => {
       });
     } finally {
       setInvitingId(null);
+    }
+  };
+
+  const handleResendInvite = async (solicitud: SolicitudSocio) => {
+    setResendingId(solicitud.id);
+
+    try {
+      const { data, error } = await supabase.functions.invoke("resend-invite", {
+        body: {
+          email: solicitud.email,
+          nombre: solicitud.nombre,
+        },
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Invitación reenviada",
+        description: `Se ha reenviado el correo a ${solicitud.email}`,
+      });
+    } catch (error: any) {
+      console.error("Error resending invite:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message || "No se pudo reenviar la invitación",
+      });
+    } finally {
+      setResendingId(null);
     }
   };
 
@@ -1020,13 +1050,26 @@ const AdminNoticias = () => {
               )}
 
               {viewingSolicitud.estado === "aceptado" && (
-                <div className="pt-4 border-t">
+                <div className="pt-4 border-t space-y-4">
                   <div className="flex items-center gap-2 text-green-600 justify-center">
                     <UserCheck className="h-5 w-5" />
                     <span className="font-medium">Solicitud aprobada</span>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-2 text-center">
-                    Este socio ya tiene acceso a la plataforma
+                  <Button
+                    variant="outline"
+                    onClick={() => handleResendInvite(viewingSolicitud)}
+                    disabled={resendingId === viewingSolicitud.id}
+                    className="w-full"
+                  >
+                    {resendingId === viewingSolicitud.id ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                    )}
+                    Reenviar invitación
+                  </Button>
+                  <p className="text-xs text-muted-foreground text-center">
+                    Envía un nuevo correo si el socio no recibió el anterior
                   </p>
                 </div>
               )}
