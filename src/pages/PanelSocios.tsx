@@ -22,12 +22,14 @@ import {
   Download,
   Key,
   Eye,
-  EyeOff
+  EyeOff,
+  CreditCard
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import logoWhite from "@/assets/logo-ahora-white.png";
 
 
 interface Socio {
@@ -38,6 +40,7 @@ interface Socio {
   activo: boolean;
   tipo_cuota: string;
   fecha_alta: string;
+  numero_socio: string | null;
 }
 
 interface Votacion {
@@ -339,8 +342,12 @@ const PanelSocios = () => {
             </CardContent>
           </Card>
 
-          <Tabs defaultValue="socios" className="w-full">
-            <TabsList className="grid w-full max-w-3xl grid-cols-5 mb-6">
+          <Tabs defaultValue="carnet" className="w-full">
+            <TabsList className="grid w-full max-w-4xl grid-cols-6 mb-6">
+              <TabsTrigger value="carnet" className="flex items-center gap-2">
+                <CreditCard className="h-4 w-4" />
+                <span className="hidden sm:inline">Carnet</span>
+              </TabsTrigger>
               <TabsTrigger value="socios" className="flex items-center gap-2">
                 <Users className="h-4 w-4" />
                 <span className="hidden sm:inline">Socios</span>
@@ -362,6 +369,64 @@ const PanelSocios = () => {
                 <span className="hidden sm:inline">Mi cuenta</span>
               </TabsTrigger>
             </TabsList>
+
+            {/* Tab Carnet Digital */}
+            <TabsContent value="carnet">
+              <div className="flex justify-center">
+                <div className="w-full max-w-md">
+                  {/* Carnet Digital */}
+                  <div className="relative aspect-[1.6/1] rounded-2xl overflow-hidden shadow-2xl bg-gradient-to-br from-primary via-primary/90 to-primary/80">
+                    {/* Decorative elements */}
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-secondary/20 rounded-full -translate-y-1/2 translate-x-1/2" />
+                    <div className="absolute bottom-0 left-0 w-24 h-24 bg-secondary/10 rounded-full translate-y-1/2 -translate-x-1/2" />
+                    <div className="absolute top-4 right-4 w-16 h-16 bg-secondary/30 rounded-full opacity-50" />
+                    
+                    {/* Content */}
+                    <div className="relative h-full p-6 flex flex-col justify-between">
+                      {/* Header */}
+                      <div className="flex items-start justify-between">
+                        <img src={logoWhite} alt="AHORA" className="h-10" />
+                        <div className="text-right">
+                          <p className="text-primary-foreground/70 text-xs uppercase tracking-wider">Carnet de Socio</p>
+                          <p className="text-secondary font-bold text-lg font-mono">
+                            {miSocio?.numero_socio || "---"}
+                          </p>
+                        </div>
+                      </div>
+                      
+                      {/* Member Info */}
+                      <div className="mt-auto">
+                        <p className="text-primary-foreground text-xl font-bold tracking-wide">
+                          {miSocio ? `${miSocio.nombre} ${miSocio.apellidos}` : "Cargando..."}
+                        </p>
+                        <div className="flex items-center justify-between mt-2">
+                          <div>
+                            <p className="text-primary-foreground/60 text-xs uppercase">Miembro desde</p>
+                            <p className="text-primary-foreground/90 text-sm font-medium">
+                              {miSocio ? format(new Date(miSocio.fecha_alta), "MMMM yyyy", { locale: es }) : "---"}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-primary-foreground/60 text-xs uppercase">Tipo</p>
+                            <p className="text-secondary text-sm font-semibold">
+                              {miSocio?.tipo_cuota === "reducida" ? "Reducida" : "Normal"}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Bottom decoration */}
+                      <div className="absolute bottom-0 left-0 right-0 h-1 bg-secondary" />
+                    </div>
+                  </div>
+                  
+                  {/* Card description */}
+                  <p className="text-center text-muted-foreground text-sm mt-6">
+                    Tu carnet digital de socio de AHORA
+                  </p>
+                </div>
+              </div>
+            </TabsContent>
 
             {/* Tab Socios Activos */}
             <TabsContent value="socios">

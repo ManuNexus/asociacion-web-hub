@@ -180,6 +180,7 @@ export type Database = {
           fecha_alta: string
           id: string
           nombre: string
+          numero_socio: string | null
           telefono: string | null
           tipo_cuota: string
           updated_at: string
@@ -193,6 +194,7 @@ export type Database = {
           fecha_alta?: string
           id?: string
           nombre: string
+          numero_socio?: string | null
           telefono?: string | null
           tipo_cuota?: string
           updated_at?: string
@@ -206,6 +208,7 @@ export type Database = {
           fecha_alta?: string
           id?: string
           nombre?: string
+          numero_socio?: string | null
           telefono?: string | null
           tipo_cuota?: string
           updated_at?: string

@@ -34,12 +34,13 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Pencil, Trash2, Loader2, LogOut, Users, Newspaper, Mail, Phone, Eye, Search, Tag, UserCheck, Send, RefreshCw, Vote, Calendar, FileText } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, LogOut, Users, Newspaper, Mail, Phone, Eye, Search, Tag, UserCheck, Send, RefreshCw, Vote, Calendar, FileText, CreditCard } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { AdminVotaciones } from "@/components/admin/AdminVotaciones";
 import { AdminEventos } from "@/components/admin/AdminEventos";
 import { AdminDocumentos } from "@/components/admin/AdminDocumentos";
+import { AdminSocios } from "@/components/admin/AdminSocios";
 
 interface Categoria {
   id: string;
@@ -513,7 +514,7 @@ const AdminNoticias = () => {
       <section className="py-8">
         <div className="container">
           <Tabs defaultValue="noticias" className="w-full">
-            <TabsList className="grid w-full max-w-3xl grid-cols-6 mb-6">
+            <TabsList className="grid w-full max-w-4xl grid-cols-7 mb-6">
               <TabsTrigger value="noticias" className="flex items-center gap-2">
                 <Newspaper className="h-4 w-4" />
                 <span className="hidden sm:inline">Noticias</span>
@@ -530,6 +531,10 @@ const AdminNoticias = () => {
                     {solicitudes.filter(s => s.estado === "pendiente").length}
                   </Badge>
                 )}
+              </TabsTrigger>
+              <TabsTrigger value="socios" className="flex items-center gap-2">
+                <CreditCard className="h-4 w-4" />
+                <span className="hidden sm:inline">Socios</span>
               </TabsTrigger>
               <TabsTrigger value="votaciones" className="flex items-center gap-2">
                 <Vote className="h-4 w-4" />
@@ -970,6 +975,11 @@ const AdminNoticias = () => {
             {/* Tab Documentos */}
             <TabsContent value="documentos">
               <AdminDocumentos />
+            </TabsContent>
+
+            {/* Tab Socios */}
+            <TabsContent value="socios">
+              <AdminSocios />
             </TabsContent>
           </Tabs>
         </div>
