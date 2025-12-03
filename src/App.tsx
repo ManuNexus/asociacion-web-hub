@@ -21,6 +21,7 @@ const HazteSocio = lazy(() => import("./pages/HazteSocio"));
 const PoliticaPrivacidad = lazy(() => import("./pages/PoliticaPrivacidad"));
 const Auth = lazy(() => import("./pages/Auth"));
 const AdminNoticias = lazy(() => import("./pages/AdminNoticias"));
+const PanelSocios = lazy(() => import("./pages/PanelSocios"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -46,6 +47,7 @@ const App = () => (
                 <Route path="/politica-privacidad" element={<PoliticaPrivacidad />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/admin/noticias" element={<AdminNoticias />} />
+                <Route path="/socios" element={<PanelSocios />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </PageTransition>
