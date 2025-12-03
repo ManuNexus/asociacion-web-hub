@@ -16,6 +16,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
@@ -42,6 +49,7 @@ export const AdminSocios = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingSocio, setEditingSocio] = useState<Socio | null>(null);
   const [numeroSocio, setNumeroSocio] = useState("");
+  const [tipoCuota, setTipoCuota] = useState("normal");
   const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
 
@@ -65,6 +73,7 @@ export const AdminSocios = () => {
   const openEditDialog = (socio: Socio) => {
     setEditingSocio(socio);
     setNumeroSocio(socio.numero_socio || "");
+    setTipoCuota(socio.tipo_cuota || "normal");
     setDialogOpen(true);
   };
 
@@ -75,7 +84,10 @@ export const AdminSocios = () => {
     setSaving(true);
     const { error } = await supabase
       .from("socios")
-      .update({ numero_socio: numeroSocio || null })
+      .update({ 
+        numero_socio: numeroSocio || null,
+        tipo_cuota: tipoCuota
+      })
       .eq("id", editingSocio.id);
 
     if (error) {
@@ -193,7 +205,7 @@ export const AdminSocios = () => {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Editar Número de Socio</DialogTitle>
+            <DialogTitle>Editar Socio</DialogTitle>
           </DialogHeader>
           {editingSocio && (
             <form onSubmit={handleSave} className="space-y-4">
@@ -211,6 +223,21 @@ export const AdminSocios = () => {
                 />
                 <p className="text-xs text-muted-foreground">
                   Este número aparecerá en el carnet digital del socio
+                </p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="tipo_cuota">Tipo de Membresía</Label>
+                <Select value={tipoCuota} onValueChange={setTipoCuota}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="normal">Normal (5€/mes)</SelectItem>
+                    <SelectItem value="reducida">Reducida (2,50€/mes)</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  Cuota reducida para estudiantes y desempleados
                 </p>
               </div>
               <div className="flex justify-end gap-2">
