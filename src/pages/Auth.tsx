@@ -32,8 +32,6 @@ function checkIsRecoveryFromURL(): boolean {
   const isRecovery = hashType === "recovery" || searchType === "recovery" || 
     (hasAccessToken && hashType === "recovery");
   
-  console.log("URL Recovery Check:", { hashType, searchType, hasAccessToken, isRecovery });
-  
   return isRecovery;
 }
 
@@ -56,15 +54,9 @@ const Auth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Log initial state
-  useEffect(() => {
-    console.log("Auth component mounted - Recovery mode:", isRecoveryModeRef.current, "Mode:", mode);
-  }, []);
-
   useEffect(() => {
     // If already in recovery mode, don't do anything else
     if (isRecoveryModeRef.current) {
-      console.log("Recovery mode active - skipping session checks");
       setCheckingSession(false);
       return;
     }
@@ -74,13 +66,11 @@ const Auth = () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (session?.user && !isRecoveryModeRef.current) {
-          console.log("Existing session found, redirecting...");
           await redirectBasedOnRole(session.user.id);
         } else {
           setCheckingSession(false);
         }
       } catch (error) {
-        console.error("Error checking session:", error);
         setCheckingSession(false);
       }
     };
@@ -89,10 +79,7 @@ const Auth = () => {
 
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth event:", event, "Recovery mode ref:", isRecoveryModeRef.current);
-      
       if (event === "PASSWORD_RECOVERY") {
-        console.log("PASSWORD_RECOVERY event received");
         isRecoveryModeRef.current = true;
         setMode("set-password");
         setCheckingSession(false);
@@ -103,14 +90,12 @@ const Auth = () => {
       if (event === "SIGNED_IN" && session?.user) {
         // Double-check URL again in case we missed it
         if (checkIsRecoveryFromURL() || isRecoveryModeRef.current) {
-          console.log("SIGNED_IN during recovery - staying on password form");
           isRecoveryModeRef.current = true;
           setMode("set-password");
           setCheckingSession(false);
           return;
         }
         
-        console.log("SIGNED_IN - redirecting based on role");
         await redirectBasedOnRole(session.user.id);
       }
     });
@@ -121,7 +106,6 @@ const Auth = () => {
   const redirectBasedOnRole = async (userId: string) => {
     // Final safety check
     if (isRecoveryModeRef.current || checkIsRecoveryFromURL()) {
-      console.log("Blocking redirect - recovery mode active");
       return;
     }
     
@@ -139,7 +123,6 @@ const Auth = () => {
         navigate("/");
       }
     } catch (error) {
-      console.error("Error checking roles:", error);
       navigate("/");
     }
   };
