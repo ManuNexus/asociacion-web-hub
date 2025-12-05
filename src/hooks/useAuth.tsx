@@ -142,10 +142,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    // Use 'local' scope to ensure local session is cleared even if server session is already invalid
+    await supabase.auth.signOut({ scope: 'local' });
     setIsAdmin(false);
     setIsSocio(false);
     setIsJunta(false);
+    setUser(null);
+    setSession(null);
   };
 
   return (
