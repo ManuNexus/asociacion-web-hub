@@ -118,7 +118,7 @@ const PanelSocios = () => {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
 
-  const { user, isSocio, isJunta, loading: authLoading, socioLoading, signOut } = useAuth();
+  const { user, isSocio, isJunta, isAdmin, loading: authLoading, socioLoading, signOut } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -474,15 +474,17 @@ const PanelSocios = () => {
           </Card>
 
           <Tabs defaultValue="carnet" className="w-full">
-            <TabsList className="grid w-full max-w-4xl grid-cols-4 sm:grid-cols-7 mb-6 h-auto gap-1">
+            <TabsList className={`grid w-full max-w-4xl mb-6 h-auto gap-1 ${(isJunta || isAdmin) ? 'grid-cols-4 sm:grid-cols-7' : 'grid-cols-3 sm:grid-cols-6'}`}>
               <TabsTrigger value="carnet" className="flex items-center gap-2 py-2">
                 <CreditCard className="h-4 w-4" />
                 <span className="hidden sm:inline">Carnet</span>
               </TabsTrigger>
-              <TabsTrigger value="socios" className="flex items-center gap-2 py-2">
-                <Users className="h-4 w-4" />
-                <span className="hidden sm:inline">Socios</span>
-              </TabsTrigger>
+              {(isJunta || isAdmin) && (
+                <TabsTrigger value="socios" className="flex items-center gap-2 py-2">
+                  <Users className="h-4 w-4" />
+                  <span className="hidden sm:inline">Socios</span>
+                </TabsTrigger>
+              )}
               <TabsTrigger value="votaciones" className="flex items-center gap-2 py-2">
                 <Vote className="h-4 w-4" />
                 <span className="hidden sm:inline">Votaciones</span>
