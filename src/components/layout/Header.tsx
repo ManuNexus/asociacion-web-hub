@@ -7,7 +7,7 @@ import logoAhora from "@/assets/logo-ahora.png";
 const navLinks = [
   { href: "/", label: "Inicio" },
   { href: "/nosotros", label: "Quiénes Somos" },
-  { href: "/noticias", label: "Noticias" },
+  { href: "/noticias", label: "Sala de Prensa" },
   { href: "/transparencia", label: "Transparencia" },
   { href: "/hazte-socio", label: "Hazte Socio" },
 ];
