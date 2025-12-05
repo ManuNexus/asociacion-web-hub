@@ -570,9 +570,10 @@ const PanelSocios = () => {
               </div>
             </TabsContent>
 
-            {/* Tab Socios Activos */}
-            <TabsContent value="socios">
-              <Card>
+            {/* Tab Socios Activos - Solo visible para Junta y Admin */}
+            {(isJunta || isAdmin) && (
+              <TabsContent value="socios">
+                <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Users className="h-5 w-5" />
@@ -629,7 +630,8 @@ const PanelSocios = () => {
                   )}
                 </CardContent>
               </Card>
-            </TabsContent>
+              </TabsContent>
+            )}
 
             {/* Tab Votaciones */}
             <TabsContent value="votaciones">
