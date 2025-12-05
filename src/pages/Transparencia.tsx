@@ -5,14 +5,14 @@ const documentos = [{
   title: "Estatutos de la Asociación",
   description: "Documento fundacional que recoge los fines, organización y funcionamiento de la asociación.",
   icon: FileText,
-  available: true,
-  url: "/documentos/estatutos-fundacionales.pdf"
+  available: false,
+  url: null
 }, {
   title: "Acta Fundacional",
   description: "Acta de constitución de la Asociación AHORA, firmada el 13 de junio de 2025.",
   icon: FileText,
-  available: true,
-  url: "/documentos/acta-constitucion.pdf"
+  available: false,
+  url: null
 }, {
   title: "Resolución de Inscripción",
   description: "Resolución del Ministerio del Interior inscribiendo la asociación en el Registro Nacional.",
@@ -184,7 +184,7 @@ const Transparencia = () => {
                 <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
                   <div>
                     <div className="text-primary-foreground/60 text-sm mb-1">Domicilio Social</div>
-                    <div className="font-medium">C/ Aragón 578, 08026 Barcelona</div>
+                    <div className="font-medium">C/ Aragón 458, 08013 Barcelona</div>
                   </div>
                   <Button variant="hero" size="sm" asChild>
                     <a target="_blank" rel="noopener noreferrer" href="https://sede.interior.gob.es/portal/sede/asociaciones/detalle?legacy=true&numeroNacional=631.679&codigoSeccion=1&codigoDenominacion=81.499.831&paginaActual=1">
