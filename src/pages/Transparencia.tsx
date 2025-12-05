@@ -36,6 +36,14 @@ const organos = [{
   cargo: "Tesorero",
   nombre: "Javier Edrosa Pérez",
   descripcion: "Gestiona los recursos económicos y elabora los presupuestos."
+}, {
+  cargo: "Vocal",
+  nombre: "Arantxa de Caramany Bonet",
+  descripcion: "Participa en las deliberaciones y decisiones de la Junta Directiva."
+}, {
+  cargo: "Vocal",
+  nombre: "José Arroyo Parejo",
+  descripcion: "Participa en las deliberaciones y decisiones de la Junta Directiva."
 }];
 const Transparencia = () => {
   return <Layout>
