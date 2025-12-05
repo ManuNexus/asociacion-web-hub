@@ -28,6 +28,48 @@ serve(async (req: Request): Promise<Response> => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+    // Verify admin authorization
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      console.error("No authorization header provided");
+      return new Response(
+        JSON.stringify({ error: "No authorization header" }),
+        { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    const token = authHeader.replace("Bearer ", "");
+    let adminUserId: string;
+    
+    try {
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      adminUserId = payload.sub;
+    } catch {
+      console.error("Invalid token format");
+      return new Response(
+        JSON.stringify({ error: "Invalid token" }),
+        { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    // Check if user has admin role
+    const { data: roleData, error: roleError } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", adminUserId)
+      .eq("role", "admin")
+      .maybeSingle();
+
+    if (roleError || !roleData) {
+      console.error("User is not an admin:", adminUserId);
+      return new Response(
+        JSON.stringify({ error: "Only admins can send notifications" }),
+        { status: 403, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    console.log("Admin authorization verified for user:", adminUserId);
+
     const { tipo, titulo, descripcion, fecha, ubicacion, solo_junta }: NotifyRequest = await req.json();
 
     console.log(`Sending notification for ${tipo}: ${titulo}, solo_junta: ${solo_junta}`);
