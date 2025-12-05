@@ -39,7 +39,7 @@ export function Footer() {
               <div className="flex items-start gap-2">
                 <MapPin className="h-4 w-4 mt-0.5 text-secondary" />
                 <span className="text-primary-foreground/80">
-                  C/ Aragón 578<br />08026 Barcelona
+                  C/ Aragón 458<br />08013 Barcelona
                 </span>
               </div>
               <div className="flex items-center gap-2">
