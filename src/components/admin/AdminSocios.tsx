@@ -39,7 +39,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Pencil, Search, Trash2, UserX, Shield } from "lucide-react";
+import { Loader2, Pencil, Search, Trash2, UserX, Shield, Hash } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 
@@ -257,10 +257,65 @@ export const AdminSocios = () => {
       (s.numero_socio?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false)
   );
 
+  const getNextNumeroSocio = () => {
+    const existingNumbers = socios
+      .map(s => s.numero_socio)
+      .filter(n => n && /^\d+$/.test(n))
+      .map(n => parseInt(n!, 10));
+    
+    const maxNumber = existingNumbers.length > 0 ? Math.max(...existingNumbers) : 0;
+    return String(maxNumber + 1).padStart(6, '0');
+  };
+
+  const sociosSinNumero = socios.filter(s => !s.numero_socio && s.activo);
+
+  const handleAutoAssignNumbers = async () => {
+    if (sociosSinNumero.length === 0) {
+      toast({ title: "Todos los socios activos tienen número asignado" });
+      return;
+    }
+
+    setSaving(true);
+    let nextNumber = parseInt(getNextNumeroSocio(), 10);
+
+    for (const socio of sociosSinNumero) {
+      const numeroSocio = String(nextNumber).padStart(6, '0');
+      await supabase
+        .from("socios")
+        .update({ numero_socio: numeroSocio })
+        .eq("id", socio.id);
+      nextNumber++;
+    }
+
+    toast({ 
+      title: `${sociosSinNumero.length} número(s) de socio asignados`,
+      description: "Los socios activos sin número han recibido uno automáticamente"
+    });
+    fetchSocios();
+    setSaving(false);
+  };
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Gestión de Socios</CardTitle>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <CardTitle>Gestión de Socios</CardTitle>
+          {sociosSinNumero.length > 0 && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleAutoAssignNumbers}
+              disabled={saving}
+            >
+              {saving ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Hash className="mr-2 h-4 w-4" />
+              )}
+              Asignar números ({sociosSinNumero.length})
+            </Button>
+          )}
+        </div>
         <div className="relative mt-4">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
