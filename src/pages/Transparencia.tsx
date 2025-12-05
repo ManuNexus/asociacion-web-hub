@@ -177,7 +177,7 @@ const Transparencia = () => {
                 </div>
                 <div>
                   <div className="text-primary-foreground/60 text-sm mb-1">Fecha de Inscripción</div>
-                  <div className="font-bold">03/10/2025</div>
+                  <div className="font-bold">07/10/2025</div>
                 </div>
               </div>
               <div className="mt-6 pt-6 border-t border-primary-foreground/20">
