@@ -109,10 +109,10 @@ const Noticias = () => {
         <div className="container">
           <div className="max-w-3xl">
             <h1 className="text-4xl md:text-5xl font-extrabold text-primary-foreground mb-6">
-              Noticias
+              Sala de Prensa
             </h1>
             <p className="text-xl text-primary-foreground/80">
-              Mantente informado sobre nuestras actividades, comunicados y novedades.
+              Comunicados, notas de prensa y actualidad de AHORA.
             </p>
           </div>
         </div>
