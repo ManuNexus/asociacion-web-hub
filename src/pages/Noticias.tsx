@@ -205,9 +205,11 @@ const Noticias = () => {
                             {formatDate(noticia.fecha_publicacion)}
                           </div>
                         </div>
-                        <h2 className="text-2xl font-bold text-foreground mb-3 group-hover:text-primary transition-colors">
-                          {noticia.titulo}
-                        </h2>
+                        <Link to={`/noticias/${noticia.id}`}>
+                          <h2 className="text-2xl font-bold text-foreground mb-3 group-hover:text-primary transition-colors cursor-pointer">
+                            {noticia.titulo}
+                          </h2>
+                        </Link>
                         <p className="text-muted-foreground mb-4">
                           {noticia.extracto}
                         </p>
