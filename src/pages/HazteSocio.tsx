@@ -127,6 +127,20 @@ const HazteSocio = () => {
 
       if (error) throw error;
 
+      // Send notification email to admin (non-blocking)
+      supabase.functions.invoke('notify-new-solicitud', {
+        body: {
+          nombre: validData.nombre,
+          apellidos: validData.apellidos,
+          email: validData.email,
+          dni: validData.dni.toUpperCase(),
+          telefono: validData.telefono || undefined,
+          ciudad: validData.ciudad || undefined,
+          provincia: validData.provincia || undefined,
+          motivacion: validData.motivacion || undefined,
+        },
+      }).catch(err => console.error('Error sending notification:', err));
+
       toast({
         title: "¡Solicitud enviada!",
         description: "Hemos recibido tu solicitud. Nos pondremos en contacto contigo pronto.",

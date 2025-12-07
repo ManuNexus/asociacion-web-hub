@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.og-news]
 verify_jwt = false
+
+[functions.notify-new-solicitud]
+verify_jwt = false
