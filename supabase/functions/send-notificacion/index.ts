@@ -15,6 +15,11 @@ interface NotificacionRequest {
   solo_junta: boolean;
 }
 
+// Helper function to convert line breaks to HTML
+function nl2br(text: string): string {
+  return text.replace(/\n/g, '<br>');
+}
+
 serve(async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -142,7 +147,7 @@ serve(async (req: Request): Promise<Response> => {
             <h2 style="color: #1e3a5f; margin-top: 10px;">${titulo}</h2>
             
             <div class="message-box">
-              <p style="white-space: pre-wrap;">${mensaje}</p>
+              <p>${nl2br(mensaje)}</p>
             </div>
             
             <p style="text-align: center;">

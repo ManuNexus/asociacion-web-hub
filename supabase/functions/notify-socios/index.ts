@@ -18,6 +18,11 @@ interface NotifyRequest {
   solo_junta: boolean;
 }
 
+// Helper function to convert line breaks to HTML
+function nl2br(text: string): string {
+  return text.replace(/\n/g, '<br>');
+}
+
 serve(async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -123,7 +128,7 @@ serve(async (req: Request): Promise<Response> => {
     let detallesContent = "";
     
     if (descripcion) {
-      detallesContent += `<p>${descripcion}</p>`;
+      detallesContent += `<p>${nl2br(descripcion)}</p>`;
     }
 
     if (tipo === "evento" && fecha) {
