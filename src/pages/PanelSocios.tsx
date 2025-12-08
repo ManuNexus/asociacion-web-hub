@@ -25,7 +25,10 @@ import {
   EyeOff,
   CreditCard,
   Shield,
-  Bell
+  Bell,
+  Folder,
+  ChevronRight,
+  ArrowLeft
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -102,6 +105,7 @@ const PanelSocios = () => {
   const [notificacionesLeidas, setNotificacionesLeidas] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [voting, setVoting] = useState<string | null>(null);
+  const [currentDocFolder, setCurrentDocFolder] = useState<string | null>(null);
   
   // Profile edit states
   const [editNombre, setEditNombre] = useState("");
@@ -813,46 +817,115 @@ const PanelSocios = () => {
                     <p className="text-center text-muted-foreground py-8">
                       No hay documentos disponibles
                     </p>
-                  ) : (
-                    <div className="space-y-3">
-                      {documentos.map((documento) => (
-                        <div 
-                          key={documento.id} 
-                          className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 rounded-lg border bg-card hover:bg-muted/50 transition-colors"
-                        >
-                          <div className="flex items-center gap-4 flex-1 min-w-0">
-                            <div className="p-3 bg-primary/10 rounded-lg shrink-0">
-                              <FileText className="h-6 w-6 text-primary" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <h3 className="font-medium truncate">{documento.titulo}</h3>
-                              {documento.descripcion && (
-                                <p className="text-sm text-muted-foreground line-clamp-2">
-                                  {documento.descripcion}
-                                </p>
-                              )}
-                              {documento.categoria && (
-                                <Badge variant="outline" className="mt-1">
-                                  {documento.categoria}
-                                </Badge>
-                              )}
+                  ) : (() => {
+                    const folders = [...new Set(documentos.map(d => d.categoria).filter(Boolean))] as string[];
+                    const currentDocs = documentos.filter(d => 
+                      currentDocFolder === null 
+                        ? !d.categoria 
+                        : d.categoria === currentDocFolder
+                    );
+                    const getDocCount = (folder: string) => documentos.filter(d => d.categoria === folder).length;
+
+                    return (
+                      <div className="space-y-4">
+                        {/* Breadcrumb navigation */}
+                        {currentDocFolder && (
+                          <div className="flex items-center gap-2 pb-4 border-b">
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              onClick={() => setCurrentDocFolder(null)}
+                              className="gap-1"
+                            >
+                              <ArrowLeft className="h-4 w-4" />
+                              Volver
+                            </Button>
+                            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                            <span className="font-medium flex items-center gap-2">
+                              <Folder className="h-4 w-4" />
+                              {currentDocFolder}
+                            </span>
+                            <Badge variant="secondary" className="ml-2">
+                              {currentDocs.length} documentos
+                            </Badge>
+                          </div>
+                        )}
+
+                        {/* Folders (only show when at root) */}
+                        {currentDocFolder === null && folders.length > 0 && (
+                          <div className="space-y-2">
+                            <p className="text-sm font-medium text-muted-foreground">Carpetas</p>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                              {folders.map((folder) => (
+                                <button
+                                  key={folder}
+                                  onClick={() => setCurrentDocFolder(folder)}
+                                  className="flex items-center gap-3 p-4 rounded-lg border bg-card hover:bg-muted/50 transition-colors text-left"
+                                >
+                                  <Folder className="h-8 w-8 text-secondary" />
+                                  <div className="flex-1 min-w-0">
+                                    <p className="font-medium truncate">{folder}</p>
+                                    <p className="text-sm text-muted-foreground">
+                                      {getDocCount(folder)} documentos
+                                    </p>
+                                  </div>
+                                  <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                                </button>
+                              ))}
                             </div>
                           </div>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            asChild
-                            className="w-full sm:w-auto"
-                          >
-                            <a href={documento.archivo_url} target="_blank" rel="noopener noreferrer">
-                              <Download className="h-4 w-4 mr-2" />
-                              Descargar
-                            </a>
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                        )}
+
+                        {/* Documents */}
+                        {(currentDocFolder !== null || currentDocs.length > 0) && (
+                          <div className="space-y-2">
+                            {currentDocFolder === null && folders.length > 0 && currentDocs.length > 0 && (
+                              <p className="text-sm font-medium text-muted-foreground pt-4">Sin carpeta</p>
+                            )}
+                            {currentDocs.length === 0 && currentDocFolder !== null ? (
+                              <p className="text-center text-muted-foreground py-8">
+                                No hay documentos en esta carpeta
+                              </p>
+                            ) : (
+                              <div className="space-y-3">
+                                {currentDocs.map((documento) => (
+                                  <div 
+                                    key={documento.id} 
+                                    className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 rounded-lg border bg-card hover:bg-muted/50 transition-colors"
+                                  >
+                                    <div className="flex items-center gap-4 flex-1 min-w-0">
+                                      <div className="p-3 bg-primary/10 rounded-lg shrink-0">
+                                        <FileText className="h-6 w-6 text-primary" />
+                                      </div>
+                                      <div className="flex-1 min-w-0">
+                                        <h3 className="font-medium truncate">{documento.titulo}</h3>
+                                        {documento.descripcion && (
+                                          <p className="text-sm text-muted-foreground line-clamp-2">
+                                            {documento.descripcion}
+                                          </p>
+                                        )}
+                                      </div>
+                                    </div>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      asChild
+                                      className="w-full sm:w-auto"
+                                    >
+                                      <a href={documento.archivo_url} target="_blank" rel="noopener noreferrer">
+                                        <Download className="h-4 w-4 mr-2" />
+                                        Descargar
+                                      </a>
+                                    </Button>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </CardContent>
               </Card>
             </TabsContent>
