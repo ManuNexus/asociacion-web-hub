@@ -23,6 +23,11 @@ function nl2br(text: string): string {
   return text.replace(/\n/g, '<br>');
 }
 
+// Helper function to add delay
+function delay(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 serve(async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -187,20 +192,30 @@ serve(async (req: Request): Promise<Response> => {
       </html>
     `;
 
-    // Send emails to all recipients
-    const emailPromises = recipients.map(recipient =>
-      resend.emails.send({
-        from: "AHORA <socios@ahoraorg.es>",
-        to: [recipient.email],
-        subject: subject,
-        html: htmlContent,
-      })
-    );
-
-    const results = await Promise.allSettled(emailPromises);
+    // Send emails sequentially with delay to avoid rate limiting
+    let successful = 0;
+    let failed = 0;
     
-    const successful = results.filter(r => r.status === "fulfilled").length;
-    const failed = results.filter(r => r.status === "rejected").length;
+    for (const recipient of recipients) {
+      try {
+        await resend.emails.send({
+          from: "AHORA <socios@ahoraorg.es>",
+          to: [recipient.email],
+          subject: subject,
+          html: htmlContent,
+        });
+        successful++;
+        console.log(`Email sent to ${recipient.email}`);
+      } catch (error) {
+        failed++;
+        console.error(`Failed to send email to ${recipient.email}:`, error);
+      }
+      
+      // Wait 1 second between emails to avoid rate limiting
+      if (recipients.indexOf(recipient) < recipients.length - 1) {
+        await delay(1000);
+      }
+    }
 
     console.log(`Emails sent: ${successful} successful, ${failed} failed`);
 
