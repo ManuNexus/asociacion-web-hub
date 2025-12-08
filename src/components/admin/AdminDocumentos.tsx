@@ -11,18 +11,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Pencil, Trash2, Loader2, FileText, ExternalLink, Shield, Folder, FolderPlus, ChevronRight, ArrowLeft } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, FileText, ExternalLink, Shield, Folder, FolderPlus, ChevronRight, Home } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 
@@ -43,7 +36,7 @@ export const AdminDocumentos = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [folderDialogOpen, setFolderDialogOpen] = useState(false);
   const [editingDocumento, setEditingDocumento] = useState<Documento | null>(null);
-  const [currentFolder, setCurrentFolder] = useState<string | null>(null);
+  const [currentPath, setCurrentPath] = useState<string[]>([]);
   const [newFolderName, setNewFolderName] = useState("");
   
   const [formData, setFormData] = useState({
@@ -65,7 +58,8 @@ export const AdminDocumentos = () => {
     const { data, error } = await supabase
       .from("documentos_internos")
       .select("*")
-      .order("created_at", { ascending: false });
+      .order("categoria", { ascending: true })
+      .order("titulo", { ascending: true });
 
     if (error) {
       console.error("Error fetching documentos:", error);
@@ -80,15 +74,71 @@ export const AdminDocumentos = () => {
     setLoading(false);
   };
 
-  // Get unique folders
-  const folders = [...new Set(documentos.map(d => d.categoria).filter(Boolean))] as string[];
-  
-  // Get documents without folder (root) or in current folder
-  const currentDocuments = documentos.filter(d => 
-    currentFolder === null 
-      ? !d.categoria 
-      : d.categoria === currentFolder
-  );
+  // Get current path as string
+  const currentPathString = currentPath.join("/");
+
+  // Get all unique folder paths
+  const getAllFolderPaths = (): string[] => {
+    const paths = new Set<string>();
+    documentos.forEach(d => {
+      if (d.categoria) {
+        // Add all parent paths too
+        const parts = d.categoria.split("/");
+        let accumulated = "";
+        parts.forEach(part => {
+          accumulated = accumulated ? `${accumulated}/${part}` : part;
+          paths.add(accumulated);
+        });
+      }
+    });
+    return Array.from(paths).sort();
+  };
+
+  // Get subfolders at current level
+  const getSubfolders = (): string[] => {
+    const allPaths = getAllFolderPaths();
+    const prefix = currentPathString ? `${currentPathString}/` : "";
+    
+    const subfolders = new Set<string>();
+    allPaths.forEach(path => {
+      if (currentPathString === "") {
+        // At root - get top-level folders
+        const firstPart = path.split("/")[0];
+        subfolders.add(firstPart);
+      } else if (path.startsWith(prefix) && path !== currentPathString) {
+        // Get next level folder name
+        const remainder = path.slice(prefix.length);
+        const nextFolder = remainder.split("/")[0];
+        subfolders.add(nextFolder);
+      }
+    });
+    
+    return Array.from(subfolders).sort();
+  };
+
+  // Get documents at current level (exact match, not including subfolders)
+  const getCurrentDocuments = (): Documento[] => {
+    return documentos.filter(d => {
+      const docPath = d.categoria || "";
+      return docPath === currentPathString;
+    });
+  };
+
+  // Count documents in a folder (including subfolders)
+  const getDocumentCountInFolder = (folderName: string): number => {
+    const folderPath = currentPathString ? `${currentPathString}/${folderName}` : folderName;
+    return documentos.filter(d => {
+      const docPath = d.categoria || "";
+      return docPath === folderPath || docPath.startsWith(`${folderPath}/`);
+    }).length;
+  };
+
+  // Count subfolders in a folder
+  const getSubfolderCount = (folderName: string): number => {
+    const folderPath = currentPathString ? `${currentPathString}/${folderName}` : folderName;
+    const allPaths = getAllFolderPaths();
+    return allPaths.filter(p => p.startsWith(`${folderPath}/`)).length;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -104,7 +154,10 @@ export const AdminDocumentos = () => {
     setSaving(true);
 
     try {
-      const categoriaToSave = formData.categoria || currentFolder || null;
+      // Use current path as category unless editing
+      const categoriaToSave = editingDocumento 
+        ? (formData.categoria || null)
+        : (currentPathString || null);
       
       if (editingDocumento) {
         const { error } = await supabase
@@ -157,8 +210,18 @@ export const AdminDocumentos = () => {
       });
       return;
     }
+
+    if (newFolderName.includes("/")) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "El nombre no puede contener '/'",
+      });
+      return;
+    }
     
-    if (folders.includes(newFolderName.trim())) {
+    const existingSubfolders = getSubfolders();
+    if (existingSubfolders.includes(newFolderName.trim())) {
       toast({
         variant: "destructive",
         title: "Error",
@@ -167,8 +230,8 @@ export const AdminDocumentos = () => {
       return;
     }
 
-    // Navigate to the new folder - documents will be created there
-    setCurrentFolder(newFolderName.trim());
+    // Navigate to the new folder
+    setCurrentPath([...currentPath, newFolderName.trim()]);
     setNewFolderName("");
     setFolderDialogOpen(false);
     toast({ title: "Carpeta creada", description: "Ahora puedes añadir documentos a esta carpeta" });
@@ -209,14 +272,25 @@ export const AdminDocumentos = () => {
       titulo: "",
       descripcion: "",
       archivo_url: "",
-      categoria: currentFolder || "",
+      categoria: currentPathString,
       solo_junta: false,
     });
   };
 
-  const getDocumentCountInFolder = (folder: string) => {
-    return documentos.filter(d => d.categoria === folder).length;
+  const navigateToFolder = (folderName: string) => {
+    setCurrentPath([...currentPath, folderName]);
   };
+
+  const navigateUp = () => {
+    setCurrentPath(currentPath.slice(0, -1));
+  };
+
+  const navigateToPathIndex = (index: number) => {
+    setCurrentPath(currentPath.slice(0, index + 1));
+  };
+
+  const subfolders = getSubfolders();
+  const currentDocuments = getCurrentDocuments();
 
   return (
     <Card>
@@ -238,13 +312,18 @@ export const AdminDocumentos = () => {
                 <DialogTitle>Nueva Carpeta</DialogTitle>
               </DialogHeader>
               <div className="space-y-4">
+                {currentPath.length > 0 && (
+                  <p className="text-sm text-muted-foreground">
+                    Se creará dentro de: <span className="font-medium">{currentPathString}</span>
+                  </p>
+                )}
                 <div className="space-y-2">
                   <Label htmlFor="folder-name">Nombre de la carpeta</Label>
                   <Input
                     id="folder-name"
                     value={newFolderName}
                     onChange={(e) => setNewFolderName(e.target.value)}
-                    placeholder="Ej: Actas, Normativa, Informes..."
+                    placeholder="Ej: Actas, Normativa, 2024..."
                   />
                 </div>
                 <div className="flex justify-end gap-2">
@@ -278,6 +357,11 @@ export const AdminDocumentos = () => {
                 </DialogTitle>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
+                {!editingDocumento && currentPath.length > 0 && (
+                  <p className="text-sm text-muted-foreground">
+                    Se creará en: <span className="font-medium">{currentPathString}</span>
+                  </p>
+                )}
                 <div className="space-y-2">
                   <Label htmlFor="titulo">Título *</Label>
                   <Input
@@ -309,25 +393,20 @@ export const AdminDocumentos = () => {
                     Introduce la URL directa al archivo (PDF, documento, etc.)
                   </p>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="categoria">Carpeta</Label>
-                  <Select 
-                    value={formData.categoria || "_root"} 
-                    onValueChange={(value) => setFormData({ ...formData, categoria: value === "_root" ? "" : value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecciona una carpeta" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="_root">📁 Raíz (sin carpeta)</SelectItem>
-                      {folders.map((folder) => (
-                        <SelectItem key={folder} value={folder}>
-                          📁 {folder}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                {editingDocumento && (
+                  <div className="space-y-2">
+                    <Label htmlFor="categoria">Ruta de carpeta</Label>
+                    <Input
+                      id="categoria"
+                      value={formData.categoria}
+                      onChange={(e) => setFormData({ ...formData, categoria: e.target.value })}
+                      placeholder="Ej: Actas/2024 (dejar vacío para raíz)"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Usa "/" para separar niveles de carpetas
+                    </p>
+                  </div>
+                )}
                 <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
                   <div className="flex items-center gap-2">
                     <Shield className="h-4 w-4 text-primary" />
@@ -366,44 +445,47 @@ export const AdminDocumentos = () => {
         ) : (
           <div className="space-y-4">
             {/* Breadcrumb navigation */}
-            {currentFolder && (
-              <div className="flex items-center gap-2 pb-4 border-b">
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={() => setCurrentFolder(null)}
-                  className="gap-1"
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                  Volver
-                </Button>
-                <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                <span className="font-medium flex items-center gap-2">
-                  <Folder className="h-4 w-4" />
-                  {currentFolder}
-                </span>
-                <Badge variant="secondary" className="ml-2">
-                  {currentDocuments.length} documentos
-                </Badge>
-              </div>
-            )}
+            <div className="flex items-center gap-1 pb-4 border-b flex-wrap">
+              <Button 
+                variant={currentPath.length === 0 ? "secondary" : "ghost"}
+                size="sm" 
+                onClick={() => setCurrentPath([])}
+                className="gap-1"
+              >
+                <Home className="h-4 w-4" />
+                Raíz
+              </Button>
+              {currentPath.map((folder, index) => (
+                <div key={index} className="flex items-center gap-1">
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  <Button 
+                    variant={index === currentPath.length - 1 ? "secondary" : "ghost"}
+                    size="sm" 
+                    onClick={() => navigateToPathIndex(index)}
+                  >
+                    {folder}
+                  </Button>
+                </div>
+              ))}
+            </div>
 
-            {/* Folders (only show when at root) */}
-            {currentFolder === null && folders.length > 0 && (
+            {/* Subfolders */}
+            {subfolders.length > 0 && (
               <div className="space-y-2">
                 <p className="text-sm font-medium text-muted-foreground">Carpetas</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {folders.map((folder) => (
+                  {subfolders.map((folder) => (
                     <button
                       key={folder}
-                      onClick={() => setCurrentFolder(folder)}
+                      onClick={() => navigateToFolder(folder)}
                       className="flex items-center gap-3 p-4 rounded-lg border bg-card hover:bg-muted/50 transition-colors text-left"
                     >
                       <Folder className="h-8 w-8 text-secondary" />
                       <div className="flex-1 min-w-0">
                         <p className="font-medium truncate">{folder}</p>
                         <p className="text-sm text-muted-foreground">
-                          {getDocumentCountInFolder(folder)} documentos
+                          {getDocumentCountInFolder(folder)} docs
+                          {getSubfolderCount(folder) > 0 && ` · ${getSubfolderCount(folder)} carpetas`}
                         </p>
                       </div>
                       <ChevronRight className="h-5 w-5 text-muted-foreground" />
@@ -413,74 +495,68 @@ export const AdminDocumentos = () => {
               </div>
             )}
 
-            {/* Documents */}
-            {(currentFolder !== null || currentDocuments.length > 0) && (
+            {/* Documents at current level */}
+            {currentDocuments.length > 0 && (
               <div className="space-y-2">
-                {currentFolder === null && folders.length > 0 && (
-                  <p className="text-sm font-medium text-muted-foreground pt-4">Sin carpeta</p>
+                {subfolders.length > 0 && (
+                  <p className="text-sm font-medium text-muted-foreground pt-2">Documentos</p>
                 )}
-                {currentDocuments.length === 0 ? (
-                  <p className="text-center text-muted-foreground py-8">
-                    {currentFolder 
-                      ? "No hay documentos en esta carpeta. Crea el primero."
-                      : "No hay documentos sin carpeta."}
-                  </p>
-                ) : (
-                  <div className="space-y-3">
-                    {currentDocuments.map((documento) => (
-                      <div key={documento.id} className="border rounded-lg p-4 space-y-3">
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2">
-                              <h3 className="font-medium truncate">{documento.titulo}</h3>
-                              <a
-                                href={documento.archivo_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-primary hover:text-primary/80 shrink-0"
-                              >
-                                <ExternalLink className="h-4 w-4" />
-                              </a>
-                            </div>
-                            {documento.descripcion && (
-                              <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-                                {documento.descripcion}
-                              </p>
-                            )}
+                <div className="space-y-3">
+                  {currentDocuments.map((documento) => (
+                    <div key={documento.id} className="border rounded-lg p-4 space-y-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-medium truncate">{documento.titulo}</h3>
+                            <a
+                              href={documento.archivo_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-primary hover:text-primary/80 shrink-0"
+                            >
+                              <ExternalLink className="h-4 w-4" />
+                            </a>
                           </div>
-                          <div className="flex gap-1 shrink-0">
-                            <Button variant="ghost" size="icon" onClick={() => openEditDialog(documento)}>
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="icon" onClick={() => handleDelete(documento.id)}>
-                              <Trash2 className="h-4 w-4 text-destructive" />
-                            </Button>
-                          </div>
-                        </div>
-                        <div className="flex flex-wrap items-center gap-2">
-                          {documento.solo_junta ? (
-                            <Badge variant="outline" className="border-primary text-primary">
-                              <Shield className="h-3 w-3 mr-1" />
-                              Junta
-                            </Badge>
-                          ) : (
-                            <Badge variant="secondary">Todos</Badge>
+                          {documento.descripcion && (
+                            <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                              {documento.descripcion}
+                            </p>
                           )}
-                          <span className="text-sm text-muted-foreground">
-                            {format(new Date(documento.created_at), "dd/MM/yyyy", { locale: es })}
-                          </span>
+                        </div>
+                        <div className="flex gap-1 shrink-0">
+                          <Button variant="ghost" size="icon" onClick={() => openEditDialog(documento)}>
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" onClick={() => handleDelete(documento.id)}>
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
                         </div>
                       </div>
-                    ))}
-                  </div>
-                )}
+                      <div className="flex flex-wrap items-center gap-2">
+                        {documento.solo_junta ? (
+                          <Badge variant="outline" className="border-primary text-primary">
+                            <Shield className="h-3 w-3 mr-1" />
+                            Junta
+                          </Badge>
+                        ) : (
+                          <Badge variant="secondary">Todos</Badge>
+                        )}
+                        <span className="text-sm text-muted-foreground">
+                          {format(new Date(documento.created_at), "dd/MM/yyyy", { locale: es })}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 
-            {/* Empty state when no folders and no documents */}
-            {currentFolder === null && folders.length === 0 && currentDocuments.length === 0 && (
+            {/* Empty state */}
+            {subfolders.length === 0 && currentDocuments.length === 0 && (
               <p className="text-center text-muted-foreground py-8">
-                No hay documentos. Crea el primero o crea una carpeta para organizar.
+                {currentPath.length > 0 
+                  ? "Esta carpeta está vacía. Crea un documento o subcarpeta."
+                  : "No hay documentos. Crea el primero o crea una carpeta para organizar."}
               </p>
             )}
           </div>
