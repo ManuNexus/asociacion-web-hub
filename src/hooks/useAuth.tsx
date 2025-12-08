@@ -31,22 +31,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [juntaLoading, setJuntaLoading] = useState(true);
 
   useEffect(() => {
+    // Track if roles have been checked to avoid re-checking on token refresh
+    let rolesChecked = false;
+    let currentUserId: string | null = null;
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        // Only react to actual sign-in/sign-out events, not token refreshes
+        const isSignInEvent = event === 'SIGNED_IN' || event === 'INITIAL_SESSION';
+        const isSignOutEvent = event === 'SIGNED_OUT';
+        const userChanged = session?.user?.id !== currentUserId;
+        
+        // Update session and user state
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Set loading states BEFORE scheduling the check to prevent race condition
-          setAdminLoading(true);
-          setSocioLoading(true);
-          setJuntaLoading(true);
-          setTimeout(() => {
-            checkAdminRole(session.user.id);
-            checkSocioRole(session.user.id);
-            checkJuntaRole(session.user.id);
-          }, 0);
-        } else {
+          // Only check roles if user actually changed or it's a fresh sign-in
+          if ((isSignInEvent || userChanged) && !rolesChecked) {
+            currentUserId = session.user.id;
+            rolesChecked = true;
+            setAdminLoading(true);
+            setSocioLoading(true);
+            setJuntaLoading(true);
+            setTimeout(() => {
+              checkAdminRole(session.user.id);
+              checkSocioRole(session.user.id);
+              checkJuntaRole(session.user.id);
+            }, 0);
+          }
+        } else if (isSignOutEvent || !session) {
+          currentUserId = null;
+          rolesChecked = false;
           setIsAdmin(false);
           setAdminLoading(false);
           setIsSocio(false);
@@ -61,6 +77,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
+        currentUserId = session.user.id;
+        rolesChecked = true;
         checkAdminRole(session.user.id);
         checkSocioRole(session.user.id);
         checkJuntaRole(session.user.id);
