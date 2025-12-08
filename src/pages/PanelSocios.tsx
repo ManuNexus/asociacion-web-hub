@@ -70,6 +70,11 @@ interface OpcionVotacion {
   texto: string;
 }
 
+interface VotoCount {
+  opcion_id: string;
+  count: number;
+}
+
 interface Evento {
   id: string;
   titulo: string;
@@ -100,6 +105,7 @@ const PanelSocios = () => {
   const [votaciones, setVotaciones] = useState<Votacion[]>([]);
   const [opciones, setOpciones] = useState<OpcionVotacion[]>([]);
   const [misVotos, setMisVotos] = useState<string[]>([]);
+  const [votosCount, setVotosCount] = useState<VotoCount[]>([]);
   const [eventos, setEventos] = useState<Evento[]>([]);
   const [documentos, setDocumentos] = useState<Documento[]>([]);
   const [notificaciones, setNotificaciones] = useState<Notificacion[]>([]);
@@ -264,6 +270,35 @@ const PanelSocios = () => {
       
       if (opcionesData) {
         setOpciones(opcionesData);
+      }
+
+      // Fetch vote counts for finished votaciones
+      const finishedVotacionIds = votacionesData
+        .filter(v => new Date(v.fecha_fin) < new Date())
+        .map(v => v.id);
+
+      if (finishedVotacionIds.length > 0 && opcionesData) {
+        const finishedOpcionIds = opcionesData
+          .filter(o => finishedVotacionIds.includes(o.votacion_id))
+          .map(o => o.id);
+
+        if (finishedOpcionIds.length > 0) {
+          const { data: votosData } = await supabase
+            .from("votos")
+            .select("opcion_id")
+            .in("opcion_id", finishedOpcionIds);
+
+          if (votosData) {
+            const counts: VotoCount[] = [];
+            finishedOpcionIds.forEach(opcionId => {
+              counts.push({
+                opcion_id: opcionId,
+                count: votosData.filter(v => v.opcion_id === opcionId).length
+              });
+            });
+            setVotosCount(counts);
+          }
+        }
       }
     }
   };
@@ -665,6 +700,27 @@ const PanelSocios = () => {
                         const activa = isVotacionActiva(votacion);
                         const yaVotado = misVotos.includes(votacion.id);
                         const opcionesVotacion = opciones.filter(o => o.votacion_id === votacion.id);
+                        const finalizada = new Date(votacion.fecha_fin) < new Date();
+                        
+                        // Calculate vote percentages for finished votaciones
+                        const getVotePercentage = (opcionId: string) => {
+                          const opcionIds = opcionesVotacion.map(o => o.id);
+                          const totalVotos = votosCount
+                            .filter(v => opcionIds.includes(v.opcion_id))
+                            .reduce((sum, v) => sum + v.count, 0);
+                          
+                          if (totalVotos === 0) return 0;
+                          
+                          const opcionVotos = votosCount.find(v => v.opcion_id === opcionId)?.count || 0;
+                          return Math.round((opcionVotos / totalVotos) * 100);
+                        };
+
+                        const getTotalVotos = () => {
+                          const opcionIds = opcionesVotacion.map(o => o.id);
+                          return votosCount
+                            .filter(v => opcionIds.includes(v.opcion_id))
+                            .reduce((sum, v) => sum + v.count, 0);
+                        };
                         
                         return (
                           <div 
@@ -683,7 +739,7 @@ const PanelSocios = () => {
                               <div className="flex flex-wrap gap-1">
                                 {activa ? (
                                   <Badge className="bg-green-500">Activa</Badge>
-                                ) : new Date(votacion.fecha_fin) < new Date() ? (
+                                ) : finalizada ? (
                                   <Badge variant="secondary">Finalizada</Badge>
                                 ) : (
                                   <Badge variant="outline">Próximamente</Badge>
@@ -704,6 +760,7 @@ const PanelSocios = () => {
                               </span>
                             </div>
 
+                            {/* Show voting buttons for active votaciones */}
                             {activa && !yaVotado && opcionesVotacion.length > 0 && (
                               <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t">
                                 {opcionesVotacion.map((opcion) => (
@@ -720,6 +777,32 @@ const PanelSocios = () => {
                                     {opcion.texto}
                                   </Button>
                                 ))}
+                              </div>
+                            )}
+
+                            {/* Show results for finished votaciones */}
+                            {finalizada && opcionesVotacion.length > 0 && (
+                              <div className="mt-3 pt-3 border-t space-y-3">
+                                <p className="text-sm font-medium text-muted-foreground">
+                                  Resultados ({getTotalVotos()} votos totales)
+                                </p>
+                                {opcionesVotacion.map((opcion) => {
+                                  const percentage = getVotePercentage(opcion.id);
+                                  return (
+                                    <div key={opcion.id} className="space-y-1">
+                                      <div className="flex justify-between text-sm">
+                                        <span>{opcion.texto}</span>
+                                        <span className="font-semibold">{percentage}%</span>
+                                      </div>
+                                      <div className="h-2 bg-muted rounded-full overflow-hidden">
+                                        <div 
+                                          className="h-full bg-primary rounded-full transition-all duration-500"
+                                          style={{ width: `${percentage}%` }}
+                                        />
+                                      </div>
+                                    </div>
+                                  );
+                                })}
                               </div>
                             )}
                           </div>
