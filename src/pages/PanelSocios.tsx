@@ -766,7 +766,7 @@ const PanelSocios = () => {
                             <div className="flex-1 min-w-0">
                               <h3 className="font-semibold text-lg">{evento.titulo}</h3>
                               {evento.descripcion && (
-                                <p className="text-muted-foreground text-sm mt-1">
+                                <p className="text-muted-foreground text-sm mt-1 whitespace-pre-line">
                                   {evento.descripcion}
                                 </p>
                               )}
