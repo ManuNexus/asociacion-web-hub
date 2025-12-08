@@ -28,7 +28,8 @@ import {
   Bell,
   Folder,
   ChevronRight,
-  ArrowLeft
+  ArrowLeft,
+  Home
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -105,7 +106,7 @@ const PanelSocios = () => {
   const [notificacionesLeidas, setNotificacionesLeidas] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [voting, setVoting] = useState<string | null>(null);
-  const [currentDocFolder, setCurrentDocFolder] = useState<string | null>(null);
+  const [currentDocPath, setCurrentDocPath] = useState<string[]>([]);
   
   // Profile edit states
   const [editNombre, setEditNombre] = useState("");
@@ -818,55 +819,115 @@ const PanelSocios = () => {
                       No hay documentos disponibles
                     </p>
                   ) : (() => {
-                    const folders = [...new Set(documentos.map(d => d.categoria).filter(Boolean))] as string[];
-                    const currentDocs = documentos.filter(d => 
-                      currentDocFolder === null 
-                        ? !d.categoria 
-                        : d.categoria === currentDocFolder
-                    );
-                    const getDocCount = (folder: string) => documentos.filter(d => d.categoria === folder).length;
+                    const currentPathString = currentDocPath.join("/");
+                    
+                    // Get all unique folder paths
+                    const getAllFolderPaths = (): string[] => {
+                      const paths = new Set<string>();
+                      documentos.forEach(d => {
+                        if (d.categoria) {
+                          const parts = d.categoria.split("/");
+                          let accumulated = "";
+                          parts.forEach(part => {
+                            accumulated = accumulated ? `${accumulated}/${part}` : part;
+                            paths.add(accumulated);
+                          });
+                        }
+                      });
+                      return Array.from(paths).sort();
+                    };
+
+                    // Get subfolders at current level
+                    const getSubfolders = (): string[] => {
+                      const allPaths = getAllFolderPaths();
+                      const prefix = currentPathString ? `${currentPathString}/` : "";
+                      
+                      const subfolders = new Set<string>();
+                      allPaths.forEach(path => {
+                        if (currentPathString === "") {
+                          const firstPart = path.split("/")[0];
+                          subfolders.add(firstPart);
+                        } else if (path.startsWith(prefix) && path !== currentPathString) {
+                          const remainder = path.slice(prefix.length);
+                          const nextFolder = remainder.split("/")[0];
+                          subfolders.add(nextFolder);
+                        }
+                      });
+                      
+                      return Array.from(subfolders).sort();
+                    };
+
+                    // Get documents at current level
+                    const getCurrentDocs = (): typeof documentos => {
+                      return documentos.filter(d => {
+                        const docPath = d.categoria || "";
+                        return docPath === currentPathString;
+                      });
+                    };
+
+                    // Count documents in a folder (including subfolders)
+                    const getDocCountInFolder = (folderName: string): number => {
+                      const folderPath = currentPathString ? `${currentPathString}/${folderName}` : folderName;
+                      return documentos.filter(d => {
+                        const docPath = d.categoria || "";
+                        return docPath === folderPath || docPath.startsWith(`${folderPath}/`);
+                      }).length;
+                    };
+
+                    const subfolders = getSubfolders();
+                    const currentDocs = getCurrentDocs();
+
+                    const navigateToFolder = (folderName: string) => {
+                      setCurrentDocPath([...currentDocPath, folderName]);
+                    };
+
+                    const navigateToPathIndex = (index: number) => {
+                      setCurrentDocPath(currentDocPath.slice(0, index + 1));
+                    };
 
                     return (
                       <div className="space-y-4">
                         {/* Breadcrumb navigation */}
-                        {currentDocFolder && (
-                          <div className="flex items-center gap-2 pb-4 border-b">
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
-                              onClick={() => setCurrentDocFolder(null)}
-                              className="gap-1"
-                            >
-                              <ArrowLeft className="h-4 w-4" />
-                              Volver
-                            </Button>
-                            <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                            <span className="font-medium flex items-center gap-2">
-                              <Folder className="h-4 w-4" />
-                              {currentDocFolder}
-                            </span>
-                            <Badge variant="secondary" className="ml-2">
-                              {currentDocs.length} documentos
-                            </Badge>
-                          </div>
-                        )}
+                        <div className="flex items-center gap-1 pb-4 border-b flex-wrap">
+                          <Button 
+                            variant={currentDocPath.length === 0 ? "secondary" : "ghost"}
+                            size="sm" 
+                            onClick={() => setCurrentDocPath([])}
+                            className="gap-1"
+                          >
+                            <Home className="h-4 w-4" />
+                            Raíz
+                          </Button>
+                          {currentDocPath.map((folder, index) => (
+                            <div key={index} className="flex items-center gap-1">
+                              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                              <Button 
+                                variant={index === currentDocPath.length - 1 ? "secondary" : "ghost"}
+                                size="sm" 
+                                onClick={() => navigateToPathIndex(index)}
+                              >
+                                {folder}
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
 
-                        {/* Folders (only show when at root) */}
-                        {currentDocFolder === null && folders.length > 0 && (
+                        {/* Subfolders */}
+                        {subfolders.length > 0 && (
                           <div className="space-y-2">
                             <p className="text-sm font-medium text-muted-foreground">Carpetas</p>
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                              {folders.map((folder) => (
+                              {subfolders.map((folder) => (
                                 <button
                                   key={folder}
-                                  onClick={() => setCurrentDocFolder(folder)}
+                                  onClick={() => navigateToFolder(folder)}
                                   className="flex items-center gap-3 p-4 rounded-lg border bg-card hover:bg-muted/50 transition-colors text-left"
                                 >
                                   <Folder className="h-8 w-8 text-secondary" />
                                   <div className="flex-1 min-w-0">
                                     <p className="font-medium truncate">{folder}</p>
                                     <p className="text-sm text-muted-foreground">
-                                      {getDocCount(folder)} documentos
+                                      {getDocCountInFolder(folder)} docs
                                     </p>
                                   </div>
                                   <ChevronRight className="h-5 w-5 text-muted-foreground" />
@@ -876,52 +937,55 @@ const PanelSocios = () => {
                           </div>
                         )}
 
-                        {/* Documents */}
-                        {(currentDocFolder !== null || currentDocs.length > 0) && (
+                        {/* Documents at current level */}
+                        {currentDocs.length > 0 && (
                           <div className="space-y-2">
-                            {currentDocFolder === null && folders.length > 0 && currentDocs.length > 0 && (
-                              <p className="text-sm font-medium text-muted-foreground pt-4">Sin carpeta</p>
+                            {subfolders.length > 0 && (
+                              <p className="text-sm font-medium text-muted-foreground pt-2">Documentos</p>
                             )}
-                            {currentDocs.length === 0 && currentDocFolder !== null ? (
-                              <p className="text-center text-muted-foreground py-8">
-                                No hay documentos en esta carpeta
-                              </p>
-                            ) : (
-                              <div className="space-y-3">
-                                {currentDocs.map((documento) => (
-                                  <div 
-                                    key={documento.id} 
-                                    className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 rounded-lg border bg-card hover:bg-muted/50 transition-colors"
-                                  >
-                                    <div className="flex items-center gap-4 flex-1 min-w-0">
-                                      <div className="p-3 bg-primary/10 rounded-lg shrink-0">
-                                        <FileText className="h-6 w-6 text-primary" />
-                                      </div>
-                                      <div className="flex-1 min-w-0">
-                                        <h3 className="font-medium truncate">{documento.titulo}</h3>
-                                        {documento.descripcion && (
-                                          <p className="text-sm text-muted-foreground line-clamp-2">
-                                            {documento.descripcion}
-                                          </p>
-                                        )}
-                                      </div>
+                            <div className="space-y-3">
+                              {currentDocs.map((documento) => (
+                                <div 
+                                  key={documento.id} 
+                                  className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 rounded-lg border bg-card hover:bg-muted/50 transition-colors"
+                                >
+                                  <div className="flex items-center gap-4 flex-1 min-w-0">
+                                    <div className="p-3 bg-primary/10 rounded-lg shrink-0">
+                                      <FileText className="h-6 w-6 text-primary" />
                                     </div>
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      asChild
-                                      className="w-full sm:w-auto"
-                                    >
-                                      <a href={documento.archivo_url} target="_blank" rel="noopener noreferrer">
-                                        <Download className="h-4 w-4 mr-2" />
-                                        Descargar
-                                      </a>
-                                    </Button>
+                                    <div className="flex-1 min-w-0">
+                                      <h3 className="font-medium truncate">{documento.titulo}</h3>
+                                      {documento.descripcion && (
+                                        <p className="text-sm text-muted-foreground line-clamp-2">
+                                          {documento.descripcion}
+                                        </p>
+                                      )}
+                                    </div>
                                   </div>
-                                ))}
-                              </div>
-                            )}
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    asChild
+                                    className="w-full sm:w-auto"
+                                  >
+                                    <a href={documento.archivo_url} target="_blank" rel="noopener noreferrer">
+                                      <Download className="h-4 w-4 mr-2" />
+                                      Descargar
+                                    </a>
+                                  </Button>
+                                </div>
+                              ))}
+                            </div>
                           </div>
+                        )}
+
+                        {/* Empty state */}
+                        {subfolders.length === 0 && currentDocs.length === 0 && (
+                          <p className="text-center text-muted-foreground py-8">
+                            {currentDocPath.length > 0 
+                              ? "Esta carpeta está vacía"
+                              : "No hay documentos disponibles"}
+                          </p>
                         )}
                       </div>
                     );
