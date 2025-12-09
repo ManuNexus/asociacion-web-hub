@@ -20,3 +20,6 @@ verify_jwt = false
 
 [functions.notify-new-solicitud]
 verify_jwt = false
+
+[functions.certificado-voto]
+verify_jwt = false

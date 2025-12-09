@@ -112,6 +112,7 @@ const PanelSocios = () => {
   const [notificacionesLeidas, setNotificacionesLeidas] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [voting, setVoting] = useState<string | null>(null);
+  const [downloadingCert, setDownloadingCert] = useState<string | null>(null);
   const [currentDocPath, setCurrentDocPath] = useState<string[]>([]);
   
   // Profile edit states
@@ -390,11 +391,66 @@ const PanelSocios = () => {
         description: "No se pudo registrar tu voto",
       });
     } else {
-      toast({ title: "Voto registrado correctamente" });
+      toast({ 
+        title: "Voto registrado correctamente",
+        description: "Puedes descargar tu certificado de voto"
+      });
       setMisVotos([...misVotos, votacionId]);
+      // Auto download certificate after voting
+      handleDownloadCertificado(votacionId);
     }
     
     setVoting(null);
+  };
+
+  const handleDownloadCertificado = async (votacionId: string) => {
+    if (!user) return;
+    
+    setDownloadingCert(votacionId);
+    
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error("No hay sesión activa");
+      }
+
+      const response = await supabase.functions.invoke("certificado-voto", {
+        body: { votacion_id: votacionId },
+      });
+
+      if (response.error) {
+        throw new Error(response.error.message || "Error al generar certificado");
+      }
+
+      const { html, certificado_id } = response.data;
+
+      // Open certificate in new window for printing/saving
+      const printWindow = window.open("", "_blank");
+      if (printWindow) {
+        printWindow.document.write(html);
+        printWindow.document.close();
+        // Add print button functionality
+        printWindow.document.body.insertAdjacentHTML(
+          "beforeend",
+          `<div style="position:fixed;bottom:20px;right:20px;display:flex;gap:10px;z-index:1000;">
+            <button onclick="window.print()" style="padding:12px 24px;background:#1e3a8a;color:white;border:none;border-radius:8px;cursor:pointer;font-size:14px;">
+              Imprimir / Guardar PDF
+            </button>
+          </div>`
+        );
+      }
+
+      toast({ title: "Certificado generado", description: `ID: ${certificado_id}` });
+    } catch (error: any) {
+      console.error("Error downloading certificate:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message || "No se pudo generar el certificado",
+      });
+    } finally {
+      setDownloadingCert(null);
+    }
   };
 
   const handleLogout = async () => {
@@ -783,9 +839,26 @@ const PanelSocios = () => {
                             {/* Show results for finished votaciones */}
                             {finalizada && opcionesVotacion.length > 0 && (
                               <div className="mt-3 pt-3 border-t space-y-3">
-                                <p className="text-sm font-medium text-muted-foreground">
-                                  Resultados ({getTotalVotos()} votos totales)
-                                </p>
+                                <div className="flex items-center justify-between">
+                                  <p className="text-sm font-medium text-muted-foreground">
+                                    Resultados ({getTotalVotos()} votos totales)
+                                  </p>
+                                  {yaVotado && (
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => handleDownloadCertificado(votacion.id)}
+                                      disabled={downloadingCert === votacion.id}
+                                    >
+                                      {downloadingCert === votacion.id ? (
+                                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                      ) : (
+                                        <Download className="h-4 w-4 mr-2" />
+                                      )}
+                                      Certificado
+                                    </Button>
+                                  )}
+                                </div>
                                 {opcionesVotacion.map((opcion) => {
                                   const percentage = getVotePercentage(opcion.id);
                                   return (
@@ -803,6 +876,25 @@ const PanelSocios = () => {
                                     </div>
                                   );
                                 })}
+                              </div>
+                            )}
+
+                            {/* Show certificate button for voted but not yet finished */}
+                            {yaVotado && !finalizada && (
+                              <div className="mt-3 pt-3 border-t">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleDownloadCertificado(votacion.id)}
+                                  disabled={downloadingCert === votacion.id}
+                                >
+                                  {downloadingCert === votacion.id ? (
+                                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                  ) : (
+                                    <Download className="h-4 w-4 mr-2" />
+                                  )}
+                                  Descargar Certificado de Voto
+                                </Button>
                               </div>
                             )}
                           </div>
