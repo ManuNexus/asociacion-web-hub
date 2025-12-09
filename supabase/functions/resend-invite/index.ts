@@ -30,30 +30,23 @@ serve(async (req: Request): Promise<Response> => {
     }
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const token = authHeader.replace("Bearer ", "");
 
-    // Decode JWT to extract user_id (sub claim)
-    const parts = token.split(".");
-    if (parts.length !== 3) {
-      throw new Error("Invalid JWT format");
+    // Verify JWT token using Supabase auth
+    const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    
+    const { data: { user }, error: userError } = await supabaseAuth.auth.getUser();
+    
+    if (userError || !user) {
+      console.error("Auth error:", userError?.message);
+      throw new Error("Invalid or expired token");
     }
     
-    // Decode the payload (second part)
-    const payload = JSON.parse(atob(parts[1]));
-    const userId = payload.sub;
-    
-    if (!userId) {
-      throw new Error("Invalid JWT: no user_id");
-    }
-    
-    console.log("User ID from JWT:", userId);
-    console.log("JWT exp:", new Date(payload.exp * 1000).toISOString());
-    
-    // Check if token is expired
-    if (payload.exp && payload.exp * 1000 < Date.now()) {
-      throw new Error("Token expired");
-    }
+    const userId = user.id;
+    console.log("Verified user ID:", userId);
 
     // Create admin client for other operations
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
