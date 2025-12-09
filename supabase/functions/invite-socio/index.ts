@@ -33,28 +33,23 @@ serve(async (req: Request): Promise<Response> => {
     }
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const token = authHeader.replace("Bearer ", "");
+
+    // Verify JWT token using Supabase auth
+    const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
     
-    // Decode JWT to extract user_id (sub claim)
-    const parts = token.split(".");
-    if (parts.length !== 3) {
-      throw new Error("Invalid JWT format");
+    const { data: { user }, error: userError } = await supabaseAuth.auth.getUser();
+    
+    if (userError || !user) {
+      console.error("Auth error:", userError?.message);
+      throw new Error("Invalid or expired token");
     }
     
-    const payload = JSON.parse(atob(parts[1]));
-    const adminUserId = payload.sub;
-    
-    if (!adminUserId) {
-      throw new Error("Invalid JWT: no user_id");
-    }
-    
-    console.log("Admin User ID from JWT:", adminUserId);
-    
-    // Check if token is expired
-    if (payload.exp && payload.exp * 1000 < Date.now()) {
-      throw new Error("Token expired");
-    }
+    const adminUserId = user.id;
+    console.log("Verified admin user ID:", adminUserId);
     
     // Create admin client with service role
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
