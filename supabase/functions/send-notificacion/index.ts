@@ -32,11 +32,12 @@ serve(async (req: Request): Promise<Response> => {
 
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    
+    // Create admin client for database operations
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Verify admin authorization
+    // Verify admin authorization using the service role to validate the token
     const authHeader = req.headers.get("Authorization");
     console.log("Auth header present:", !!authHeader);
     
@@ -48,16 +49,12 @@ serve(async (req: Request): Promise<Response> => {
       );
     }
 
-    // Extract the token, handling both "Bearer token" and raw token formats
-    const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : authHeader;
+    // Extract the token
+    const token = authHeader.replace("Bearer ", "");
     console.log("Token length:", token.length);
 
-    // Verify JWT token using Supabase auth
-    const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: `Bearer ${token}` } },
-    });
-    
-    const { data: { user }, error: userError } = await supabaseAuth.auth.getUser();
+    // Use the admin client to get user from the token
+    const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(token);
     
     if (userError || !user) {
       console.error("Auth error:", userError?.message, "Code:", userError?.code);
@@ -72,7 +69,7 @@ serve(async (req: Request): Promise<Response> => {
     const adminUserId = user.id;
 
     // Check if user has admin role
-    const { data: roleData, error: roleError } = await supabase
+    const { data: roleData, error: roleError } = await supabaseAdmin
       .from("user_roles")
       .select("role")
       .eq("user_id", adminUserId)
@@ -94,7 +91,7 @@ serve(async (req: Request): Promise<Response> => {
     console.log(`Sending notification: ${titulo}, solo_junta: ${solo_junta}`);
 
     // Get all active socios
-    const { data: socios, error: sociosError } = await supabase
+    const { data: socios, error: sociosError } = await supabaseAdmin
       .from("socios")
       .select("email, nombre, apellidos, user_id")
       .eq("activo", true);
@@ -116,7 +113,7 @@ serve(async (req: Request): Promise<Response> => {
     let recipients = socios;
     if (solo_junta) {
       const userIds = socios.map(s => s.user_id);
-      const { data: juntaRoles } = await supabase
+      const { data: juntaRoles } = await supabaseAdmin
         .from("user_roles")
         .select("user_id")
         .eq("role", "junta")
