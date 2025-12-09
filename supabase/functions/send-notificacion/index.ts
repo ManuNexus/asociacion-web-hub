@@ -38,6 +38,8 @@ serve(async (req: Request): Promise<Response> => {
 
     // Verify admin authorization
     const authHeader = req.headers.get("Authorization");
+    console.log("Auth header present:", !!authHeader);
+    
     if (!authHeader) {
       console.error("No authorization header provided");
       return new Response(
@@ -46,20 +48,26 @@ serve(async (req: Request): Promise<Response> => {
       );
     }
 
+    // Extract the token, handling both "Bearer token" and raw token formats
+    const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : authHeader;
+    console.log("Token length:", token.length);
+
     // Verify JWT token using Supabase auth
     const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: authHeader } },
+      global: { headers: { Authorization: `Bearer ${token}` } },
     });
     
     const { data: { user }, error: userError } = await supabaseAuth.auth.getUser();
     
     if (userError || !user) {
-      console.error("Auth error:", userError?.message);
+      console.error("Auth error:", userError?.message, "Code:", userError?.code);
       return new Response(
-        JSON.stringify({ error: "Invalid or expired token" }),
+        JSON.stringify({ error: "Invalid or expired token", details: userError?.message }),
         { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
     }
+    
+    console.log("User authenticated:", user.email);
 
     const adminUserId = user.id;
 
