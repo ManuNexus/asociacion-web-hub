@@ -50,8 +50,8 @@ export function Footer() {
               </div>
               <div className="flex items-center gap-2">
                 <Twitter className="h-4 w-4 text-secondary" />
-                <a className="text-primary-foreground/80 hover:text-primary-foreground transition-colors" href="https://x.com/AhoraOrg" target="_blank" rel="noopener noreferrer">
-                  @AhoraOrg
+                <a className="text-primary-foreground/80 hover:text-primary-foreground transition-colors" href="https://x.com/AhoraOrg_es" target="_blank" rel="noopener noreferrer">
+                  @AhoraOrg_es
                 </a>
               </div>
             </div>
