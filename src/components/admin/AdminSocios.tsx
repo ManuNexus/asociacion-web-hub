@@ -75,7 +75,7 @@ export const AdminSocios = () => {
   const [socioToDelete, setSocioToDelete] = useState<SocioWithJunta | null>(null);
   const [socioToBaja, setSocioToBaja] = useState<SocioWithJunta | null>(null);
   const [numeroSocio, setNumeroSocio] = useState("");
-  const [tipoCuota, setTipoCuota] = useState("normal");
+  const [tipoPago, setTipoPago] = useState("mensual");
   const [activo, setActivo] = useState(true);
   const [alCorrientePago, setAlCorrientePago] = useState(true);
   const [esJunta, setEsJunta] = useState(false);
@@ -117,7 +117,7 @@ export const AdminSocios = () => {
   const openEditDialog = (socio: SocioWithJunta) => {
     setEditingSocio(socio);
     setNumeroSocio(socio.numero_socio || "");
-    setTipoCuota(socio.tipo_cuota || "normal");
+    setTipoPago(socio.tipo_pago || "mensual");
     setActivo(socio.activo);
     setAlCorrientePago(socio.al_corriente_pago);
     setEsJunta(socio.es_junta);
@@ -137,7 +137,7 @@ export const AdminSocios = () => {
       .from("socios")
       .update({ 
         numero_socio: numeroSocio || null,
-        tipo_cuota: tipoCuota,
+        tipo_pago: tipoPago,
         activo: activo,
         al_corriente_pago: alCorrientePago
       })
@@ -499,19 +499,16 @@ export const AdminSocios = () => {
                 </p>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="tipo_cuota">Tipo de Membresía</Label>
-                <Select value={tipoCuota} onValueChange={setTipoCuota}>
+                <Label htmlFor="tipo_pago">Tipo de Pago</Label>
+                <Select value={tipoPago} onValueChange={setTipoPago}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="normal">Normal (5€/mes)</SelectItem>
-                    <SelectItem value="reducida">Reducida (2,50€/mes)</SelectItem>
+                    <SelectItem value="mensual">Mensual (5€/mes)</SelectItem>
+                    <SelectItem value="anual">Anual (50€/año)</SelectItem>
                   </SelectContent>
                 </Select>
-                <p className="text-xs text-muted-foreground">
-                  Cuota reducida para estudiantes y desempleados
-                </p>
               </div>
               <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
                 <div>
