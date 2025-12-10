@@ -39,7 +39,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Pencil, Search, Trash2, UserX, Shield, Hash } from "lucide-react";
+import { Loader2, Pencil, Search, Trash2, UserX, Shield, Hash, CreditCard } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 
@@ -49,11 +49,15 @@ interface Socio {
   nombre: string;
   apellidos: string;
   email: string;
+  telefono: string | null;
   activo: boolean;
   tipo_cuota: string;
+  tipo_pago: string;
   fecha_alta: string;
   numero_socio: string | null;
   al_corriente_pago: boolean;
+  iban: string | null;
+  titular_cuenta: string | null;
 }
 
 interface SocioWithJunta extends Socio {
@@ -453,9 +457,34 @@ export const AdminSocios = () => {
           </DialogHeader>
           {editingSocio && (
             <form onSubmit={handleSave} className="space-y-4">
-              <div className="p-4 bg-muted rounded-lg">
+              <div className="p-4 bg-muted rounded-lg space-y-1">
                 <p className="font-medium">{editingSocio.nombre} {editingSocio.apellidos}</p>
                 <p className="text-sm text-muted-foreground">{editingSocio.email}</p>
+                {editingSocio.telefono && (
+                  <p className="text-sm text-muted-foreground">Tel: {editingSocio.telefono}</p>
+                )}
+              </div>
+              
+              {/* Datos bancarios (solo visible para admins) */}
+              <div className="p-4 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800 space-y-2">
+                <p className="font-medium text-sm flex items-center gap-2">
+                  <CreditCard className="h-4 w-4" />
+                  Datos Bancarios para Domiciliación
+                </p>
+                <div className="grid grid-cols-1 gap-2 text-sm">
+                  <div>
+                    <span className="text-muted-foreground">IBAN:</span>{" "}
+                    <span className="font-mono">{editingSocio.iban || "No proporcionado"}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Titular:</span>{" "}
+                    <span>{editingSocio.titular_cuenta || "No proporcionado"}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Tipo de pago:</span>{" "}
+                    <span>{editingSocio.tipo_pago === "anual" ? "Anual (50€/año)" : "Mensual (5€/mes)"}</span>
+                  </div>
+                </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="numero_socio">Número de Socio</Label>
