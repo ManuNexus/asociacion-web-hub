@@ -15,8 +15,12 @@ interface InviteSocioRequest {
   apellidos: string;
   telefono?: string;
   tipo_cuota?: string;
+  tipo_pago?: string;
   solicitud_id: string;
-  dni: string; // DNI will be used as default password
+  dni: string;
+  iban?: string;
+  titular_cuenta?: string;
+  dia_cobro?: number;
 }
 
 serve(async (req: Request): Promise<Response> => {
@@ -71,11 +75,13 @@ serve(async (req: Request): Promise<Response> => {
       throw new Error("Only admins can invite socios");
     }
 
-    const { email, nombre, apellidos, telefono, tipo_cuota, solicitud_id, dni }: InviteSocioRequest = await req.json();
+    const { email, nombre, apellidos, telefono, tipo_cuota, tipo_pago, solicitud_id, dni, iban, titular_cuenta, dia_cobro }: InviteSocioRequest = await req.json();
 
     if (!dni) {
       throw new Error("DNI is required");
     }
+
+    const billingDay = dia_cobro && dia_cobro >= 1 && dia_cobro <= 28 ? dia_cobro : 1;
 
     console.log(`Inviting socio: ${email} (${nombre} ${apellidos})`);
 
@@ -152,6 +158,10 @@ serve(async (req: Request): Promise<Response> => {
         email,
         telefono: telefono || null,
         tipo_cuota: tipo_cuota || "normal",
+        tipo_pago: tipo_pago || "mensual",
+        iban: iban || null,
+        titular_cuenta: titular_cuenta || null,
+        dia_cobro: billingDay,
         activo: true,
       }, { onConflict: 'user_id' });
 

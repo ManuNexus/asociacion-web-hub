@@ -76,6 +76,9 @@ interface SolicitudSocio {
   motivacion: string | null;
   estado: string;
   created_at: string;
+  iban: string | null;
+  titular_cuenta: string | null;
+  tipo_pago: string;
 }
 
 const AdminNoticias = () => {
@@ -94,6 +97,7 @@ const AdminNoticias = () => {
   const [filtroEstado, setFiltroEstado] = useState<string>("todos");
   const [invitingId, setInvitingId] = useState<string | null>(null);
   const [resendingId, setResendingId] = useState<string | null>(null);
+  const [diaCobro, setDiaCobro] = useState<number>(1);
 
   const solicitudesFiltradas = solicitudes.filter((s) => {
     const matchesSearch = 
@@ -380,19 +384,24 @@ const AdminNoticias = () => {
           apellidos: solicitud.apellidos,
           telefono: solicitud.telefono,
           tipo_cuota: "normal",
+          tipo_pago: solicitud.tipo_pago,
           solicitud_id: solicitud.id,
           dni: solicitud.dni,
+          iban: solicitud.iban,
+          titular_cuenta: solicitud.titular_cuenta,
+          dia_cobro: diaCobro,
         },
       });
 
       if (error) throw error;
 
       toast({
-        title: "Invitación enviada",
-        description: `Se ha enviado un correo a ${solicitud.email} para configurar su cuenta`,
+        title: "Socio aprobado",
+        description: `Se ha enviado un correo a ${solicitud.email} con las instrucciones de acceso`,
       });
       
       setSolicitudDialogOpen(false);
+      setDiaCobro(1);
       fetchSolicitudes();
     } catch (error: any) {
       console.error("Error inviting socio:", error);
@@ -1057,6 +1066,28 @@ const AdminNoticias = () => {
                   <p className="text-sm">{viewingSolicitud.motivacion}</p>
                 </div>
               )}
+
+              {/* Datos bancarios */}
+              <div className="p-4 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800 space-y-2">
+                <p className="font-medium text-sm flex items-center gap-2">
+                  <CreditCard className="h-4 w-4" />
+                  Datos Bancarios
+                </p>
+                <div className="grid grid-cols-1 gap-2 text-sm">
+                  <div>
+                    <span className="text-muted-foreground">IBAN:</span>{" "}
+                    <span className="font-mono">{viewingSolicitud.iban || "No proporcionado"}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Titular:</span>{" "}
+                    <span>{viewingSolicitud.titular_cuenta || "No proporcionado"}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Tipo de pago:</span>{" "}
+                    <span>{viewingSolicitud.tipo_pago === "anual" ? "Anual (50€/año)" : "Mensual (5€/mes)"}</span>
+                  </div>
+                </div>
+              </div>
               
               <div>
                 <Label className="text-muted-foreground text-xs mb-2 block">Estado</Label>
@@ -1080,7 +1111,30 @@ const AdminNoticias = () => {
               </div>
 
               {viewingSolicitud.estado !== "aceptado" && (
-                <div className="pt-4 border-t">
+                <div className="pt-4 border-t space-y-4">
+                  {/* Selector de día de cobro */}
+                  <div>
+                    <Label className="text-muted-foreground text-xs mb-2 block">Día de cobro mensual</Label>
+                    <Select
+                      value={diaCobro.toString()}
+                      onValueChange={(value) => setDiaCobro(parseInt(value))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecciona el día" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Array.from({ length: 28 }, (_, i) => i + 1).map((day) => (
+                          <SelectItem key={day} value={day.toString()}>
+                            Día {day}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Se cobrará el día {diaCobro} de cada mes
+                    </p>
+                  </div>
+                  
                   <Button
                     onClick={() => handleInviteSocio(viewingSolicitud)}
                     disabled={invitingId === viewingSolicitud.id}
@@ -1093,8 +1147,8 @@ const AdminNoticias = () => {
                     )}
                     Aprobar y enviar invitación
                   </Button>
-                  <p className="text-xs text-muted-foreground mt-2 text-center">
-                    Se creará la cuenta y se enviará un correo para configurar la contraseña
+                  <p className="text-xs text-muted-foreground text-center">
+                    Se creará la cuenta y se enviará un correo con las instrucciones de acceso
                   </p>
                 </div>
               )}

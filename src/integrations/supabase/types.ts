@@ -236,6 +236,7 @@ export type Database = {
           al_corriente_pago: boolean
           apellidos: string
           created_at: string
+          dia_cobro: number | null
           email: string
           fecha_alta: string
           iban: string | null
@@ -254,6 +255,7 @@ export type Database = {
           al_corriente_pago?: boolean
           apellidos: string
           created_at?: string
+          dia_cobro?: number | null
           email: string
           fecha_alta?: string
           iban?: string | null
@@ -272,6 +274,7 @@ export type Database = {
           al_corriente_pago?: boolean
           apellidos?: string
           created_at?: string
+          dia_cobro?: number | null
           email?: string
           fecha_alta?: string
           iban?: string | null
@@ -293,6 +296,7 @@ export type Database = {
           ciudad: string | null
           codigo_postal: string | null
           created_at: string
+          dia_cobro: number | null
           direccion: string | null
           dni: string
           email: string
@@ -312,6 +316,7 @@ export type Database = {
           ciudad?: string | null
           codigo_postal?: string | null
           created_at?: string
+          dia_cobro?: number | null
           direccion?: string | null
           dni: string
           email: string
@@ -331,6 +336,7 @@ export type Database = {
           ciudad?: string | null
           codigo_postal?: string | null
           created_at?: string
+          dia_cobro?: number | null
           direccion?: string | null
           dni?: string
           email?: string
