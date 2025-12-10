@@ -29,7 +29,8 @@ const handler = async (req: Request): Promise<Response> => {
     const solicitud: SolicitudData = await req.json();
     console.log("Nueva solicitud de socio recibida:", solicitud.email);
 
-    const emailResponse = await resend.emails.send({
+    // Email 1: Notificación al administrador
+    const adminEmailResponse = await resend.emails.send({
       from: "AHORA <socios@ahoraorg.es>",
       to: ["marrorra2001@gmail.com"],
       subject: `Nueva solicitud de socio: ${solicitud.nombre} ${solicitud.apellidos}`,
@@ -107,7 +108,89 @@ const handler = async (req: Request): Promise<Response> => {
       `,
     });
 
-    console.log("Email de notificación enviado:", emailResponse);
+    console.log("Email de notificación al admin enviado:", adminEmailResponse);
+
+    // Esperar 1 segundo antes de enviar el segundo email (rate limiting)
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    // Email 2: Confirmación al solicitante
+    const applicantEmailResponse = await resend.emails.send({
+      from: "AHORA <socios@ahoraorg.es>",
+      to: [solicitud.email],
+      subject: "Hemos recibido tu solicitud de socio - AHORA",
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+        </head>
+        <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px;">
+          <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            <div style="background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%); padding: 30px; text-align: center;">
+              <h1 style="color: #fbbf24; margin: 0; font-size: 24px;">¡Solicitud Recibida!</h1>
+            </div>
+            <div style="padding: 30px;">
+              <p style="color: #333; font-size: 16px; margin-bottom: 20px;">
+                Hola <strong>${solicitud.nombre}</strong>,
+              </p>
+              
+              <p style="color: #333; font-size: 16px; margin-bottom: 20px;">
+                Hemos recibido correctamente tu solicitud para formar parte de <strong>AHORA</strong>.
+              </p>
+              
+              <div style="background-color: #f0f9ff; border-left: 4px solid #1e3a5f; padding: 20px; margin-bottom: 20px;">
+                <h3 style="color: #1e3a5f; font-size: 16px; margin: 0 0 10px 0;">¿Qué ocurrirá ahora?</h3>
+                <p style="color: #333; margin: 0; line-height: 1.6;">
+                  La Junta Directiva se reúne <strong>una vez al mes</strong> para valorar las solicitudes de nuevos socios. 
+                  En esa reunión, revisaremos tu solicitud y te comunicaremos la resolución por correo electrónico.
+                </p>
+              </div>
+              
+              <div style="background-color: #f8fafc; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+                <h3 style="color: #1e3a5f; font-size: 16px; margin: 0 0 15px 0;">Datos de tu solicitud:</h3>
+                <table style="width: 100%; border-collapse: collapse;">
+                  <tr>
+                    <td style="padding: 8px 0; color: #666; font-weight: bold; width: 140px;">Nombre:</td>
+                    <td style="padding: 8px 0; color: #333;">${solicitud.nombre} ${solicitud.apellidos}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 8px 0; color: #666; font-weight: bold;">Email:</td>
+                    <td style="padding: 8px 0; color: #333;">${solicitud.email}</td>
+                  </tr>
+                  ${solicitud.telefono ? `
+                  <tr>
+                    <td style="padding: 8px 0; color: #666; font-weight: bold;">Teléfono:</td>
+                    <td style="padding: 8px 0; color: #333;">${solicitud.telefono}</td>
+                  </tr>
+                  ` : ''}
+                </table>
+              </div>
+              
+              <p style="color: #333; font-size: 16px; margin-bottom: 20px;">
+                Si tienes cualquier duda, puedes escribirnos a <a href="mailto:info@ahoraorg.es" style="color: #2d5a87;">info@ahoraorg.es</a>.
+              </p>
+              
+              <p style="color: #333; font-size: 16px; margin-bottom: 0;">
+                ¡Gracias por tu interés en formar parte de AHORA!
+              </p>
+              
+              <p style="color: #666; font-size: 14px; margin-top: 25px;">
+                Un cordial saludo,<br>
+                <em>El equipo de AHORA</em>
+              </p>
+            </div>
+            <div style="background-color: #f8fafc; padding: 20px; text-align: center; border-top: 1px solid #e2e8f0;">
+              <p style="color: #94a3b8; font-size: 12px; margin: 0;">
+                AHORA - Actuar en el presente para construir el futuro
+              </p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `,
+    });
+
+    console.log("Email de confirmación al solicitante enviado:", applicantEmailResponse);
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,
