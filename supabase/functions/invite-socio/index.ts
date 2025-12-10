@@ -36,16 +36,22 @@ serve(async (req: Request): Promise<Response> => {
       throw new Error("No authorization header");
     }
 
+    // Extract token from Bearer header
+    const token = authHeader.replace("Bearer ", "");
+
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-    // Verify JWT token using Supabase auth
-    const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: authHeader } },
+    // Create admin client with service role
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
     });
-    
-    const { data: { user }, error: userError } = await supabaseAuth.auth.getUser();
+
+    // Verify JWT token using service role key for cryptographic verification
+    const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(token);
     
     if (userError || !user) {
       console.error("Auth error:", userError?.message);
@@ -54,14 +60,6 @@ serve(async (req: Request): Promise<Response> => {
     
     const adminUserId = user.id;
     console.log("Verified admin user ID:", adminUserId);
-    
-    // Create admin client with service role
-    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
-    });
 
     // Check if user is admin
     const { data: roleData, error: roleError } = await supabaseAdmin
