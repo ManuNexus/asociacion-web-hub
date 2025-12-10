@@ -229,11 +229,28 @@ const PanelSocios = () => {
   };
 
   const fetchSocios = async () => {
-    const { data, error } = await supabase
-      .from("socios")
-      .select("*")
-      .eq("activo", true)
-      .order("apellidos");
+    let data: Socio[] | null = null;
+    let error: any = null;
+
+    // Admin can access full table, junta uses secure RPC function that hides sensitive fields
+    if (isAdmin) {
+      const result = await supabase
+        .from("socios")
+        .select("*")
+        .eq("activo", true)
+        .order("apellidos");
+      data = result.data;
+      error = result.error;
+    } else if (isJunta) {
+      // Use secure RPC function that excludes IBAN and titular_cuenta
+      const result = await supabase.rpc("get_socios_for_junta");
+      if (!result.error && result.data) {
+        data = (result.data as Socio[]).filter(s => s.activo).sort((a, b) => 
+          a.apellidos.localeCompare(b.apellidos)
+        );
+      }
+      error = result.error;
+    }
 
     if (!error && data) {
       // Fetch junta roles for all socios

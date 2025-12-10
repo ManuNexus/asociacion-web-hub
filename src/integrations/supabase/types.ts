@@ -445,65 +445,28 @@ export type Database = {
       }
     }
     Views: {
-      socios_junta_view: {
-        Row: {
-          activo: boolean | null
-          al_corriente_pago: boolean | null
-          apellidos: string | null
-          created_at: string | null
-          email: string | null
-          fecha_alta: string | null
-          iban: string | null
-          id: string | null
-          nombre: string | null
-          numero_socio: string | null
-          telefono: string | null
-          tipo_cuota: string | null
-          tipo_pago: string | null
-          titular_cuenta: string | null
-          updated_at: string | null
-          user_id: string | null
-        }
-        Insert: {
-          activo?: boolean | null
-          al_corriente_pago?: boolean | null
-          apellidos?: string | null
-          created_at?: string | null
-          email?: string | null
-          fecha_alta?: string | null
-          iban?: never
-          id?: string | null
-          nombre?: string | null
-          numero_socio?: string | null
-          telefono?: string | null
-          tipo_cuota?: string | null
-          tipo_pago?: string | null
-          titular_cuenta?: never
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          activo?: boolean | null
-          al_corriente_pago?: boolean | null
-          apellidos?: string | null
-          created_at?: string | null
-          email?: string | null
-          fecha_alta?: string | null
-          iban?: never
-          id?: string | null
-          nombre?: string | null
-          numero_socio?: string | null
-          telefono?: string | null
-          tipo_cuota?: string | null
-          tipo_pago?: string | null
-          titular_cuenta?: never
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
+      get_socios_for_junta: {
+        Args: never
+        Returns: {
+          activo: boolean
+          al_corriente_pago: boolean
+          apellidos: string
+          created_at: string
+          email: string
+          fecha_alta: string
+          id: string
+          nombre: string
+          numero_socio: string
+          telefono: string
+          tipo_cuota: string
+          tipo_pago: string
+          updated_at: string
+          user_id: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
