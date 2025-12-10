@@ -247,7 +247,7 @@ const PanelSocios = () => {
       // Use secure RPC function that excludes IBAN and titular_cuenta
       const result = await supabase.rpc("get_socios_for_junta");
       if (!result.error && result.data) {
-        data = (result.data as Socio[]).filter(s => s.activo).sort((a, b) => 
+        data = (result.data as unknown as Socio[]).filter(s => s.activo).sort((a, b) => 
           a.apellidos.localeCompare(b.apellidos)
         );
       }
@@ -681,6 +681,36 @@ const PanelSocios = () => {
                   <p className="text-center text-muted-foreground text-sm mt-6">
                     Tu carnet digital de socio de AHORA
                   </p>
+                  
+                  {/* Payment Info Card */}
+                  <Card className="mt-6 border-secondary/30">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <CreditCard className="h-4 w-4" />
+                        Información de cuota
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="flex justify-between items-center">
+                        <span className="text-muted-foreground text-sm">Tipo de pago:</span>
+                        <Badge variant="outline">
+                          {(miSocio as any)?.tipo_pago === "anual" ? "Anual (50€/año)" : "Mensual (5€/mes)"}
+                        </Badge>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-muted-foreground text-sm">Día de cobro:</span>
+                        <span className="font-medium">
+                          {(miSocio as any)?.dia_cobro ? `Día ${(miSocio as any).dia_cobro} de cada mes` : "No asignado"}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-muted-foreground text-sm">Importe:</span>
+                        <span className="font-bold text-primary">
+                          {(miSocio as any)?.tipo_pago === "anual" ? "50,00 €/año" : "5,00 €/mes"}
+                        </span>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
               </div>
             </TabsContent>
