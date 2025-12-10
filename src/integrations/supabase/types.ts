@@ -238,11 +238,14 @@ export type Database = {
           created_at: string
           email: string
           fecha_alta: string
+          iban: string | null
           id: string
           nombre: string
           numero_socio: string | null
           telefono: string | null
           tipo_cuota: string
+          tipo_pago: string
+          titular_cuenta: string | null
           updated_at: string
           user_id: string
         }
@@ -253,11 +256,14 @@ export type Database = {
           created_at?: string
           email: string
           fecha_alta?: string
+          iban?: string | null
           id?: string
           nombre: string
           numero_socio?: string | null
           telefono?: string | null
           tipo_cuota?: string
+          tipo_pago?: string
+          titular_cuenta?: string | null
           updated_at?: string
           user_id: string
         }
@@ -268,11 +274,14 @@ export type Database = {
           created_at?: string
           email?: string
           fecha_alta?: string
+          iban?: string | null
           id?: string
           nombre?: string
           numero_socio?: string | null
           telefono?: string | null
           tipo_cuota?: string
+          tipo_pago?: string
+          titular_cuenta?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -288,11 +297,14 @@ export type Database = {
           dni: string
           email: string
           estado: string
+          iban: string | null
           id: string
           motivacion: string | null
           nombre: string
           provincia: string | null
           telefono: string | null
+          tipo_pago: string
+          titular_cuenta: string | null
           updated_at: string
         }
         Insert: {
@@ -304,11 +316,14 @@ export type Database = {
           dni: string
           email: string
           estado?: string
+          iban?: string | null
           id?: string
           motivacion?: string | null
           nombre: string
           provincia?: string | null
           telefono?: string | null
+          tipo_pago?: string
+          titular_cuenta?: string | null
           updated_at?: string
         }
         Update: {
@@ -320,11 +335,14 @@ export type Database = {
           dni?: string
           email?: string
           estado?: string
+          iban?: string | null
           id?: string
           motivacion?: string | null
           nombre?: string
           provincia?: string | null
           telefono?: string | null
+          tipo_pago?: string
+          titular_cuenta?: string | null
           updated_at?: string
         }
         Relationships: []
