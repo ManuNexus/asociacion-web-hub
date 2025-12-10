@@ -1104,7 +1104,9 @@ const AdminNoticias = () => {
                   <SelectContent>
                     <SelectItem value="pendiente">Pendiente</SelectItem>
                     <SelectItem value="contactado">Contactado</SelectItem>
-                    <SelectItem value="aceptado">Aceptado</SelectItem>
+                    {viewingSolicitud.estado === "aceptado" && (
+                      <SelectItem value="aceptado">Aceptado</SelectItem>
+                    )}
                     <SelectItem value="rechazado">Rechazado</SelectItem>
                   </SelectContent>
                 </Select>
