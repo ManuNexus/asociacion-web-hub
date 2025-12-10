@@ -79,6 +79,8 @@ export const AdminSocios = () => {
   const [activo, setActivo] = useState(true);
   const [alCorrientePago, setAlCorrientePago] = useState(true);
   const [esJunta, setEsJunta] = useState(false);
+  const [iban, setIban] = useState("");
+  const [titularCuenta, setTitularCuenta] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
 
@@ -121,6 +123,8 @@ export const AdminSocios = () => {
     setActivo(socio.activo);
     setAlCorrientePago(socio.al_corriente_pago);
     setEsJunta(socio.es_junta);
+    setIban(socio.iban || "");
+    setTitularCuenta(socio.titular_cuenta || "");
     setDialogOpen(true);
   };
 
@@ -139,7 +143,9 @@ export const AdminSocios = () => {
         numero_socio: numeroSocio || null,
         tipo_pago: tipoPago,
         activo: activo,
-        al_corriente_pago: alCorrientePago
+        al_corriente_pago: alCorrientePago,
+        iban: iban || null,
+        titular_cuenta: titularCuenta || null
       })
       .eq("id", editingSocio.id);
 
@@ -465,25 +471,30 @@ export const AdminSocios = () => {
                 )}
               </div>
               
-              {/* Datos bancarios (solo visible para admins) */}
-              <div className="p-4 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800 space-y-2">
+              {/* Datos bancarios editables */}
+              <div className="p-4 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800 space-y-3">
                 <p className="font-medium text-sm flex items-center gap-2">
                   <CreditCard className="h-4 w-4" />
                   Datos Bancarios para Domiciliación
                 </p>
-                <div className="grid grid-cols-1 gap-2 text-sm">
-                  <div>
-                    <span className="text-muted-foreground">IBAN:</span>{" "}
-                    <span className="font-mono">{editingSocio.iban || "No proporcionado"}</span>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Titular:</span>{" "}
-                    <span>{editingSocio.titular_cuenta || "No proporcionado"}</span>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Tipo de pago:</span>{" "}
-                    <span>{editingSocio.tipo_pago === "anual" ? "Anual (50€/año)" : "Mensual (5€/mes)"}</span>
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="iban">IBAN</Label>
+                  <Input
+                    id="iban"
+                    value={iban}
+                    onChange={(e) => setIban(e.target.value.toUpperCase())}
+                    placeholder="ES00 0000 0000 0000 0000 0000"
+                    className="font-mono"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="titular_cuenta">Titular de la cuenta</Label>
+                  <Input
+                    id="titular_cuenta"
+                    value={titularCuenta}
+                    onChange={(e) => setTitularCuenta(e.target.value)}
+                    placeholder="Nombre del titular"
+                  />
                 </div>
               </div>
               <div className="space-y-2">
