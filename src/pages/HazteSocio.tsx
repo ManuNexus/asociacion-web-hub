@@ -8,8 +8,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
-import { CheckCircle2, Users, Heart, Shield } from "lucide-react";
+import { CheckCircle2, Users, Heart, Shield, CreditCard } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 // Validation schema for membership form
 const membershipSchema = z.object({
@@ -26,6 +27,12 @@ const membershipSchema = z.object({
   ciudad: z.string().trim().max(100, "Máximo 100 caracteres").optional().or(z.literal("")),
   provincia: z.string().trim().max(100, "Máximo 100 caracteres").optional().or(z.literal("")),
   motivacion: z.string().trim().max(2000, "Máximo 2000 caracteres").optional().or(z.literal("")),
+  tipoPago: z.enum(["mensual", "anual"], { errorMap: () => ({ message: "Selecciona un tipo de pago" }) }),
+  iban: z.string().trim().min(1, "El IBAN es obligatorio").regex(
+    /^[A-Z]{2}[0-9]{2}[A-Z0-9]{4}[0-9]{7}([A-Z0-9]?){0,16}$/,
+    "Formato de IBAN inválido"
+  ),
+  titularCuenta: z.string().trim().max(200, "Máximo 200 caracteres").optional().or(z.literal("")),
   aceptaEstatutos: z.literal(true, { errorMap: () => ({ message: "Debes aceptar los estatutos" }) }),
   aceptaPrivacidad: z.literal(true, { errorMap: () => ({ message: "Debes aceptar la política de privacidad" }) }),
 });
@@ -65,6 +72,9 @@ const HazteSocio = () => {
     ciudad: "",
     provincia: "",
     motivacion: "",
+    tipoPago: "mensual" as "mensual" | "anual",
+    iban: "",
+    titularCuenta: "",
     aceptaEstatutos: false,
     aceptaPrivacidad: false,
   });
@@ -123,6 +133,9 @@ const HazteSocio = () => {
         ciudad: validData.ciudad || null,
         provincia: validData.provincia || null,
         motivacion: validData.motivacion || null,
+        tipo_pago: validData.tipoPago,
+        iban: validData.iban.replace(/\s/g, '').toUpperCase(),
+        titular_cuenta: validData.titularCuenta || null,
       });
 
       if (error) throw error;
@@ -157,6 +170,9 @@ const HazteSocio = () => {
         ciudad: "",
         provincia: "",
         motivacion: "",
+        tipoPago: "mensual",
+        iban: "",
+        titularCuenta: "",
         aceptaEstatutos: false,
         aceptaPrivacidad: false,
       });
@@ -216,35 +232,35 @@ const HazteSocio = () => {
               Cuotas de Socio
             </h2>
             <p className="text-muted-foreground">
-              Elige la cuota que mejor se adapte a tu situación
+              Elige la modalidad de pago que prefieras
             </p>
           </div>
           
           <div className="grid gap-6 md:grid-cols-2 max-w-2xl mx-auto">
-            {/* Cuota Normal */}
-            <div className="bg-card rounded-xl border-2 border-primary p-6 relative">
-              <div className="absolute -top-3 left-6 bg-primary text-primary-foreground text-xs font-semibold px-3 py-1 rounded-full">
-                Recomendada
-              </div>
-              <h3 className="text-xl font-bold text-foreground mb-2">Cuota Normal</h3>
+            {/* Cuota Mensual */}
+            <div className="bg-card rounded-xl border border-border p-6">
+              <h3 className="text-xl font-bold text-foreground mb-2">Pago Mensual</h3>
               <div className="flex items-baseline gap-1 mb-4">
                 <span className="text-4xl font-extrabold text-primary">5€</span>
                 <span className="text-muted-foreground">/ mes</span>
               </div>
               <p className="text-sm text-muted-foreground">
-                Cuota estándar para todos los socios que deseen apoyar la asociación.
+                Cuota mensual domiciliada en tu cuenta bancaria.
               </p>
             </div>
 
-            {/* Cuota Reducida */}
-            <div className="bg-card rounded-xl border border-border p-6">
-              <h3 className="text-xl font-bold text-foreground mb-2">Cuota Reducida</h3>
-              <div className="flex items-baseline gap-1 mb-4">
-                <span className="text-4xl font-extrabold text-secondary">2,50€</span>
-                <span className="text-muted-foreground">/ mes</span>
+            {/* Cuota Anual */}
+            <div className="bg-card rounded-xl border-2 border-secondary p-6 relative">
+              <div className="absolute -top-3 left-6 bg-secondary text-secondary-foreground text-xs font-semibold px-3 py-1 rounded-full">
+                Ahorra 10€
               </div>
-              <p className="text-sm text-muted-foreground">
-                Para <strong>estudiantes</strong> y <strong>personas en situación de desempleo</strong>. Se requerirá acreditación.
+              <h3 className="text-xl font-bold text-foreground mb-2">Pago Anual</h3>
+              <div className="flex items-baseline gap-1 mb-2">
+                <span className="text-4xl font-extrabold text-secondary">50€</span>
+                <span className="text-muted-foreground">/ año</span>
+              </div>
+              <p className="text-sm text-muted-foreground mb-2">
+                Equivale a <strong>4,16€/mes</strong>. Pago único anual.
               </p>
             </div>
           </div>
@@ -402,6 +418,82 @@ const HazteSocio = () => {
                     />
                     {formErrors.provincia && <p className="text-sm text-destructive">{formErrors.provincia}</p>}
                   </div>
+                </div>
+              </div>
+
+              {/* Pago y Domiciliación */}
+              <div className="space-y-6">
+                <h3 className="text-lg font-semibold text-foreground border-b border-border pb-2 flex items-center gap-2">
+                  <CreditCard className="h-5 w-5" />
+                  Pago y Domiciliación Bancaria
+                </h3>
+                
+                {/* Tipo de pago */}
+                <div className="space-y-3">
+                  <Label>Modalidad de pago *</Label>
+                  <RadioGroup 
+                    value={formData.tipoPago} 
+                    onValueChange={(value: "mensual" | "anual") => {
+                      setFormData(prev => ({ ...prev, tipoPago: value }));
+                      if (formErrors.tipoPago) {
+                        setFormErrors(prev => ({ ...prev, tipoPago: "" }));
+                      }
+                    }}
+                    className="grid gap-3 md:grid-cols-2"
+                  >
+                    <div className={`flex items-center space-x-3 border rounded-lg p-4 cursor-pointer transition-colors ${formData.tipoPago === 'mensual' ? 'border-primary bg-primary/5' : 'border-border hover:border-muted-foreground'}`}>
+                      <RadioGroupItem value="mensual" id="mensual" />
+                      <Label htmlFor="mensual" className="cursor-pointer flex-1">
+                        <span className="font-semibold">Mensual</span>
+                        <span className="text-muted-foreground ml-2">5€/mes</span>
+                      </Label>
+                    </div>
+                    <div className={`flex items-center space-x-3 border rounded-lg p-4 cursor-pointer transition-colors ${formData.tipoPago === 'anual' ? 'border-secondary bg-secondary/5' : 'border-border hover:border-muted-foreground'}`}>
+                      <RadioGroupItem value="anual" id="anual" />
+                      <Label htmlFor="anual" className="cursor-pointer flex-1">
+                        <span className="font-semibold">Anual</span>
+                        <span className="text-muted-foreground ml-2">50€/año</span>
+                        <span className="text-xs text-secondary ml-1">(ahorra 10€)</span>
+                      </Label>
+                    </div>
+                  </RadioGroup>
+                  {formErrors.tipoPago && <p className="text-sm text-destructive">{formErrors.tipoPago}</p>}
+                </div>
+
+                {/* IBAN */}
+                <div className="space-y-2">
+                  <Label htmlFor="iban">IBAN de la cuenta bancaria *</Label>
+                  <Input
+                    id="iban"
+                    name="iban"
+                    value={formData.iban}
+                    onChange={handleInputChange}
+                    placeholder="ES00 0000 0000 0000 0000 0000"
+                    maxLength={34}
+                    className={formErrors.iban ? "border-destructive" : ""}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Cuenta donde se domiciliará el cobro de la cuota
+                  </p>
+                  {formErrors.iban && <p className="text-sm text-destructive">{formErrors.iban}</p>}
+                </div>
+
+                {/* Titular de la cuenta */}
+                <div className="space-y-2">
+                  <Label htmlFor="titularCuenta">Titular de la cuenta (si es diferente al socio)</Label>
+                  <Input
+                    id="titularCuenta"
+                    name="titularCuenta"
+                    value={formData.titularCuenta}
+                    onChange={handleInputChange}
+                    placeholder="Nombre completo del titular"
+                    maxLength={200}
+                    className={formErrors.titularCuenta ? "border-destructive" : ""}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Déjalo en blanco si eres el titular de la cuenta
+                  </p>
+                  {formErrors.titularCuenta && <p className="text-sm text-destructive">{formErrors.titularCuenta}</p>}
                 </div>
               </div>
 
