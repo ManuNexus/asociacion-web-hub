@@ -690,25 +690,85 @@ const PanelSocios = () => {
                         Información de cuota
                       </CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-3">
-                      <div className="flex justify-between items-center">
-                        <span className="text-muted-foreground text-sm">Tipo de pago:</span>
-                        <Badge variant="outline">
-                          {(miSocio as any)?.tipo_pago === "anual" ? "Anual (50€/año)" : "Mensual (5€/mes)"}
-                        </Badge>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-muted-foreground text-sm">Día de cobro:</span>
-                        <span className="font-medium">
-                          {(miSocio as any)?.dia_cobro ? `Día ${(miSocio as any).dia_cobro} de cada mes` : "No asignado"}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-muted-foreground text-sm">Importe:</span>
-                        <span className="font-bold text-primary">
-                          {(miSocio as any)?.tipo_pago === "anual" ? "50,00 €/año" : "5,00 €/mes"}
-                        </span>
-                      </div>
+                    <CardContent className="space-y-4">
+                      {(() => {
+                        const socioData = miSocio as any;
+                        const tipoPago = socioData?.tipo_pago || "mensual";
+                        const diaCobro = socioData?.dia_cobro || 1;
+                        const fechaAlta = socioData?.fecha_alta ? new Date(socioData.fecha_alta) : new Date();
+                        const importe = tipoPago === "anual" ? 50 : 5;
+                        
+                        // Calculate next billing date
+                        const calcularProximoCobro = () => {
+                          const hoy = new Date();
+                          
+                          if (tipoPago === "anual") {
+                            // For annual: next billing is the anniversary of fecha_alta
+                            const mesAlta = fechaAlta.getMonth();
+                            const anioActual = hoy.getFullYear();
+                            let proximaFecha = new Date(anioActual, mesAlta, diaCobro);
+                            
+                            // If that date has passed this year, go to next year
+                            if (proximaFecha <= hoy) {
+                              proximaFecha = new Date(anioActual + 1, mesAlta, diaCobro);
+                            }
+                            return proximaFecha;
+                          } else {
+                            // For monthly: next billing is the dia_cobro of current or next month
+                            const mesActual = hoy.getMonth();
+                            const anioActual = hoy.getFullYear();
+                            let proximaFecha = new Date(anioActual, mesActual, diaCobro);
+                            
+                            // If that date has passed this month, go to next month
+                            if (proximaFecha <= hoy) {
+                              proximaFecha = new Date(anioActual, mesActual + 1, diaCobro);
+                            }
+                            return proximaFecha;
+                          }
+                        };
+                        
+                        const proximoCobro = calcularProximoCobro();
+                        const diasRestantes = Math.ceil((proximoCobro.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+                        
+                        return (
+                          <>
+                            <div className="flex justify-between items-center">
+                              <span className="text-muted-foreground text-sm">Tipo de pago:</span>
+                              <Badge variant="outline">
+                                {tipoPago === "anual" ? "Anual" : "Mensual"}
+                              </Badge>
+                            </div>
+                            
+                            {/* Next billing highlight */}
+                            <div className="p-4 bg-primary/5 rounded-lg border border-primary/20">
+                              <div className="flex items-center justify-between mb-2">
+                                <div className="flex items-center gap-2">
+                                  <Calendar className="h-4 w-4 text-primary" />
+                                  <span className="font-medium">Próximo cobro</span>
+                                </div>
+                                <Badge variant="secondary" className="text-xs">
+                                  {diasRestantes === 0 ? "Hoy" : diasRestantes === 1 ? "Mañana" : `En ${diasRestantes} días`}
+                                </Badge>
+                              </div>
+                              <div className="flex items-center justify-between">
+                                <span className="text-lg font-bold text-primary">
+                                  {format(proximoCobro, "d 'de' MMMM yyyy", { locale: es })}
+                                </span>
+                                <span className="text-xl font-bold text-foreground">
+                                  {importe.toFixed(2).replace(".", ",")} €
+                                </span>
+                              </div>
+                            </div>
+                            
+                            <div className="text-xs text-muted-foreground text-center">
+                              {tipoPago === "anual" 
+                                ? `Cobro anual el día ${diaCobro} del mes de ${format(fechaAlta, "MMMM", { locale: es })}`
+                                : `Cobro mensual el día ${diaCobro} de cada mes`
+                              }
+                            </div>
+                          </>
+                        );
+                      })()}
                     </CardContent>
                   </Card>
                 </div>
