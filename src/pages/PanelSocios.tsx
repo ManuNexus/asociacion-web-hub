@@ -47,8 +47,10 @@ interface Socio {
   telefono: string | null;
   activo: boolean;
   tipo_cuota: string;
+  tipo_pago: string;
   fecha_alta: string;
   numero_socio: string | null;
+  dia_cobro: number | null;
 }
 
 interface SocioWithJunta extends Socio {
