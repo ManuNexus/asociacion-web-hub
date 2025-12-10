@@ -461,6 +461,7 @@ export type Database = {
           al_corriente_pago: boolean
           apellidos: string
           created_at: string
+          dia_cobro: number
           email: string
           fecha_alta: string
           id: string

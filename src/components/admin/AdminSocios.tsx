@@ -58,6 +58,7 @@ interface Socio {
   al_corriente_pago: boolean;
   iban: string | null;
   titular_cuenta: string | null;
+  dia_cobro: number | null;
 }
 
 interface SocioWithJunta extends Socio {
@@ -81,6 +82,7 @@ export const AdminSocios = () => {
   const [esJunta, setEsJunta] = useState(false);
   const [iban, setIban] = useState("");
   const [titularCuenta, setTitularCuenta] = useState("");
+  const [diaCobro, setDiaCobro] = useState<number>(1);
   const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
 
@@ -125,6 +127,7 @@ export const AdminSocios = () => {
     setEsJunta(socio.es_junta);
     setIban(socio.iban || "");
     setTitularCuenta(socio.titular_cuenta || "");
+    setDiaCobro(socio.dia_cobro || 1);
     setDialogOpen(true);
   };
 
@@ -145,7 +148,8 @@ export const AdminSocios = () => {
         activo: activo,
         al_corriente_pago: alCorrientePago,
         iban: iban || null,
-        titular_cuenta: titularCuenta || null
+        titular_cuenta: titularCuenta || null,
+        dia_cobro: diaCobro
       })
       .eq("id", editingSocio.id);
 
@@ -509,17 +513,34 @@ export const AdminSocios = () => {
                   Este número aparecerá en el carnet digital del socio
                 </p>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="tipo_pago">Tipo de Pago</Label>
-                <Select value={tipoPago} onValueChange={setTipoPago}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="mensual">Mensual (5€/mes)</SelectItem>
-                    <SelectItem value="anual">Anual (50€/año)</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="tipo_pago">Tipo de Pago</Label>
+                  <Select value={tipoPago} onValueChange={setTipoPago}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="mensual">Mensual (5€/mes)</SelectItem>
+                      <SelectItem value="anual">Anual (50€/año)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="dia_cobro">Día de Cobro</Label>
+                  <Select value={diaCobro.toString()} onValueChange={(v) => setDiaCobro(parseInt(v))}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Array.from({ length: 28 }, (_, i) => i + 1).map((day) => (
+                        <SelectItem key={day} value={day.toString()}>
+                          Día {day}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
               <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
                 <div>
