@@ -445,7 +445,63 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      socios_junta_view: {
+        Row: {
+          activo: boolean | null
+          al_corriente_pago: boolean | null
+          apellidos: string | null
+          created_at: string | null
+          email: string | null
+          fecha_alta: string | null
+          iban: string | null
+          id: string | null
+          nombre: string | null
+          numero_socio: string | null
+          telefono: string | null
+          tipo_cuota: string | null
+          tipo_pago: string | null
+          titular_cuenta: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          activo?: boolean | null
+          al_corriente_pago?: boolean | null
+          apellidos?: string | null
+          created_at?: string | null
+          email?: string | null
+          fecha_alta?: string | null
+          iban?: never
+          id?: string | null
+          nombre?: string | null
+          numero_socio?: string | null
+          telefono?: string | null
+          tipo_cuota?: string | null
+          tipo_pago?: string | null
+          titular_cuenta?: never
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          activo?: boolean | null
+          al_corriente_pago?: boolean | null
+          apellidos?: string | null
+          created_at?: string | null
+          email?: string | null
+          fecha_alta?: string | null
+          iban?: never
+          id?: string | null
+          nombre?: string | null
+          numero_socio?: string | null
+          telefono?: string | null
+          tipo_cuota?: string | null
+          tipo_pago?: string | null
+          titular_cuenta?: never
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       has_role: {
