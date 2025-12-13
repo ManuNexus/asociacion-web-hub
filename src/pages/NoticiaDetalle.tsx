@@ -20,9 +20,12 @@ interface Noticia {
   extracto: string | null;
   contenido: string | null;
   imagen_url: string | null;
+  autor: string | null;
+  autor_socio_id: string | null;
   fecha_publicacion: string | null;
   categoria_id: string | null;
   categorias_noticia: Categoria | null;
+  socios?: { id: string; nombre: string; apellidos: string; foto_url: string | null } | null;
 }
 
 const NoticiaDetalle = () => {
@@ -43,7 +46,7 @@ const NoticiaDetalle = () => {
 
       const { data, error } = await supabase
         .from("noticias")
-        .select("*, categorias_noticia(*)")
+        .select("*, categorias_noticia(*), socios(id, nombre, apellidos, foto_url)")
         .eq("id", id)
         .eq("publicada", true)
         .maybeSingle();
@@ -214,9 +217,13 @@ const NoticiaDetalle = () => {
               {/* Author */}
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
-                  <img src={logoIcon} alt="AHORA" className="w-5 h-5 object-contain" />
+                  {noticia.socios?.foto_url ? (
+                    <img src={noticia.socios.foto_url} alt={noticia.autor || "Autor"} className="w-full h-full object-cover" />
+                  ) : (
+                    <img src={logoIcon} alt="AHORA" className="w-5 h-5 object-contain" />
+                  )}
                 </div>
-                <span className="font-medium text-foreground">AHORA</span>
+                <span className="font-medium text-foreground">{noticia.autor || "AHORA"}</span>
               </div>
 
               {/* Separator */}
