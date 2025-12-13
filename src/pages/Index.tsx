@@ -43,6 +43,7 @@ const Index = () => {
       const { data, error } = await supabase
         .from("noticias")
         .select("id, titulo, extracto, fecha_publicacion, imagen_url")
+        .eq("publicada", true)
         .order("fecha_publicacion", { ascending: false })
         .limit(3);
 

@@ -55,6 +55,7 @@ const Noticias = () => {
         supabase
           .from("noticias")
           .select("*, categorias_noticia(*)")
+          .eq("publicada", true)
           .order("fecha_publicacion", { ascending: false }),
         supabase.from("categorias_noticia").select("*").order("nombre"),
       ]);
