@@ -103,6 +103,7 @@ export type Database = {
       }
       noticias: {
         Row: {
+          autor: string | null
           categoria_id: string | null
           contenido: string | null
           created_at: string
@@ -115,6 +116,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          autor?: string | null
           categoria_id?: string | null
           contenido?: string | null
           created_at?: string
@@ -127,6 +129,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          autor?: string | null
           categoria_id?: string | null
           contenido?: string | null
           created_at?: string
@@ -239,6 +242,7 @@ export type Database = {
           dia_cobro: number | null
           email: string
           fecha_alta: string
+          foto_url: string | null
           iban: string | null
           id: string
           nombre: string
@@ -258,6 +262,7 @@ export type Database = {
           dia_cobro?: number | null
           email: string
           fecha_alta?: string
+          foto_url?: string | null
           iban?: string | null
           id?: string
           nombre: string
@@ -277,6 +282,7 @@ export type Database = {
           dia_cobro?: number | null
           email?: string
           fecha_alta?: string
+          foto_url?: string | null
           iban?: string | null
           id?: string
           nombre?: string
