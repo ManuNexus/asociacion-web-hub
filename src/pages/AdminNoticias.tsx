@@ -55,6 +55,7 @@ interface Noticia {
   extracto: string | null;
   contenido: string | null;
   imagen_url: string | null;
+  autor: string | null;
   publicada: boolean;
   fecha_publicacion: string | null;
   created_at: string;
@@ -117,6 +118,7 @@ const AdminNoticias = () => {
     extracto: "",
     contenido: "",
     imagen_url: "",
+    autor: "AHORA",
     publicada: false,
     categoria_id: "",
   });
@@ -228,6 +230,7 @@ const AdminNoticias = () => {
             extracto: formData.extracto || null,
             contenido: formData.contenido || null,
             imagen_url: formData.imagen_url || null,
+            autor: formData.autor || "AHORA",
             publicada: formData.publicada,
             categoria_id: formData.categoria_id || null,
           })
@@ -241,6 +244,7 @@ const AdminNoticias = () => {
           extracto: formData.extracto || null,
           contenido: formData.contenido || null,
           imagen_url: formData.imagen_url || null,
+          autor: formData.autor || "AHORA",
           publicada: formData.publicada,
           categoria_id: formData.categoria_id || null,
           fecha_publicacion: formData.publicada ? new Date().toISOString() : null,
@@ -452,6 +456,7 @@ const AdminNoticias = () => {
       extracto: noticia.extracto || "",
       contenido: noticia.contenido || "",
       imagen_url: noticia.imagen_url || "",
+      autor: noticia.autor || "AHORA",
       publicada: noticia.publicada,
       categoria_id: noticia.categoria_id || "",
     });
@@ -465,6 +470,7 @@ const AdminNoticias = () => {
       extracto: "",
       contenido: "",
       imagen_url: "",
+      autor: "AHORA",
       publicada: false,
       categoria_id: "",
     });
@@ -657,6 +663,20 @@ const AdminNoticias = () => {
                             }
                             placeholder="https://..."
                           />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="autor">Autor</Label>
+                          <Input
+                            id="autor"
+                            value={formData.autor}
+                            onChange={(e) =>
+                              setFormData({ ...formData, autor: e.target.value })
+                            }
+                            placeholder="AHORA"
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            Por defecto "AHORA". Cambiar para artículos de opinión.
+                          </p>
                         </div>
                         <div className="flex items-center space-x-2">
                           <Switch

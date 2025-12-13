@@ -59,6 +59,7 @@ interface Socio {
   iban: string | null;
   titular_cuenta: string | null;
   dia_cobro: number | null;
+  foto_url: string | null;
 }
 
 interface SocioWithJunta extends Socio {
@@ -83,6 +84,7 @@ export const AdminSocios = () => {
   const [iban, setIban] = useState("");
   const [titularCuenta, setTitularCuenta] = useState("");
   const [diaCobro, setDiaCobro] = useState<number>(1);
+  const [fotoUrl, setFotoUrl] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
 
@@ -128,6 +130,7 @@ export const AdminSocios = () => {
     setIban(socio.iban || "");
     setTitularCuenta(socio.titular_cuenta || "");
     setDiaCobro(socio.dia_cobro || 1);
+    setFotoUrl(socio.foto_url || "");
     setDialogOpen(true);
   };
 
@@ -149,7 +152,8 @@ export const AdminSocios = () => {
         al_corriente_pago: alCorrientePago,
         iban: iban || null,
         titular_cuenta: titularCuenta || null,
-        dia_cobro: diaCobro
+        dia_cobro: diaCobro,
+        foto_url: fotoUrl || null
       })
       .eq("id", editingSocio.id);
 
@@ -500,6 +504,30 @@ export const AdminSocios = () => {
                     placeholder="Nombre del titular"
                   />
                 </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="foto_url">Foto del Socio (URL)</Label>
+                <Input
+                  id="foto_url"
+                  value={fotoUrl}
+                  onChange={(e) => setFotoUrl(e.target.value)}
+                  placeholder="https://..."
+                />
+                <p className="text-xs text-muted-foreground">
+                  URL de la foto del socio para el carnet digital
+                </p>
+                {fotoUrl && (
+                  <div className="mt-2">
+                    <img 
+                      src={fotoUrl} 
+                      alt="Vista previa" 
+                      className="w-20 h-20 object-cover rounded-lg border"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = 'none';
+                      }}
+                    />
+                  </div>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="numero_socio">Número de Socio</Label>
