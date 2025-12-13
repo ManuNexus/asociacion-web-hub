@@ -34,7 +34,7 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Pencil, Trash2, Loader2, LogOut, Users, Newspaper, Mail, Phone, Eye, Search, Tag, UserCheck, Send, RefreshCw, Vote, Calendar, FileText, CreditCard, Bell } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, LogOut, Users, Newspaper, Mail, Phone, Eye, Search, Tag, UserCheck, Send, RefreshCw, Vote, Calendar, FileText, CreditCard, Bell, Link } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { AdminVotaciones } from "@/components/admin/AdminVotaciones";
@@ -839,6 +839,21 @@ const AdminNoticias = () => {
                               </TableCell>
                               <TableCell className="text-right">
                                 <div className="flex justify-end gap-2">
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => {
+                                      const url = `${window.location.origin}/noticias/${noticia.id}`;
+                                      navigator.clipboard.writeText(url);
+                                      toast({
+                                        title: "Enlace copiado",
+                                        description: "El enlace de la noticia se ha copiado al portapapeles",
+                                      });
+                                    }}
+                                    title="Copiar enlace"
+                                  >
+                                    <Link className="h-4 w-4" />
+                                  </Button>
                                   <Button
                                     variant="ghost"
                                     size="icon"
