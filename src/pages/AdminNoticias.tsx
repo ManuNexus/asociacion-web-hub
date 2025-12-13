@@ -843,7 +843,7 @@ const AdminNoticias = () => {
                                     variant="ghost"
                                     size="icon"
                                     onClick={() => {
-                                      const url = `${window.location.origin}/noticias/${noticia.id}`;
+                                      const url = `https://ahoraorg.es/noticias/${noticia.id}`;
                                       navigator.clipboard.writeText(url);
                                       toast({
                                         title: "Enlace copiado",
