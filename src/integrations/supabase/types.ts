@@ -104,6 +104,7 @@ export type Database = {
       noticias: {
         Row: {
           autor: string | null
+          autor_socio_id: string | null
           categoria_id: string | null
           contenido: string | null
           created_at: string
@@ -117,6 +118,7 @@ export type Database = {
         }
         Insert: {
           autor?: string | null
+          autor_socio_id?: string | null
           categoria_id?: string | null
           contenido?: string | null
           created_at?: string
@@ -130,6 +132,7 @@ export type Database = {
         }
         Update: {
           autor?: string | null
+          autor_socio_id?: string | null
           categoria_id?: string | null
           contenido?: string | null
           created_at?: string
@@ -142,6 +145,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "noticias_autor_socio_id_fkey"
+            columns: ["autor_socio_id"]
+            isOneToOne: false
+            referencedRelation: "socios"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "noticias_categoria_id_fkey"
             columns: ["categoria_id"]

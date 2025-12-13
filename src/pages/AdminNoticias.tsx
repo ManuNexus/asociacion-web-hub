@@ -56,11 +56,13 @@ interface Noticia {
   contenido: string | null;
   imagen_url: string | null;
   autor: string | null;
+  autor_socio_id: string | null;
   publicada: boolean;
   fecha_publicacion: string | null;
   created_at: string;
   categoria_id: string | null;
   categorias_noticia: Categoria | null;
+  socios?: { id: string; nombre: string; apellidos: string; foto_url: string | null } | null;
 }
 
 interface SolicitudSocio {
@@ -86,6 +88,7 @@ const AdminNoticias = () => {
   const [noticias, setNoticias] = useState<Noticia[]>([]);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [solicitudes, setSolicitudes] = useState<SolicitudSocio[]>([]);
+  const [miembrosJunta, setMiembrosJunta] = useState<{ id: string; nombre: string; apellidos: string; foto_url: string | null }[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingSolicitudes, setLoadingSolicitudes] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -119,6 +122,7 @@ const AdminNoticias = () => {
     contenido: "",
     imagen_url: "",
     autor: "AHORA",
+    autor_socio_id: "",
     publicada: false,
     categoria_id: "",
   });
@@ -152,6 +156,7 @@ const AdminNoticias = () => {
       fetchNoticias();
       fetchCategorias();
       fetchSolicitudes();
+      fetchMiembrosJunta();
     }
   }, [user, isAdmin]);
 
@@ -159,7 +164,7 @@ const AdminNoticias = () => {
     setLoading(true);
     const { data, error } = await supabase
       .from("noticias")
-      .select("*, categorias_noticia(*)")
+      .select("*, categorias_noticia(*), socios(id, nombre, apellidos, foto_url)")
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -173,6 +178,26 @@ const AdminNoticias = () => {
       setNoticias(data || []);
     }
     setLoading(false);
+  };
+
+  const fetchMiembrosJunta = async () => {
+    // Fetch socios who are junta members
+    const { data: juntaRoles } = await supabase
+      .from("user_roles")
+      .select("user_id")
+      .eq("role", "junta");
+    
+    if (juntaRoles && juntaRoles.length > 0) {
+      const userIds = juntaRoles.map(r => r.user_id);
+      const { data: socios } = await supabase
+        .from("socios")
+        .select("id, nombre, apellidos, foto_url, user_id")
+        .in("user_id", userIds)
+        .eq("activo", true)
+        .order("apellidos");
+      
+      setMiembrosJunta(socios || []);
+    }
   };
 
   const fetchCategorias = async () => {
@@ -231,6 +256,7 @@ const AdminNoticias = () => {
             contenido: formData.contenido || null,
             imagen_url: formData.imagen_url || null,
             autor: formData.autor || "AHORA",
+            autor_socio_id: formData.autor_socio_id || null,
             publicada: formData.publicada,
             categoria_id: formData.categoria_id || null,
           })
@@ -245,6 +271,7 @@ const AdminNoticias = () => {
           contenido: formData.contenido || null,
           imagen_url: formData.imagen_url || null,
           autor: formData.autor || "AHORA",
+          autor_socio_id: formData.autor_socio_id || null,
           publicada: formData.publicada,
           categoria_id: formData.categoria_id || null,
           fecha_publicacion: formData.publicada ? new Date().toISOString() : null,
@@ -457,6 +484,7 @@ const AdminNoticias = () => {
       contenido: noticia.contenido || "",
       imagen_url: noticia.imagen_url || "",
       autor: noticia.autor || "AHORA",
+      autor_socio_id: noticia.autor_socio_id || "",
       publicada: noticia.publicada,
       categoria_id: noticia.categoria_id || "",
     });
@@ -471,6 +499,7 @@ const AdminNoticias = () => {
       contenido: "",
       imagen_url: "",
       autor: "AHORA",
+      autor_socio_id: "",
       publicada: false,
       categoria_id: "",
     });
@@ -670,14 +699,62 @@ const AdminNoticias = () => {
                             id="autor"
                             value={formData.autor}
                             onChange={(e) =>
-                              setFormData({ ...formData, autor: e.target.value })
+                              setFormData({ ...formData, autor: e.target.value, autor_socio_id: "" })
                             }
                             placeholder="AHORA"
                           />
                           <p className="text-xs text-muted-foreground">
-                            Por defecto "AHORA". Cambiar para artículos de opinión.
+                            Escribe el nombre o selecciona un miembro de la junta abajo.
                           </p>
                         </div>
+                        {miembrosJunta.length > 0 && (
+                          <div className="space-y-2">
+                            <Label htmlFor="autor_socio">O selecciona un miembro de la junta</Label>
+                            <Select
+                              value={formData.autor_socio_id}
+                              onValueChange={(value) => {
+                                const miembro = miembrosJunta.find(m => m.id === value);
+                                if (miembro) {
+                                  setFormData({ 
+                                    ...formData, 
+                                    autor: `${miembro.nombre} ${miembro.apellidos}`,
+                                    autor_socio_id: value 
+                                  });
+                                } else if (value === "none") {
+                                  setFormData({ 
+                                    ...formData, 
+                                    autor: "AHORA",
+                                    autor_socio_id: "" 
+                                  });
+                                }
+                              }}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Sin seleccionar (usar texto de autor)" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="none">Sin seleccionar (usar texto de autor)</SelectItem>
+                                {miembrosJunta.map((miembro) => (
+                                  <SelectItem key={miembro.id} value={miembro.id}>
+                                    <div className="flex items-center gap-2">
+                                      {miembro.foto_url ? (
+                                        <img src={miembro.foto_url} alt="" className="w-5 h-5 rounded-full object-cover" />
+                                      ) : (
+                                        <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center text-xs">
+                                          {miembro.nombre[0]}
+                                        </div>
+                                      )}
+                                      {miembro.nombre} {miembro.apellidos}
+                                    </div>
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <p className="text-xs text-muted-foreground">
+                              Si seleccionas un miembro, su foto aparecerá en la noticia.
+                            </p>
+                          </div>
+                        )}
                         <div className="flex items-center space-x-2">
                           <Switch
                             id="publicada"
