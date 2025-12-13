@@ -44,18 +44,18 @@ const NoticiaDetalle = () => {
         return;
       }
 
-      const { data, error } = await supabase
+      // First try to fetch without publicada filter (admins can see all via RLS)
+      let { data, error } = await supabase
         .from("noticias")
         .select("*, categorias_noticia(*), socios(id, nombre, apellidos, foto_url)")
         .eq("id", id)
-        .eq("publicada", true)
         .maybeSingle();
 
       if (error || !data) {
         setNotFound(true);
       } else {
         setNoticia(data);
-        // Fetch related news
+        // Fetch related news (only published)
         const { data: related } = await supabase
           .from("noticias")
           .select("*, categorias_noticia(*)")
