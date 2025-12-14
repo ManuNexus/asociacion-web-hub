@@ -5,8 +5,7 @@ import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import logoIcon from "@/assets/logo-ahora-icon.png";
 import { supabase } from "@/integrations/supabase/client";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
+import { formatInMadrid } from "@/lib/timezone";
 
 const valores = [
   {
@@ -60,7 +59,7 @@ const Index = () => {
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return "";
-    return format(new Date(dateString), "dd MMM yyyy", { locale: es });
+    return formatInMadrid(dateString, "dd MMM yyyy");
   };
 
   return (

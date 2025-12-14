@@ -33,8 +33,7 @@ import {
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
+import { formatInMadrid, toMadridTime } from "@/lib/timezone";
 import logoWhite from "@/assets/logo-ahora-white.png";
 
 
@@ -660,7 +659,7 @@ const PanelSocios = () => {
                           <div>
                             <p className="text-primary-foreground/60 text-xs uppercase">Miembro desde</p>
                             <p className="text-primary-foreground/90 text-sm font-medium">
-                              {miSocio ? format(new Date(miSocio.fecha_alta), "MMMM yyyy", { locale: es }) : "---"}
+                              {miSocio ? formatInMadrid(miSocio.fecha_alta, "MMMM yyyy") : "---"}
                             </p>
                           </div>
                           <div className="text-right">
@@ -752,7 +751,7 @@ const PanelSocios = () => {
                               </div>
                               <div className="flex items-center justify-between">
                                 <span className="text-lg font-bold text-primary">
-                                  {format(proximoCobro, "d 'de' MMMM yyyy", { locale: es })}
+                                  {formatInMadrid(proximoCobro, "d 'de' MMMM yyyy")}
                                 </span>
                                 <span className="text-xl font-bold text-foreground">
                                   {importe.toFixed(2).replace(".", ",")} €
@@ -762,7 +761,7 @@ const PanelSocios = () => {
                             
                             <div className="text-xs text-muted-foreground text-center">
                               {tipoPago === "anual" 
-                                ? `Cobro anual el día ${diaCobro} del mes de ${format(fechaAlta, "MMMM", { locale: es })}`
+                                ? `Cobro anual el día ${diaCobro} del mes de ${formatInMadrid(fechaAlta, "MMMM")}`
                                 : `Cobro mensual el día ${diaCobro} de cada mes`
                               }
                             </div>
@@ -921,7 +920,7 @@ const PanelSocios = () => {
                             <div className="flex items-center gap-4 text-sm text-muted-foreground mb-3">
                               <span className="flex items-center gap-1">
                                 <Clock className="h-4 w-4" />
-                                {format(new Date(votacion.fecha_inicio), "d MMM", { locale: es })} - {format(new Date(votacion.fecha_fin), "d MMM yyyy", { locale: es })}
+                                {formatInMadrid(votacion.fecha_inicio, "d MMM")} - {formatInMadrid(votacion.fecha_fin, "d MMM yyyy")}
                               </span>
                             </div>
 
@@ -1046,10 +1045,10 @@ const PanelSocios = () => {
                           <div className="flex flex-col sm:flex-row sm:items-start gap-4">
                             <div className="flex-shrink-0 w-14 h-14 bg-primary/10 rounded-lg flex flex-col items-center justify-center">
                               <span className="text-xl font-bold text-primary">
-                                {format(new Date(evento.fecha), "d", { locale: es })}
+                                {formatInMadrid(evento.fecha, "d")}
                               </span>
                               <span className="text-xs text-primary uppercase">
-                                {format(new Date(evento.fecha), "MMM", { locale: es })}
+                                {formatInMadrid(evento.fecha, "MMM")}
                               </span>
                             </div>
                             <div className="flex-1 min-w-0">
@@ -1062,7 +1061,7 @@ const PanelSocios = () => {
                               <div className="flex flex-wrap items-center gap-3 mt-2 text-sm text-muted-foreground">
                                 <span className="flex items-center gap-1">
                                   <Clock className="h-4 w-4" />
-                                  {format(new Date(evento.fecha), "HH:mm", { locale: es })}
+                                  {formatInMadrid(evento.fecha, "HH:mm")}
                                 </span>
                                 {evento.ubicacion && (
                                   <span className="flex items-center gap-1">
@@ -1445,7 +1444,7 @@ const PanelSocios = () => {
                                     {notificacion.mensaje}
                                   </p>
                                   <p className="text-xs text-muted-foreground mt-2">
-                                    {format(new Date(notificacion.created_at), "d 'de' MMMM 'de' yyyy, HH:mm", { locale: es })}
+                                    {formatInMadrid(notificacion.created_at, "d 'de' MMMM 'de' yyyy, HH:mm")}
                                   </p>
                                 </div>
                               </div>
