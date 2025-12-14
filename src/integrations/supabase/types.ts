@@ -110,6 +110,7 @@ export type Database = {
           created_at: string
           extracto: string | null
           fecha_publicacion: string | null
+          fecha_publicacion_programada: string | null
           id: string
           imagen_url: string | null
           publicada: boolean
@@ -124,6 +125,7 @@ export type Database = {
           created_at?: string
           extracto?: string | null
           fecha_publicacion?: string | null
+          fecha_publicacion_programada?: string | null
           id?: string
           imagen_url?: string | null
           publicada?: boolean
@@ -138,6 +140,7 @@ export type Database = {
           created_at?: string
           extracto?: string | null
           fecha_publicacion?: string | null
+          fecha_publicacion_programada?: string | null
           id?: string
           imagen_url?: string | null
           publicada?: boolean
@@ -470,6 +473,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_scheduled_news: { Args: never; Returns: undefined }
       get_socios_for_junta: {
         Args: never
         Returns: {

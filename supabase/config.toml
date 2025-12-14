@@ -23,3 +23,6 @@ verify_jwt = false
 
 [functions.certificado-voto]
 verify_jwt = false
+
+[functions.publish-scheduled-news]
+verify_jwt = false

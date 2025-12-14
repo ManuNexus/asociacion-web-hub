@@ -34,8 +34,8 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Pencil, Trash2, Loader2, LogOut, Users, Newspaper, Mail, Phone, Eye, Search, Tag, UserCheck, Send, RefreshCw, Vote, Calendar, FileText, CreditCard, Bell, Link } from "lucide-react";
-import { format } from "date-fns";
+import { Plus, Pencil, Trash2, Loader2, LogOut, Users, Newspaper, Mail, Phone, Eye, Search, Tag, UserCheck, Send, RefreshCw, Vote, Calendar, FileText, CreditCard, Bell, Link, Clock } from "lucide-react";
+import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 import { AdminVotaciones } from "@/components/admin/AdminVotaciones";
 import { AdminEventos } from "@/components/admin/AdminEventos";
@@ -59,6 +59,7 @@ interface Noticia {
   autor_socio_id: string | null;
   publicada: boolean;
   fecha_publicacion: string | null;
+  fecha_publicacion_programada: string | null;
   created_at: string;
   categoria_id: string | null;
   categorias_noticia: Categoria | null;
@@ -125,6 +126,7 @@ const AdminNoticias = () => {
     autor_socio_id: "",
     publicada: false,
     categoria_id: "",
+    fecha_publicacion_programada: "",
   });
 
   const [nuevaCategoria, setNuevaCategoria] = useState({
@@ -246,6 +248,21 @@ const AdminNoticias = () => {
 
     setSaving(true);
 
+    // Prepare scheduled date
+    const fechaProgramada = formData.fecha_publicacion_programada 
+      ? new Date(formData.fecha_publicacion_programada).toISOString() 
+      : null;
+
+    // Determine publication date
+    let fechaPublicacion = null;
+    if (formData.publicada && !fechaProgramada) {
+      // Publishing immediately - set fecha_publicacion to now
+      fechaPublicacion = new Date().toISOString();
+    } else if (editingNoticia && editingNoticia.fecha_publicacion) {
+      // Keep existing publication date if already published
+      fechaPublicacion = editingNoticia.fecha_publicacion;
+    }
+
     try {
       if (editingNoticia) {
         const { error } = await supabase
@@ -259,6 +276,8 @@ const AdminNoticias = () => {
             autor_socio_id: formData.autor_socio_id || null,
             publicada: formData.publicada,
             categoria_id: formData.categoria_id || null,
+            fecha_publicacion_programada: fechaProgramada,
+            fecha_publicacion: fechaPublicacion,
           })
           .eq("id", editingNoticia.id);
 
@@ -274,7 +293,8 @@ const AdminNoticias = () => {
           autor_socio_id: formData.autor_socio_id || null,
           publicada: formData.publicada,
           categoria_id: formData.categoria_id || null,
-          fecha_publicacion: formData.publicada ? new Date().toISOString() : null,
+          fecha_publicacion: fechaPublicacion,
+          fecha_publicacion_programada: fechaProgramada,
         });
 
         if (error) throw error;
@@ -478,6 +498,12 @@ const AdminNoticias = () => {
 
   const openEditDialog = (noticia: Noticia) => {
     setEditingNoticia(noticia);
+    // Format date for datetime-local input
+    let fechaProgramadaLocal = "";
+    if (noticia.fecha_publicacion_programada) {
+      const date = new Date(noticia.fecha_publicacion_programada);
+      fechaProgramadaLocal = format(date, "yyyy-MM-dd'T'HH:mm");
+    }
     setFormData({
       titulo: noticia.titulo,
       extracto: noticia.extracto || "",
@@ -487,6 +513,7 @@ const AdminNoticias = () => {
       autor_socio_id: noticia.autor_socio_id || "",
       publicada: noticia.publicada,
       categoria_id: noticia.categoria_id || "",
+      fecha_publicacion_programada: fechaProgramadaLocal,
     });
     setDialogOpen(true);
   };
@@ -502,6 +529,7 @@ const AdminNoticias = () => {
       autor_socio_id: "",
       publicada: false,
       categoria_id: "",
+      fecha_publicacion_programada: "",
     });
   };
 
@@ -755,15 +783,38 @@ const AdminNoticias = () => {
                             </p>
                           </div>
                         )}
-                        <div className="flex items-center space-x-2">
-                          <Switch
-                            id="publicada"
-                            checked={formData.publicada}
-                            onCheckedChange={(checked) =>
-                              setFormData({ ...formData, publicada: checked })
-                            }
-                          />
-                          <Label htmlFor="publicada">Publicada</Label>
+                        <div className="space-y-4 pt-4 border-t">
+                          <div className="flex items-center space-x-2">
+                            <Switch
+                              id="publicada"
+                              checked={formData.publicada}
+                              onCheckedChange={(checked) =>
+                                setFormData({ ...formData, publicada: checked, fecha_publicacion_programada: checked ? "" : formData.fecha_publicacion_programada })
+                              }
+                            />
+                            <Label htmlFor="publicada">Publicar ahora</Label>
+                          </div>
+                          
+                          {!formData.publicada && (
+                            <div className="space-y-2">
+                              <Label htmlFor="fecha_programada" className="flex items-center gap-2">
+                                <Clock className="h-4 w-4" />
+                                Programar publicación
+                              </Label>
+                              <Input
+                                id="fecha_programada"
+                                type="datetime-local"
+                                value={formData.fecha_publicacion_programada}
+                                onChange={(e) =>
+                                  setFormData({ ...formData, fecha_publicacion_programada: e.target.value })
+                                }
+                                min={format(new Date(), "yyyy-MM-dd'T'HH:mm")}
+                              />
+                              <p className="text-xs text-muted-foreground">
+                                La noticia se publicará automáticamente en la fecha y hora indicadas.
+                              </p>
+                            </div>
+                          )}
                         </div>
                         <div className="flex justify-end gap-2">
                           <Button
@@ -822,20 +873,32 @@ const AdminNoticias = () => {
                                 )}
                               </TableCell>
                               <TableCell>
-                                <span
-                                  className={`px-2 py-1 text-xs rounded-full ${
-                                    noticia.publicada
-                                      ? "bg-green-100 text-green-700"
-                                      : "bg-muted text-muted-foreground"
-                                  }`}
-                                >
-                                  {noticia.publicada ? "Publicada" : "Borrador"}
-                                </span>
+                                {noticia.publicada ? (
+                                  <span className="px-2 py-1 text-xs rounded-full bg-green-100 text-green-700">
+                                    Publicada
+                                  </span>
+                                ) : noticia.fecha_publicacion_programada ? (
+                                  <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-700 flex items-center gap-1 w-fit">
+                                    <Clock className="h-3 w-3" />
+                                    Programada
+                                  </span>
+                                ) : (
+                                  <span className="px-2 py-1 text-xs rounded-full bg-muted text-muted-foreground">
+                                    Borrador
+                                  </span>
+                                )}
                               </TableCell>
                               <TableCell className="text-muted-foreground text-sm">
-                                {format(new Date(noticia.created_at), "dd/MM/yyyy", {
-                                  locale: es,
-                                })}
+                                {noticia.fecha_publicacion_programada && !noticia.publicada ? (
+                                  <span className="flex items-center gap-1" title="Publicación programada">
+                                    <Clock className="h-3 w-3" />
+                                    {format(new Date(noticia.fecha_publicacion_programada), "dd/MM/yyyy HH:mm", { locale: es })}
+                                  </span>
+                                ) : noticia.fecha_publicacion ? (
+                                  format(new Date(noticia.fecha_publicacion), "dd/MM/yyyy", { locale: es })
+                                ) : (
+                                  format(new Date(noticia.created_at), "dd/MM/yyyy", { locale: es })
+                                )}
                               </TableCell>
                               <TableCell className="text-right">
                                 <div className="flex justify-end gap-2">
