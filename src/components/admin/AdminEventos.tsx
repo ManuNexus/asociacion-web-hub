@@ -16,8 +16,7 @@ import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Plus, Pencil, Trash2, Loader2, Calendar, MapPin, Shield } from "lucide-react";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
+import { formatInMadrid, toDateTimeLocalValue, fromDateTimeLocalValue, toMadridTime } from "@/lib/timezone";
 
 interface Evento {
   id: string;
@@ -83,13 +82,16 @@ export const AdminEventos = () => {
     setSaving(true);
 
     try {
+      // Convert local Madrid time to UTC for storage
+      const fechaUTC = fromDateTimeLocalValue(formData.fecha);
+      
       if (editingEvento) {
         const { error } = await supabase
           .from("eventos")
           .update({
             titulo: formData.titulo,
             descripcion: formData.descripcion || null,
-            fecha: formData.fecha,
+            fecha: fechaUTC,
             ubicacion: formData.ubicacion || null,
             solo_junta: formData.solo_junta,
           })
@@ -101,7 +103,7 @@ export const AdminEventos = () => {
         const { data: newEvento, error } = await supabase.from("eventos").insert({
           titulo: formData.titulo,
           descripcion: formData.descripcion || null,
-          fecha: formData.fecha,
+          fecha: fechaUTC,
           ubicacion: formData.ubicacion || null,
           solo_junta: formData.solo_junta,
         }).select().single();
@@ -164,7 +166,7 @@ export const AdminEventos = () => {
     setFormData({
       titulo: evento.titulo,
       descripcion: evento.descripcion || "",
-      fecha: evento.fecha ? evento.fecha.slice(0, 16) : "",
+      fecha: evento.fecha ? toDateTimeLocalValue(evento.fecha) : "",
       ubicacion: evento.ubicacion || "",
       solo_junta: evento.solo_junta,
     });
@@ -182,7 +184,7 @@ export const AdminEventos = () => {
     });
   };
 
-  const isPastEvent = (fecha: string) => new Date(fecha) < new Date();
+  const isPastEvent = (fecha: string) => toMadridTime(fecha) < toMadridTime(new Date());
 
   return (
     <Card>
@@ -321,7 +323,7 @@ export const AdminEventos = () => {
                     <Badge className="bg-green-500">Próximo</Badge>
                   )}
                   <span className="text-sm text-muted-foreground">
-                    {format(new Date(evento.fecha), "dd/MM/yyyy HH:mm", { locale: es })}
+                    {formatInMadrid(evento.fecha, "dd/MM/yyyy HH:mm")}
                   </span>
                 </div>
               </div>

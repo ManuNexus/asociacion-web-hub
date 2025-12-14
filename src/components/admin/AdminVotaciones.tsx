@@ -17,8 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Plus, Pencil, Trash2, Loader2, Vote, X, BarChart3, Shield } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
+import { formatInMadrid, toDateTimeLocalValue, fromDateTimeLocalValue } from "@/lib/timezone";
 
 interface Votacion {
   id: string;
@@ -501,7 +500,7 @@ export const AdminVotaciones = () => {
                       <Badge variant="outline">Próximamente</Badge>
                     )}
                     <span className="text-sm text-muted-foreground">
-                      Fin: {format(new Date(votacion.fecha_fin), "dd/MM/yyyy HH:mm", { locale: es })}
+                      Fin: {formatInMadrid(votacion.fecha_fin, "dd/MM/yyyy HH:mm")}
                     </span>
                   </div>
                 </div>

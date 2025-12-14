@@ -35,8 +35,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Plus, Pencil, Trash2, Loader2, LogOut, Users, Newspaper, Mail, Phone, Eye, Search, Tag, UserCheck, Send, RefreshCw, Vote, Calendar, FileText, CreditCard, Bell, Link, Clock } from "lucide-react";
-import { format, parseISO } from "date-fns";
+import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { formatInMadrid, toDateTimeLocalValue, fromDateTimeLocalValue } from "@/lib/timezone";
 import { AdminVotaciones } from "@/components/admin/AdminVotaciones";
 import { AdminEventos } from "@/components/admin/AdminEventos";
 import { AdminDocumentos } from "@/components/admin/AdminDocumentos";
@@ -248,9 +249,9 @@ const AdminNoticias = () => {
 
     setSaving(true);
 
-    // Prepare scheduled date
+    // Prepare scheduled date - convert from Madrid time to UTC
     const fechaProgramada = formData.fecha_publicacion_programada 
-      ? new Date(formData.fecha_publicacion_programada).toISOString() 
+      ? fromDateTimeLocalValue(formData.fecha_publicacion_programada)
       : null;
 
     // Determine publication date
@@ -498,11 +499,10 @@ const AdminNoticias = () => {
 
   const openEditDialog = (noticia: Noticia) => {
     setEditingNoticia(noticia);
-    // Format date for datetime-local input
+    // Format date for datetime-local input (convert UTC to Madrid time)
     let fechaProgramadaLocal = "";
     if (noticia.fecha_publicacion_programada) {
-      const date = new Date(noticia.fecha_publicacion_programada);
-      fechaProgramadaLocal = format(date, "yyyy-MM-dd'T'HH:mm");
+      fechaProgramadaLocal = toDateTimeLocalValue(noticia.fecha_publicacion_programada);
     }
     setFormData({
       titulo: noticia.titulo,
@@ -892,12 +892,12 @@ const AdminNoticias = () => {
                                 {noticia.fecha_publicacion_programada && !noticia.publicada ? (
                                   <span className="flex items-center gap-1" title="Publicación programada">
                                     <Clock className="h-3 w-3" />
-                                    {format(new Date(noticia.fecha_publicacion_programada), "dd/MM/yyyy HH:mm", { locale: es })}
+                                    {formatInMadrid(noticia.fecha_publicacion_programada, "dd/MM/yyyy HH:mm")}
                                   </span>
                                 ) : noticia.fecha_publicacion ? (
-                                  format(new Date(noticia.fecha_publicacion), "dd/MM/yyyy", { locale: es })
+                                  formatInMadrid(noticia.fecha_publicacion, "dd/MM/yyyy")
                                 ) : (
-                                  format(new Date(noticia.created_at), "dd/MM/yyyy", { locale: es })
+                                  formatInMadrid(noticia.created_at, "dd/MM/yyyy")
                                 )}
                               </TableCell>
                               <TableCell className="text-right">
@@ -1116,9 +1116,7 @@ const AdminNoticias = () => {
                               </TableCell>
                               <TableCell>{getEstadoBadge(solicitud.estado)}</TableCell>
                               <TableCell className="text-muted-foreground text-sm">
-                                {format(new Date(solicitud.created_at), "dd/MM/yyyy", {
-                                  locale: es,
-                                })}
+                                {formatInMadrid(solicitud.created_at, "dd/MM/yyyy")}
                               </TableCell>
                               <TableCell className="text-right">
                                 <div className="flex justify-end gap-2">
@@ -1219,7 +1217,7 @@ const AdminNoticias = () => {
                 <div>
                   <Label className="text-muted-foreground text-xs">Fecha solicitud</Label>
                   <p className="font-medium">
-                    {format(new Date(viewingSolicitud.created_at), "dd/MM/yyyy HH:mm", { locale: es })}
+                    {formatInMadrid(viewingSolicitud.created_at, "dd/MM/yyyy HH:mm")}
                   </p>
                 </div>
               </div>

@@ -16,8 +16,7 @@ import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Plus, Pencil, Trash2, Loader2, FileText, ExternalLink, Shield, Folder, FolderPlus, ChevronRight, Home } from "lucide-react";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
+import { formatInMadrid } from "@/lib/timezone";
 
 interface Documento {
   id: string;
@@ -542,7 +541,7 @@ export const AdminDocumentos = () => {
                           <Badge variant="secondary">Todos</Badge>
                         )}
                         <span className="text-sm text-muted-foreground">
-                          {format(new Date(documento.created_at), "dd/MM/yyyy", { locale: es })}
+                          {formatInMadrid(documento.created_at, "dd/MM/yyyy")}
                         </span>
                       </div>
                     </div>

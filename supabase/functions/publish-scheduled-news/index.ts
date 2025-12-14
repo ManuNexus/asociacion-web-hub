@@ -5,6 +5,14 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Get current time in Madrid timezone
+function getMadridNow(): Date {
+  const now = new Date();
+  // Create a date string in Madrid timezone and parse it
+  const madridString = now.toLocaleString("en-US", { timeZone: "Europe/Madrid" });
+  return new Date(madridString);
+}
+
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
@@ -19,7 +27,7 @@ Deno.serve(async (req) => {
 
     console.log("Checking for scheduled news to publish...");
 
-    // Find all unpublished news with a scheduled date in the past
+    // Current time in UTC for comparison (database stores UTC)
     const now = new Date().toISOString();
     
     const { data: scheduledNews, error: fetchError } = await supabase

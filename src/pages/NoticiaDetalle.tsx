@@ -4,8 +4,7 @@ import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, ArrowLeft, Calendar, Clock, ChevronRight } from "lucide-react";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
+import { formatInMadrid } from "@/lib/timezone";
 import logoIcon from "@/assets/logo-ahora-icon.png";
 
 interface Categoria {
@@ -130,7 +129,7 @@ const NoticiaDetalle = () => {
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return "";
-    return format(new Date(dateString), "dd MMM yyyy", { locale: es });
+    return formatInMadrid(dateString, "dd MMM yyyy");
   };
 
   if (loading) {
@@ -234,9 +233,7 @@ const NoticiaDetalle = () => {
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-primary" />
                   <time>
-                    {format(new Date(noticia.fecha_publicacion), "d 'de' MMMM, yyyy", {
-                      locale: es,
-                    })}
+                    {formatInMadrid(noticia.fecha_publicacion, "d 'de' MMMM, yyyy")}
                   </time>
                 </div>
               )}

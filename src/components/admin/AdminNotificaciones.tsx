@@ -24,8 +24,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Plus, Trash2, Loader2, Send, Bell, Shield } from "lucide-react";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
+import { formatInMadrid } from "@/lib/timezone";
 
 interface Notificacion {
   id: string;
@@ -270,7 +269,7 @@ export const AdminNotificaciones = () => {
                     )}
                   </TableCell>
                   <TableCell className="text-muted-foreground">
-                    {format(new Date(notificacion.created_at), "d MMM yyyy, HH:mm", { locale: es })}
+                    {formatInMadrid(notificacion.created_at, "d MMM yyyy, HH:mm")}
                   </TableCell>
                   <TableCell>
                     <Button
