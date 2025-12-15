@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, Users, Eye, Clock, TrendingUp, Smartphone, Monitor, Globe, AlertTriangle } from "lucide-react";
+import { Loader2, Users, Eye, Clock, TrendingUp, AlertTriangle, Info } from "lucide-react";
 import { formatInMadrid } from "@/lib/timezone";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -17,19 +17,17 @@ import { AreaChart, Area, XAxis, YAxis } from "recharts";
 type DateRange = "7" | "15" | "30" | "90";
 
 interface DailyData {
-  date: string;
+  fecha: string;
   visitors: number;
   pageviews: number;
 }
 
-interface AnalyticsData {
-  visitors: number;
-  pageviews: number;
-  avgSessionDuration: number;
-  pageviewsPerVisit: number;
-  daily: DailyData[];
-  hasData: boolean;
-  dataStartDate: string | null;
+interface SummaryData {
+  total_visitors: number;
+  total_pageviews: number;
+  avg_pageviews_per_visit: number;
+  avg_session_duration: number;
+  last_updated: string;
 }
 
 const chartConfig = {
@@ -51,11 +49,12 @@ const dateRangeLabels: Record<DateRange, string> = {
 };
 
 export const EstadisticasWeb = () => {
-  const [data, setData] = useState<AnalyticsData | null>(null);
+  const [dailyData, setDailyData] = useState<DailyData[]>([]);
+  const [summary, setSummary] = useState<SummaryData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [dateRange, setDateRange] = useState<DateRange>("15");
-  const [noDataWarning, setNoDataWarning] = useState<string | null>(null);
+  const [dataWarning, setDataWarning] = useState<string | null>(null);
 
   useEffect(() => {
     fetchAnalytics();
@@ -64,7 +63,7 @@ export const EstadisticasWeb = () => {
   const fetchAnalytics = async () => {
     setLoading(true);
     setError(null);
-    setNoDataWarning(null);
+    setDataWarning(null);
     
     try {
       const days = parseInt(dateRange);
@@ -75,53 +74,46 @@ export const EstadisticasWeb = () => {
       const startDateStr = startDate.toISOString().split('T')[0];
       const endDateStr = endDate.toISOString().split('T')[0];
 
-      // Fetch analytics from Lovable's analytics API
-      const { data: analyticsData, error: analyticsError } = await supabase.functions.invoke('get-analytics', {
-        body: {
-          startDate: startDateStr,
-          endDate: endDateStr,
-          granularity: days <= 15 ? 'daily' : 'daily'
-        }
-      });
+      // Fetch daily snapshots from database
+      const { data: snapshots, error: snapshotsError } = await supabase
+        .from('analytics_snapshots')
+        .select('fecha, visitors, pageviews')
+        .gte('fecha', startDateStr)
+        .lte('fecha', endDateStr)
+        .order('fecha', { ascending: true });
 
-      if (analyticsError) {
-        throw new Error(analyticsError.message);
+      if (snapshotsError) {
+        throw new Error(snapshotsError.message);
       }
 
-      // Check if we have actual data
-      if (!analyticsData || !analyticsData.daily || analyticsData.daily.length === 0) {
-        setNoDataWarning(`No hay datos de analytics disponibles para los últimos ${days} días. Los datos comenzaron a recopilarse recientemente.`);
-        setData({
-          visitors: 0,
-          pageviews: 0,
-          avgSessionDuration: 0,
-          pageviewsPerVisit: 0,
-          daily: [],
-          hasData: false,
-          dataStartDate: null
-        });
-        return;
+      // Fetch summary
+      const { data: summaryData, error: summaryError } = await supabase
+        .from('analytics_summary')
+        .select('*')
+        .order('last_updated', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (summaryError) {
+        throw new Error(summaryError.message);
       }
 
-      // Check if data is incomplete
-      const actualDays = analyticsData.daily.length;
-      if (actualDays < days) {
-        const firstDataDate = analyticsData.daily[0]?.date;
-        setNoDataWarning(`Solo hay datos disponibles de los últimos ${actualDays} días (desde ${formatInMadrid(new Date(firstDataDate), "d 'de' MMMM")}). Se muestran los datos existentes.`);
+      // Check if we have data
+      if (!snapshots || snapshots.length === 0) {
+        setDataWarning(`No hay datos de analytics disponibles para los últimos ${days} días. Los datos comenzaron a recopilarse el 2 de diciembre de 2025.`);
+        setDailyData([]);
+      } else if (snapshots.length < days) {
+        const firstDate = snapshots[0]?.fecha;
+        setDataWarning(`Solo hay datos disponibles de ${snapshots.length} días (desde ${formatInMadrid(new Date(firstDate), "d 'de' MMMM")}). Se muestran los datos existentes.`);
+        setDailyData(snapshots);
+      } else {
+        setDailyData(snapshots);
       }
 
-      setData({
-        visitors: analyticsData.visitors || 0,
-        pageviews: analyticsData.pageviews || 0,
-        avgSessionDuration: analyticsData.avgSessionDuration || 0,
-        pageviewsPerVisit: analyticsData.pageviewsPerVisit || 0,
-        daily: analyticsData.daily || [],
-        hasData: true,
-        dataStartDate: analyticsData.daily[0]?.date || null
-      });
+      setSummary(summaryData);
     } catch (err: any) {
       console.error('Error fetching analytics:', err);
-      setError("No se pudieron cargar las estadísticas. Las estadísticas pueden no estar disponibles aún para este proyecto.");
+      setError("No se pudieron cargar las estadísticas.");
     } finally {
       setLoading(false);
     }
@@ -133,6 +125,11 @@ export const EstadisticasWeb = () => {
     return `${mins}m ${secs}s`;
   };
 
+  // Calculate totals from filtered data
+  const totalVisitors = dailyData.reduce((sum, d) => sum + d.visitors, 0);
+  const totalPageviews = dailyData.reduce((sum, d) => sum + d.pageviews, 0);
+  const avgPageviewsPerVisit = totalVisitors > 0 ? totalPageviews / totalVisitors : 0;
+
   if (loading) {
     return (
       <div className="flex justify-center py-12">
@@ -141,45 +138,20 @@ export const EstadisticasWeb = () => {
     );
   }
 
-  if (error || !data?.hasData) {
+  if (error) {
     return (
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between flex-wrap gap-4">
-          <div>
-            <h3 className="text-lg font-semibold">{dateRangeLabels[dateRange]}</h3>
-            <p className="text-sm text-muted-foreground">
-              Actualizado: {formatInMadrid(new Date(), "d 'de' MMMM, HH:mm")}
-            </p>
-          </div>
-          <Select value={dateRange} onValueChange={(v) => setDateRange(v as DateRange)}>
-            <SelectTrigger className="w-[160px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="7">7 días</SelectItem>
-              <SelectItem value="15">15 días</SelectItem>
-              <SelectItem value="30">30 días</SelectItem>
-              <SelectItem value="90">90 días</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <Alert>
-          <AlertTriangle className="h-4 w-4" />
-          <AlertDescription>
-            {error || `No hay datos de analytics disponibles para los últimos ${dateRange} días. Las estadísticas comenzarán a mostrarse cuando haya suficientes datos de tráfico en la web.`}
-          </AlertDescription>
-        </Alert>
-      </div>
+      <Alert variant="destructive">
+        <AlertTriangle className="h-4 w-4" />
+        <AlertDescription>{error}</AlertDescription>
+      </Alert>
     );
   }
 
-  const chartData = data?.daily.map((d) => ({
-    date: formatInMadrid(new Date(d.date), "dd MMM"),
+  const chartData = dailyData.map((d) => ({
+    date: formatInMadrid(new Date(d.fecha), "dd MMM"),
     visitantes: d.visitors,
     paginas: d.pageviews,
-  })) || [];
+  }));
 
   return (
     <div className="space-y-6">
@@ -188,7 +160,10 @@ export const EstadisticasWeb = () => {
         <div>
           <h3 className="text-lg font-semibold">{dateRangeLabels[dateRange]}</h3>
           <p className="text-sm text-muted-foreground">
-            Actualizado: {formatInMadrid(new Date(), "d 'de' MMMM, HH:mm")}
+            {summary?.last_updated 
+              ? `Última sincronización: ${formatInMadrid(new Date(summary.last_updated), "d 'de' MMMM, HH:mm")}`
+              : `Actualizado: ${formatInMadrid(new Date(), "d 'de' MMMM, HH:mm")}`
+            }
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -211,10 +186,10 @@ export const EstadisticasWeb = () => {
       </div>
 
       {/* Warning Alert */}
-      {noDataWarning && (
+      {dataWarning && (
         <Alert>
-          <AlertTriangle className="h-4 w-4" />
-          <AlertDescription>{noDataWarning}</AlertDescription>
+          <Info className="h-4 w-4" />
+          <AlertDescription>{dataWarning}</AlertDescription>
         </Alert>
       )}
 
@@ -226,7 +201,7 @@ export const EstadisticasWeb = () => {
               <Users className="h-4 w-4 text-primary" />
               <span className="text-sm text-muted-foreground">Visitantes</span>
             </div>
-            <p className="text-2xl font-bold">{data?.visitors.toLocaleString() || 0}</p>
+            <p className="text-2xl font-bold">{totalVisitors.toLocaleString()}</p>
           </CardContent>
         </Card>
 
@@ -236,7 +211,7 @@ export const EstadisticasWeb = () => {
               <Eye className="h-4 w-4 text-secondary" />
               <span className="text-sm text-muted-foreground">Páginas vistas</span>
             </div>
-            <p className="text-2xl font-bold">{data?.pageviews.toLocaleString() || 0}</p>
+            <p className="text-2xl font-bold">{totalPageviews.toLocaleString()}</p>
           </CardContent>
         </Card>
 
@@ -246,7 +221,7 @@ export const EstadisticasWeb = () => {
               <Clock className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm text-muted-foreground">Tiempo medio</span>
             </div>
-            <p className="text-2xl font-bold">{formatDuration(data?.avgSessionDuration || 0)}</p>
+            <p className="text-2xl font-bold">{formatDuration(summary?.avg_session_duration || 0)}</p>
           </CardContent>
         </Card>
 
@@ -256,13 +231,13 @@ export const EstadisticasWeb = () => {
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm text-muted-foreground">Págs/visita</span>
             </div>
-            <p className="text-2xl font-bold">{(data?.pageviewsPerVisit || 0).toFixed(1)}</p>
+            <p className="text-2xl font-bold">{avgPageviewsPerVisit.toFixed(1)}</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Traffic Chart */}
-      {data?.hasData && chartData.length > 0 ? (
+      {chartData.length > 0 ? (
         <Card>
           <CardHeader>
             <CardTitle className="text-base">Tráfico</CardTitle>
