@@ -14,6 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
+      analytics_snapshots: {
+        Row: {
+          created_at: string
+          fecha: string
+          id: string
+          pageviews: number
+          visitors: number
+        }
+        Insert: {
+          created_at?: string
+          fecha: string
+          id?: string
+          pageviews?: number
+          visitors?: number
+        }
+        Update: {
+          created_at?: string
+          fecha?: string
+          id?: string
+          pageviews?: number
+          visitors?: number
+        }
+        Relationships: []
+      }
+      analytics_summary: {
+        Row: {
+          avg_pageviews_per_visit: number
+          avg_session_duration: number
+          id: string
+          last_updated: string
+          total_pageviews: number
+          total_visitors: number
+        }
+        Insert: {
+          avg_pageviews_per_visit?: number
+          avg_session_duration?: number
+          id?: string
+          last_updated?: string
+          total_pageviews?: number
+          total_visitors?: number
+        }
+        Update: {
+          avg_pageviews_per_visit?: number
+          avg_session_duration?: number
+          id?: string
+          last_updated?: string
+          total_pageviews?: number
+          total_visitors?: number
+        }
+        Relationships: []
+      }
       categorias_noticia: {
         Row: {
           color: string | null
