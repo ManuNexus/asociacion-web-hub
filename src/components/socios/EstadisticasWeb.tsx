@@ -58,6 +58,31 @@ export const EstadisticasWeb = () => {
 
   useEffect(() => {
     fetchAnalytics();
+
+    // Subscribe to realtime updates
+    const channel = supabase
+      .channel('analytics-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'analytics_snapshots' },
+        () => {
+          console.log('Analytics snapshots updated');
+          fetchAnalytics();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'analytics_summary' },
+        () => {
+          console.log('Analytics summary updated');
+          fetchAnalytics();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [dateRange]);
 
   const fetchAnalytics = async () => {
