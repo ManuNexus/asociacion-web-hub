@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Users, Eye, Clock, TrendingUp, Smartphone, Monitor, Globe, ArrowUp, ArrowDown } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Loader2, Users, Eye, Clock, TrendingUp, Smartphone, Monitor, Globe } from "lucide-react";
 import { formatInMadrid } from "@/lib/timezone";
 import {
   ChartConfig,
@@ -9,7 +10,9 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, BarChart, Bar, Cell, PieChart, Pie } from "recharts";
+import { AreaChart, Area, XAxis, YAxis } from "recharts";
+
+type DateRange = "7" | "15" | "30" | "90";
 
 interface AnalyticsData {
   visitors: { total: number; daily: { date: string; value: number }[] };
@@ -42,64 +45,56 @@ const deviceIcons: Record<string, React.ReactNode> = {
 
 const deviceColors = ["hsl(var(--primary))", "hsl(var(--secondary))", "hsl(var(--muted-foreground))"];
 
+const dateRangeLabels: Record<DateRange, string> = {
+  "7": "Últimos 7 días",
+  "15": "Últimos 15 días",
+  "30": "Últimos 30 días",
+  "90": "Últimos 90 días",
+};
+
 export const EstadisticasWeb = () => {
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [dateRange, setDateRange] = useState<DateRange>("15");
 
   useEffect(() => {
     fetchAnalytics();
-  }, []);
+  }, [dateRange]);
 
   const fetchAnalytics = async () => {
+    setLoading(true);
     try {
       // Simulated analytics data based on the actual analytics API response format
       // In a real implementation, this would call an edge function that fetches from the analytics API
-      const endDate = new Date();
-      const startDate = new Date();
-      startDate.setDate(startDate.getDate() - 14);
+      const days = parseInt(dateRange);
+
+      // Generate mock daily data based on selected range
+      const generateDailyData = (days: number) => {
+        const data = [];
+        for (let i = days - 1; i >= 0; i--) {
+          const date = new Date();
+          date.setDate(date.getDate() - i);
+          data.push({
+            date: date.toISOString().split('T')[0],
+            value: Math.floor(Math.random() * 40) + 5,
+          });
+        }
+        return data;
+      };
+
+      const dailyVisitors = generateDailyData(days);
+      const dailyPageviews = generateDailyData(days).map(d => ({ ...d, value: d.value * Math.floor(Math.random() * 8 + 5) }));
 
       // Mock data based on actual analytics response
       const mockData: AnalyticsData = {
         visitors: {
-          total: 258,
-          daily: [
-            { date: "2025-12-01", value: 0 },
-            { date: "2025-12-02", value: 21 },
-            { date: "2025-12-03", value: 20 },
-            { date: "2025-12-04", value: 4 },
-            { date: "2025-12-05", value: 32 },
-            { date: "2025-12-06", value: 32 },
-            { date: "2025-12-07", value: 24 },
-            { date: "2025-12-08", value: 23 },
-            { date: "2025-12-09", value: 22 },
-            { date: "2025-12-10", value: 26 },
-            { date: "2025-12-11", value: 5 },
-            { date: "2025-12-12", value: 3 },
-            { date: "2025-12-13", value: 12 },
-            { date: "2025-12-14", value: 3 },
-            { date: "2025-12-15", value: 31 },
-          ],
+          total: dailyVisitors.reduce((acc, d) => acc + d.value, 0),
+          daily: dailyVisitors,
         },
         pageviews: {
-          total: 3002,
-          daily: [
-            { date: "2025-12-01", value: 0 },
-            { date: "2025-12-02", value: 164 },
-            { date: "2025-12-03", value: 218 },
-            { date: "2025-12-04", value: 15 },
-            { date: "2025-12-05", value: 1881 },
-            { date: "2025-12-06", value: 143 },
-            { date: "2025-12-07", value: 55 },
-            { date: "2025-12-08", value: 101 },
-            { date: "2025-12-09", value: 131 },
-            { date: "2025-12-10", value: 122 },
-            { date: "2025-12-11", value: 6 },
-            { date: "2025-12-12", value: 13 },
-            { date: "2025-12-13", value: 78 },
-            { date: "2025-12-14", value: 21 },
-            { date: "2025-12-15", value: 54 },
-          ],
+          total: dailyPageviews.reduce((acc, d) => acc + d.value, 0),
+          daily: dailyPageviews,
         },
         pageviewsPerVisit: { average: 11.64 },
         sessionDuration: { average: 424 },
@@ -173,17 +168,30 @@ export const EstadisticasWeb = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h3 className="text-lg font-semibold">Últimos 15 días</h3>
+          <h3 className="text-lg font-semibold">{dateRangeLabels[dateRange]}</h3>
           <p className="text-sm text-muted-foreground">
             Actualizado: {formatInMadrid(new Date(), "d 'de' MMMM, HH:mm")}
           </p>
         </div>
-        <Badge variant="outline" className="text-primary border-primary">
-          <TrendingUp className="h-3 w-3 mr-1" />
-          En vivo
-        </Badge>
+        <div className="flex items-center gap-3">
+          <Select value={dateRange} onValueChange={(v) => setDateRange(v as DateRange)}>
+            <SelectTrigger className="w-[160px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="7">7 días</SelectItem>
+              <SelectItem value="15">15 días</SelectItem>
+              <SelectItem value="30">30 días</SelectItem>
+              <SelectItem value="90">90 días</SelectItem>
+            </SelectContent>
+          </Select>
+          <Badge variant="outline" className="text-primary border-primary">
+            <TrendingUp className="h-3 w-3 mr-1" />
+            En vivo
+          </Badge>
+        </div>
       </div>
 
       {/* Key Metrics */}
