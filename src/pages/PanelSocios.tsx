@@ -29,8 +29,10 @@ import {
   Folder,
   ChevronRight,
   ArrowLeft,
-  Home
+  Home,
+  BarChart3
 } from "lucide-react";
+import { EstadisticasWeb } from "@/components/socios/EstadisticasWeb";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { formatInMadrid, toMadridTime } from "@/lib/timezone";
@@ -588,11 +590,17 @@ const PanelSocios = () => {
           </Card>
 
           <Tabs defaultValue="carnet" className="w-full">
-            <TabsList className={`grid w-full max-w-4xl mb-6 h-auto gap-1 ${(isJunta || isAdmin) ? 'grid-cols-4 sm:grid-cols-7' : 'grid-cols-3 sm:grid-cols-6'}`}>
+            <TabsList className={`grid w-full max-w-4xl mb-6 h-auto gap-1 ${(isJunta || isAdmin) ? 'grid-cols-4 sm:grid-cols-8' : 'grid-cols-3 sm:grid-cols-6'}`}>
               <TabsTrigger value="carnet" className="flex items-center gap-2 py-2">
                 <CreditCard className="h-4 w-4" />
                 <span className="hidden sm:inline">Carnet</span>
               </TabsTrigger>
+              {(isJunta || isAdmin) && (
+                <TabsTrigger value="estadisticas" className="flex items-center gap-2 py-2">
+                  <BarChart3 className="h-4 w-4" />
+                  <span className="hidden sm:inline">Estadísticas</span>
+                </TabsTrigger>
+              )}
               {(isJunta || isAdmin) && (
                 <TabsTrigger value="socios" className="flex items-center gap-2 py-2">
                   <Users className="h-4 w-4" />
@@ -773,6 +781,26 @@ const PanelSocios = () => {
                 </div>
               </div>
             </TabsContent>
+
+            {/* Tab Estadísticas Web - Solo visible para Junta y Admin */}
+            {(isJunta || isAdmin) && (
+              <TabsContent value="estadisticas">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <BarChart3 className="h-5 w-5" />
+                      Estadísticas de la Web
+                    </CardTitle>
+                    <CardDescription>
+                      Métricas de tráfico y uso de la página web
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <EstadisticasWeb />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            )}
 
             {/* Tab Socios Activos - Solo visible para Junta y Admin */}
             {(isJunta || isAdmin) && (
