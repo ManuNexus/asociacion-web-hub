@@ -12,8 +12,7 @@ import {
   Loader2, 
   LogOut, 
   Users, 
-  Vote, 
-  Calendar, 
+  CalendarDays, 
   FileText, 
   User,
   Clock,
@@ -23,16 +22,16 @@ import {
   Key,
   Eye,
   EyeOff,
-  CreditCard,
+  IdCard,
   Shield,
   Bell,
   Folder,
   ChevronRight,
   ArrowLeft,
   Home,
-  BarChart3
+  ClipboardList,
+  CreditCard
 } from "lucide-react";
-import { EstadisticasWeb } from "@/components/socios/EstadisticasWeb";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { formatInMadrid, toMadridTime } from "@/lib/timezone";
@@ -590,17 +589,11 @@ const PanelSocios = () => {
           </Card>
 
           <Tabs defaultValue="carnet" className="w-full">
-            <TabsList className={`grid w-full max-w-4xl mb-6 h-auto gap-1 ${(isJunta || isAdmin) ? 'grid-cols-4 sm:grid-cols-8' : 'grid-cols-3 sm:grid-cols-6'}`}>
+            <TabsList className={`grid w-full max-w-4xl mb-6 h-auto gap-1 ${(isJunta || isAdmin) ? 'grid-cols-4 sm:grid-cols-7' : 'grid-cols-3 sm:grid-cols-6'}`}>
               <TabsTrigger value="carnet" className="flex items-center gap-2 py-2">
-                <CreditCard className="h-4 w-4" />
+                <IdCard className="h-4 w-4" />
                 <span className="hidden sm:inline">Carnet</span>
               </TabsTrigger>
-              {(isJunta || isAdmin) && (
-                <TabsTrigger value="estadisticas" className="flex items-center gap-2 py-2">
-                  <BarChart3 className="h-4 w-4" />
-                  <span className="hidden sm:inline">Estadísticas</span>
-                </TabsTrigger>
-              )}
               {(isJunta || isAdmin) && (
                 <TabsTrigger value="socios" className="flex items-center gap-2 py-2">
                   <Users className="h-4 w-4" />
@@ -608,11 +601,11 @@ const PanelSocios = () => {
                 </TabsTrigger>
               )}
               <TabsTrigger value="votaciones" className="flex items-center gap-2 py-2">
-                <Vote className="h-4 w-4" />
+                <ClipboardList className="h-4 w-4" />
                 <span className="hidden sm:inline">Votaciones</span>
               </TabsTrigger>
               <TabsTrigger value="eventos" className="flex items-center gap-2 py-2">
-                <Calendar className="h-4 w-4" />
+                <CalendarDays className="h-4 w-4" />
                 <span className="hidden sm:inline">Eventos</span>
               </TabsTrigger>
               <TabsTrigger value="documentos" className="flex items-center gap-2 py-2">
@@ -620,7 +613,7 @@ const PanelSocios = () => {
                 <span className="hidden sm:inline">Documentos</span>
               </TabsTrigger>
               <TabsTrigger value="cuenta" className="flex items-center gap-2 py-2">
-                <Key className="h-4 w-4" />
+                <User className="h-4 w-4" />
                 <span className="hidden sm:inline">Mi cuenta</span>
               </TabsTrigger>
               <TabsTrigger value="avisos" className="flex items-center gap-2 py-2 relative">
@@ -750,7 +743,7 @@ const PanelSocios = () => {
                             <div className="p-4 bg-primary/5 rounded-lg border border-primary/20">
                               <div className="flex items-center justify-between mb-2">
                                 <div className="flex items-center gap-2">
-                                  <Calendar className="h-4 w-4 text-primary" />
+                                  <CalendarDays className="h-4 w-4 text-primary" />
                                   <span className="font-medium">Próximo cobro</span>
                                 </div>
                                 <Badge variant="secondary" className="text-xs">
@@ -782,25 +775,6 @@ const PanelSocios = () => {
               </div>
             </TabsContent>
 
-            {/* Tab Estadísticas Web - Solo visible para Junta y Admin */}
-            {(isJunta || isAdmin) && (
-              <TabsContent value="estadisticas">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <BarChart3 className="h-5 w-5" />
-                      Estadísticas de la Web
-                    </CardTitle>
-                    <CardDescription>
-                      Métricas de tráfico y uso de la página web
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <EstadisticasWeb />
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            )}
 
             {/* Tab Socios Activos - Solo visible para Junta y Admin */}
             {(isJunta || isAdmin) && (
@@ -870,7 +844,7 @@ const PanelSocios = () => {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Vote className="h-5 w-5" />
+                    <ClipboardList className="h-5 w-5" />
                     Votaciones
                   </CardTitle>
                   <CardDescription>
@@ -1047,7 +1021,7 @@ const PanelSocios = () => {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Calendar className="h-5 w-5" />
+                    <CalendarDays className="h-5 w-5" />
                     Próximos Eventos
                   </CardTitle>
                   <CardDescription>
