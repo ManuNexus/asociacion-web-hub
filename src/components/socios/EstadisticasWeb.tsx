@@ -59,7 +59,13 @@ export const EstadisticasWeb = () => {
   useEffect(() => {
     fetchAnalytics();
 
-    // Subscribe to realtime updates
+    // Polling every 30 seconds
+    const pollInterval = setInterval(() => {
+      console.log('Polling analytics...');
+      fetchAnalytics();
+    }, 30000);
+
+    // Subscribe to realtime updates as backup
     const channel = supabase
       .channel('analytics-changes')
       .on(
@@ -81,6 +87,7 @@ export const EstadisticasWeb = () => {
       .subscribe();
 
     return () => {
+      clearInterval(pollInterval);
       supabase.removeChannel(channel);
     };
   }, [dateRange]);
