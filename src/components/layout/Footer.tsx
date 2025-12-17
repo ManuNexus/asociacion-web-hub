@@ -69,6 +69,17 @@ export function Footer() {
               <p>Registro Nacional de Asociaciones: Nº 631679</p>
             </div>
           </div>
+          <p className="text-center text-xs text-primary-foreground/40 mt-6">
+            Crafted with care by{" "}
+            <a 
+              href="https://x.com/framework_hq" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="hover:text-primary-foreground transition-colors"
+            >
+              FRAMEWORK
+            </a>
+          </p>
         </div>
       </div>
     </footer>;
