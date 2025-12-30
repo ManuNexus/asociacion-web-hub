@@ -76,7 +76,8 @@ const NoticiaDetalle = () => {
     return Math.max(1, Math.ceil(words / 200));
   };
 
-  const shareUrl = noticia ? `https://ahoraorg.es/noticias/${noticia.id}` : "";
+  // Use the og-news edge function URL for sharing so social media crawlers get proper meta tags
+  const shareUrl = noticia ? `https://ihxczttkofjnyviqmxpl.supabase.co/functions/v1/og-news?id=${noticia.id}` : "";
   const shareTitle = noticia?.titulo || "";
 
   const socialLinks = [
