@@ -383,21 +383,19 @@ export const AdminEventos = () => {
                     )}
                   </div>
                   <div className="flex gap-1 shrink-0">
-                    {!evento.publico && (
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        onClick={() => handleResendNotification(evento)}
-                        disabled={sendingNotification === evento.id}
-                        title="Reenviar notificación a socios"
-                      >
-                        {sendingNotification === evento.id ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Send className="h-4 w-4 text-blue-500" />
-                        )}
-                      </Button>
-                    )}
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      onClick={() => handleResendNotification(evento)}
+                      disabled={sendingNotification === evento.id}
+                      title="Reenviar notificación a socios"
+                    >
+                      {sendingNotification === evento.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Send className="h-4 w-4 text-blue-500" />
+                      )}
+                    </Button>
                     <Button variant="ghost" size="icon" onClick={() => openEditDialog(evento)}>
                       <Pencil className="h-4 w-4" />
                     </Button>
