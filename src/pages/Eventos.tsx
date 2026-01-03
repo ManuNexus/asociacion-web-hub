@@ -18,6 +18,7 @@ interface Evento {
   fecha: string;
   ubicacion: string | null;
   solo_junta: boolean;
+  publico: boolean;
   organizador: string | null;
 }
 
