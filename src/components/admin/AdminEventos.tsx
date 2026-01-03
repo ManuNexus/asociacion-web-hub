@@ -121,6 +121,7 @@ export const AdminEventos = () => {
         
         // Send notification to socios
         try {
+          const { data: { session } } = await supabase.auth.getSession();
           await supabase.functions.invoke("notify-socios", {
             body: {
               tipo: "evento",
@@ -130,6 +131,9 @@ export const AdminEventos = () => {
               ubicacion: formData.ubicacion || null,
               solo_junta: formData.solo_junta,
             },
+            headers: session ? {
+              Authorization: `Bearer ${session.access_token}`
+            } : undefined,
           });
           toast({ title: "Evento creado y notificaciones enviadas" });
         } catch (notifyError) {
@@ -202,6 +206,7 @@ export const AdminEventos = () => {
     
     setSendingNotification(evento.id);
     try {
+      const { data: { session } } = await supabase.auth.getSession();
       const { data, error } = await supabase.functions.invoke("notify-socios", {
         body: {
           tipo: "evento",
@@ -211,6 +216,9 @@ export const AdminEventos = () => {
           ubicacion: evento.ubicacion || null,
           solo_junta: evento.solo_junta,
         },
+        headers: session ? {
+          Authorization: `Bearer ${session.access_token}`
+        } : undefined,
       });
       
       if (error) throw error;
