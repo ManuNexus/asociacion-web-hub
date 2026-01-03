@@ -125,6 +125,7 @@ export type Database = {
           descripcion: string | null
           fecha: string
           id: string
+          organizador: string | null
           publico: boolean
           solo_junta: boolean
           titulo: string
@@ -136,6 +137,7 @@ export type Database = {
           descripcion?: string | null
           fecha: string
           id?: string
+          organizador?: string | null
           publico?: boolean
           solo_junta?: boolean
           titulo: string
@@ -147,6 +149,7 @@ export type Database = {
           descripcion?: string | null
           fecha?: string
           id?: string
+          organizador?: string | null
           publico?: boolean
           solo_junta?: boolean
           titulo?: string

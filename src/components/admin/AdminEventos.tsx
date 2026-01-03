@@ -15,7 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Pencil, Trash2, Loader2, Calendar, MapPin, Shield, Globe } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, Calendar, MapPin, Shield, Globe, Building2 } from "lucide-react";
 import { formatInMadrid, toDateTimeLocalValue, fromDateTimeLocalValue, toMadridTime } from "@/lib/timezone";
 
 interface Evento {
@@ -26,6 +26,7 @@ interface Evento {
   ubicacion: string | null;
   solo_junta: boolean;
   publico: boolean;
+  organizador: string | null;
 }
 
 export const AdminEventos = () => {
@@ -42,6 +43,7 @@ export const AdminEventos = () => {
     ubicacion: "",
     solo_junta: false,
     publico: false,
+    organizador: "AHORA",
   });
 
   const { toast } = useToast();
@@ -97,6 +99,7 @@ export const AdminEventos = () => {
             ubicacion: formData.ubicacion || null,
             solo_junta: formData.publico ? false : formData.solo_junta,
             publico: formData.publico,
+            organizador: formData.organizador || "AHORA",
           })
           .eq("id", editingEvento.id);
 
@@ -110,6 +113,7 @@ export const AdminEventos = () => {
           ubicacion: formData.ubicacion || null,
           solo_junta: formData.publico ? false : formData.solo_junta,
           publico: formData.publico,
+          organizador: formData.organizador || "AHORA",
         }).select().single();
 
         if (error) throw error;
@@ -174,6 +178,7 @@ export const AdminEventos = () => {
       ubicacion: evento.ubicacion || "",
       solo_junta: evento.solo_junta,
       publico: evento.publico,
+      organizador: evento.organizador || "AHORA",
     });
     setDialogOpen(true);
   };
@@ -187,6 +192,7 @@ export const AdminEventos = () => {
       ubicacion: "",
       solo_junta: false,
       publico: false,
+      organizador: "AHORA",
     });
   };
 
@@ -252,6 +258,18 @@ export const AdminEventos = () => {
                   onChange={(e) => setFormData({ ...formData, ubicacion: e.target.value })}
                   placeholder="Dirección o lugar"
                 />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="organizador">Organizador</Label>
+                <Input
+                  id="organizador"
+                  value={formData.organizador}
+                  onChange={(e) => setFormData({ ...formData, organizador: e.target.value })}
+                  placeholder="AHORA, otra asociación..."
+                />
+                <p className="text-xs text-muted-foreground">
+                  Nombre de quien organiza el evento (por defecto AHORA)
+                </p>
               </div>
               <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
                 <div className="flex items-center gap-2">
@@ -320,6 +338,12 @@ export const AdminEventos = () => {
                       <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
                         <MapPin className="h-3 w-3 shrink-0" />
                         <span className="truncate">{evento.ubicacion}</span>
+                      </p>
+                    )}
+                    {evento.organizador && evento.organizador !== "AHORA" && (
+                      <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
+                        <Building2 className="h-3 w-3 shrink-0" />
+                        <span className="truncate">Organiza: {evento.organizador}</span>
                       </p>
                     )}
                   </div>

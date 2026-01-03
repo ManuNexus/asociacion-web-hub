@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Calendar, MapPin, Clock, Download, CalendarPlus } from "lucide-react";
+import { Calendar, MapPin, Clock, Download, CalendarPlus, Building2 } from "lucide-react";
 import { format, isPast, isFuture, isToday } from "date-fns";
 import { es } from "date-fns/locale";
 import { Layout } from "@/components/layout/Layout";
@@ -18,6 +18,7 @@ interface Evento {
   fecha: string;
   ubicacion: string | null;
   solo_junta: boolean;
+  organizador: string | null;
 }
 
 const generateICS = (evento: Evento): string => {
@@ -125,6 +126,12 @@ const EventoCard = ({ evento, isPastEvent }: { evento: Evento; isPastEvent: bool
             <div className="flex items-center gap-1.5">
               <MapPin className="h-4 w-4" />
               <span>{evento.ubicacion}</span>
+            </div>
+          )}
+          {evento.organizador && (
+            <div className="flex items-center gap-1.5">
+              <Building2 className="h-4 w-4" />
+              <span>Organiza: {evento.organizador}</span>
             </div>
           )}
         </div>
