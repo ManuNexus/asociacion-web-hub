@@ -22,6 +22,7 @@ const PoliticaPrivacidad = lazy(() => import("./pages/PoliticaPrivacidad"));
 const Auth = lazy(() => import("./pages/Auth"));
 const AdminNoticias = lazy(() => import("./pages/AdminNoticias"));
 const PanelSocios = lazy(() => import("./pages/PanelSocios"));
+const Eventos = lazy(() => import("./pages/Eventos"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -48,6 +49,7 @@ const App = () => (
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/admin/noticias" element={<AdminNoticias />} />
                 <Route path="/socios" element={<PanelSocios />} />
+                <Route path="/eventos" element={<Eventos />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </PageTransition>
