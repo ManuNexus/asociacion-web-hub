@@ -103,9 +103,11 @@ const EventoCard = ({ evento, isPastEvent }: { evento: Evento; isPastEvent: bool
       {/* Poster Background */}
       <div className={`absolute inset-0 bg-gradient-to-br ${gradient}`} />
       
-      {/* Decorative Elements */}
-      <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
-      <div className="absolute bottom-0 left-0 w-24 h-24 bg-black/10 rounded-full translate-y-1/2 -translate-x-1/2" />
+      {/* Decorative Elements - Yellow accents */}
+      <div className="absolute top-0 right-0 w-32 h-32 bg-secondary/30 rounded-full -translate-y-1/2 translate-x-1/2" />
+      <div className="absolute bottom-0 left-0 w-24 h-24 bg-secondary/20 rounded-full translate-y-1/2 -translate-x-1/2" />
+      <div className="absolute top-4 left-4 w-2 h-16 bg-secondary rounded-full" />
+      <div className="absolute bottom-4 right-4 w-16 h-2 bg-secondary rounded-full" />
       
       {/* Content */}
       <div className="relative p-6 md:p-8 min-h-[320px] flex flex-col text-white">
@@ -113,7 +115,7 @@ const EventoCard = ({ evento, isPastEvent }: { evento: Evento; isPastEvent: bool
         <div className="flex items-start justify-between mb-auto">
           <div className="flex flex-wrap gap-2">
             {isEventToday && !isPastEvent && (
-              <Badge className="bg-white text-primary font-bold animate-pulse">
+              <Badge className="bg-secondary text-primary font-bold animate-pulse">
                 ¡HOY!
               </Badge>
             )}
@@ -124,9 +126,9 @@ const EventoCard = ({ evento, isPastEvent }: { evento: Evento; isPastEvent: bool
             )}
           </div>
           {evento.organizador && (
-            <div className="flex items-center gap-1.5 text-sm bg-white/20 backdrop-blur-sm rounded-full px-3 py-1">
+            <div className="flex items-center gap-1.5 text-sm bg-secondary/90 text-primary backdrop-blur-sm rounded-full px-3 py-1 font-medium">
               <Building2 className="h-3 w-3" />
-              <span className="font-medium">{evento.organizador}</span>
+              <span>{evento.organizador}</span>
             </div>
           )}
         </div>
@@ -143,27 +145,27 @@ const EventoCard = ({ evento, isPastEvent }: { evento: Evento; isPastEvent: bool
           )}
         </div>
 
-        {/* Date Display - Prominent */}
+        {/* Date Display - Prominent with yellow accent */}
         <div className="flex items-end justify-between mt-auto">
-          <div className="bg-white/20 backdrop-blur-sm rounded-xl p-4">
+          <div className="bg-secondary text-primary backdrop-blur-sm rounded-xl p-4 shadow-lg">
             <div className="text-4xl md:text-5xl font-black leading-none">
               {format(eventoDate, "d", { locale: es })}
             </div>
             <div className="text-sm md:text-base font-semibold uppercase tracking-wider mt-1">
               {format(eventoDate, "MMMM", { locale: es })}
             </div>
-            <div className="text-xs opacity-80 mt-1">
+            <div className="text-xs opacity-70 mt-1">
               {format(eventoDate, "yyyy", { locale: es })}
             </div>
           </div>
 
           <div className="text-right space-y-2">
-            <div className="flex items-center justify-end gap-2 text-sm bg-white/20 backdrop-blur-sm rounded-lg px-3 py-2">
+            <div className="flex items-center justify-end gap-2 text-sm bg-white/20 backdrop-blur-sm rounded-lg px-3 py-2 border-l-2 border-secondary">
               <Clock className="h-4 w-4" />
               <span className="font-bold">{format(eventoDate, "HH:mm", { locale: es })}h</span>
             </div>
             {evento.ubicacion && (
-              <div className="flex items-center justify-end gap-2 text-sm bg-white/20 backdrop-blur-sm rounded-lg px-3 py-2">
+              <div className="flex items-center justify-end gap-2 text-sm bg-white/20 backdrop-blur-sm rounded-lg px-3 py-2 border-l-2 border-secondary">
                 <MapPin className="h-4 w-4" />
                 <span className="truncate max-w-[150px]">{evento.ubicacion}</span>
               </div>
@@ -173,12 +175,12 @@ const EventoCard = ({ evento, isPastEvent }: { evento: Evento; isPastEvent: bool
 
         {/* Calendar Buttons */}
         {!isPastEvent && (
-          <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-white/20">
+          <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-secondary/50">
             <Button 
               variant="secondary"
               size="sm"
               onClick={() => addToGoogleCalendar(evento)}
-              className="bg-white/20 hover:bg-white/30 text-white border-0 backdrop-blur-sm gap-1.5 flex-1"
+              className="bg-secondary hover:bg-secondary/80 text-primary border-0 gap-1.5 flex-1 font-semibold"
             >
               <CalendarPlus className="h-4 w-4" />
               Google Calendar
@@ -187,7 +189,7 @@ const EventoCard = ({ evento, isPastEvent }: { evento: Evento; isPastEvent: bool
               variant="secondary"
               size="sm"
               onClick={() => downloadICS(evento)}
-              className="bg-white/20 hover:bg-white/30 text-white border-0 backdrop-blur-sm gap-1.5 flex-1"
+              className="bg-white/20 hover:bg-white/30 text-white border border-secondary/50 backdrop-blur-sm gap-1.5 flex-1"
             >
               <Download className="h-4 w-4" />
               .ics
