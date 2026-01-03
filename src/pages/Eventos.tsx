@@ -20,6 +20,7 @@ interface Evento {
   solo_junta: boolean;
   publico: boolean;
   organizador: string | null;
+  imagen_url: string | null;
 }
 
 const generateICS = (evento: Evento): string => {
@@ -100,8 +101,19 @@ const EventoCard = ({ evento, isPastEvent }: { evento: Evento; isPastEvent: bool
 
   return (
     <div className={`group relative overflow-hidden rounded-2xl transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl ${isPastEvent ? "opacity-60 grayscale-[30%]" : ""}`}>
-      {/* Poster Background */}
-      <div className={`absolute inset-0 bg-gradient-to-br ${gradient}`} />
+      {/* Poster Background - Image or Gradient */}
+      {evento.imagen_url ? (
+        <>
+          <img 
+            src={evento.imagen_url} 
+            alt={evento.titulo}
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/30" />
+        </>
+      ) : (
+        <div className={`absolute inset-0 bg-gradient-to-br ${gradient}`} />
+      )}
       
       {/* Decorative Elements - Yellow accents */}
       <div className="absolute top-0 right-0 w-32 h-32 bg-secondary/30 rounded-full -translate-y-1/2 translate-x-1/2" />

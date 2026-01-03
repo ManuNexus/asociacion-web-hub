@@ -15,7 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Pencil, Trash2, Loader2, Calendar, MapPin, Shield, Globe, Building2, Send } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, Calendar, MapPin, Shield, Globe, Building2, Send, ImageIcon } from "lucide-react";
 import { formatInMadrid, toDateTimeLocalValue, fromDateTimeLocalValue, toMadridTime } from "@/lib/timezone";
 
 interface Evento {
@@ -27,6 +27,7 @@ interface Evento {
   solo_junta: boolean;
   publico: boolean;
   organizador: string | null;
+  imagen_url: string | null;
 }
 
 export const AdminEventos = () => {
@@ -45,6 +46,7 @@ export const AdminEventos = () => {
     solo_junta: false,
     publico: false,
     organizador: "AHORA",
+    imagen_url: "",
   });
 
   const { toast } = useToast();
@@ -101,6 +103,7 @@ export const AdminEventos = () => {
             solo_junta: formData.publico ? false : formData.solo_junta,
             publico: formData.publico,
             organizador: formData.organizador || "AHORA",
+            imagen_url: formData.imagen_url || null,
           })
           .eq("id", editingEvento.id);
 
@@ -115,6 +118,7 @@ export const AdminEventos = () => {
           solo_junta: formData.publico ? false : formData.solo_junta,
           publico: formData.publico,
           organizador: formData.organizador || "AHORA",
+          imagen_url: formData.imagen_url || null,
         }).select().single();
 
         if (error) throw error;
@@ -184,6 +188,7 @@ export const AdminEventos = () => {
       solo_junta: evento.solo_junta,
       publico: evento.publico,
       organizador: evento.organizador || "AHORA",
+      imagen_url: evento.imagen_url || "",
     });
     setDialogOpen(true);
   };
@@ -198,6 +203,7 @@ export const AdminEventos = () => {
       solo_junta: false,
       publico: false,
       organizador: "AHORA",
+      imagen_url: "",
     });
   };
 
@@ -313,6 +319,34 @@ export const AdminEventos = () => {
                 <p className="text-xs text-muted-foreground">
                   Nombre de quien organiza el evento (por defecto AHORA)
                 </p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="imagen_url" className="flex items-center gap-2">
+                  <ImageIcon className="h-4 w-4" />
+                  Imagen del evento (URL)
+                </Label>
+                <Input
+                  id="imagen_url"
+                  value={formData.imagen_url}
+                  onChange={(e) => setFormData({ ...formData, imagen_url: e.target.value })}
+                  placeholder="https://ejemplo.com/imagen.jpg"
+                  type="url"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Enlace a una imagen para mostrar en el póster del evento
+                </p>
+                {formData.imagen_url && (
+                  <div className="mt-2 rounded-lg overflow-hidden border">
+                    <img 
+                      src={formData.imagen_url} 
+                      alt="Vista previa" 
+                      className="w-full h-32 object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = 'none';
+                      }}
+                    />
+                  </div>
+                )}
               </div>
               <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
                 <div className="flex items-center gap-2">
