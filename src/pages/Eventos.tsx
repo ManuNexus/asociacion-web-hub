@@ -101,19 +101,8 @@ const EventoCard = ({ evento, isPastEvent }: { evento: Evento; isPastEvent: bool
 
   return (
     <div className={`group relative overflow-hidden rounded-2xl transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl ${isPastEvent ? "opacity-60 grayscale-[30%]" : ""}`}>
-      {/* Poster Background - Image or Gradient */}
-      {evento.imagen_url ? (
-        <>
-          <img 
-            src={evento.imagen_url} 
-            alt={evento.titulo}
-            className="absolute inset-0 w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/30" />
-        </>
-      ) : (
-        <div className={`absolute inset-0 bg-gradient-to-br ${gradient}`} />
-      )}
+      {/* Poster Background - Gradient only */}
+      <div className={`absolute inset-0 bg-gradient-to-br ${gradient}`} />
       
       {/* Decorative Elements - Yellow accents */}
       <div className="absolute top-0 right-0 w-32 h-32 bg-secondary/30 rounded-full -translate-y-1/2 translate-x-1/2" />
@@ -124,7 +113,7 @@ const EventoCard = ({ evento, isPastEvent }: { evento: Evento; isPastEvent: bool
       {/* Content */}
       <div className="relative p-6 md:p-8 min-h-[320px] flex flex-col text-white">
         {/* Header with badges */}
-        <div className="flex items-start justify-between mb-auto">
+        <div className="flex items-start justify-between mb-4">
           <div className="flex flex-wrap gap-2">
             {isEventToday && !isPastEvent && (
               <Badge className="bg-secondary text-primary font-bold animate-pulse">
@@ -145,8 +134,19 @@ const EventoCard = ({ evento, isPastEvent }: { evento: Evento; isPastEvent: bool
           )}
         </div>
 
+        {/* Event Image - Above title */}
+        {evento.imagen_url && (
+          <div className="mb-4 rounded-xl overflow-hidden border-2 border-secondary/50 shadow-lg">
+            <img 
+              src={evento.imagen_url} 
+              alt={evento.titulo}
+              className="w-full h-40 object-cover"
+            />
+          </div>
+        )}
+
         {/* Main Content - Title */}
-        <div className="my-6">
+        <div className="flex-1">
           <h3 className="text-2xl md:text-3xl font-bold leading-tight drop-shadow-lg">
             {evento.titulo}
           </h3>
