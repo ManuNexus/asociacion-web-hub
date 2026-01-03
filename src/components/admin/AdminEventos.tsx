@@ -15,7 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Pencil, Trash2, Loader2, Calendar, MapPin, Shield, Globe, Building2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, Calendar, MapPin, Shield, Globe, Building2, Send } from "lucide-react";
 import { formatInMadrid, toDateTimeLocalValue, fromDateTimeLocalValue, toMadridTime } from "@/lib/timezone";
 
 interface Evento {
@@ -33,6 +33,7 @@ export const AdminEventos = () => {
   const [eventos, setEventos] = useState<Evento[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [sendingNotification, setSendingNotification] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingEvento, setEditingEvento] = useState<Evento | null>(null);
   
@@ -196,6 +197,40 @@ export const AdminEventos = () => {
     });
   };
 
+  const handleResendNotification = async (evento: Evento) => {
+    if (!confirm(`¿Reenviar notificación del evento "${evento.titulo}" a los socios?`)) return;
+    
+    setSendingNotification(evento.id);
+    try {
+      const { data, error } = await supabase.functions.invoke("notify-socios", {
+        body: {
+          tipo: "evento",
+          titulo: evento.titulo,
+          descripcion: evento.descripcion || null,
+          fecha: evento.fecha,
+          ubicacion: evento.ubicacion || null,
+          solo_junta: evento.solo_junta,
+        },
+      });
+      
+      if (error) throw error;
+      
+      toast({ 
+        title: "Notificaciones enviadas",
+        description: data?.message || "Las notificaciones se han enviado correctamente"
+      });
+    } catch (error: any) {
+      console.error("Error sending notifications:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "No se pudieron enviar las notificaciones",
+      });
+    } finally {
+      setSendingNotification(null);
+    }
+  };
+
   const isPastEvent = (fecha: string) => toMadridTime(fecha) < toMadridTime(new Date());
 
   return (
@@ -348,6 +383,21 @@ export const AdminEventos = () => {
                     )}
                   </div>
                   <div className="flex gap-1 shrink-0">
+                    {!evento.publico && (
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        onClick={() => handleResendNotification(evento)}
+                        disabled={sendingNotification === evento.id}
+                        title="Reenviar notificación a socios"
+                      >
+                        {sendingNotification === evento.id ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Send className="h-4 w-4 text-blue-500" />
+                        )}
+                      </Button>
+                    )}
                     <Button variant="ghost" size="icon" onClick={() => openEditDialog(evento)}>
                       <Pencil className="h-4 w-4" />
                     </Button>
