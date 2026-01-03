@@ -146,7 +146,7 @@ const EventoCard = ({ evento, isPastEvent }: { evento: Evento; isPastEvent: bool
         )}
 
         {/* Main Content - Title */}
-        <div className="flex-1">
+        <div className="mb-6">
           <h3 className="text-2xl md:text-3xl font-bold leading-tight drop-shadow-lg">
             {evento.titulo}
           </h3>
@@ -158,7 +158,7 @@ const EventoCard = ({ evento, isPastEvent }: { evento: Evento; isPastEvent: bool
         </div>
 
         {/* Date Display - Prominent with yellow accent */}
-        <div className="flex items-end justify-between mt-auto">
+        <div className="flex items-end justify-between mt-auto pt-4 border-t border-white/20">
           <div className="bg-secondary text-primary backdrop-blur-sm rounded-xl p-4 shadow-lg">
             <div className="text-4xl md:text-5xl font-black leading-none">
               {format(eventoDate, "d", { locale: es })}
