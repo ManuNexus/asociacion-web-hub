@@ -35,7 +35,6 @@ serve(async (req: Request): Promise<Response> => {
 
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
@@ -43,25 +42,34 @@ serve(async (req: Request): Promise<Response> => {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
       console.error("No authorization header provided");
-      return new Response(
-        JSON.stringify({ error: "No authorization header" }),
-        { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } }
-      );
+      return new Response(JSON.stringify({ error: "No authorization header" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
     }
 
-    // Verify JWT token using Supabase auth
-    const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: authHeader } },
-    });
-    
-    const { data: { user }, error: userError } = await supabaseAuth.auth.getUser();
-    
+    const tokenMatch = authHeader.match(/^Bearer\s+(.*)$/i);
+    const token = tokenMatch?.[1];
+    if (!token) {
+      console.error("Malformed authorization header");
+      return new Response(JSON.stringify({ error: "Malformed authorization header" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
+    // Verify JWT token (cryptographically) using the service role client
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser(token);
+
     if (userError || !user) {
       console.error("Auth error:", userError?.message);
-      return new Response(
-        JSON.stringify({ error: "Invalid or expired token" }),
-        { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } }
-      );
+      return new Response(JSON.stringify({ error: "Invalid or expired token" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
     }
 
     const adminUserId = user.id;
