@@ -86,81 +86,116 @@ const EventoCard = ({ evento, isPastEvent }: { evento: Evento; isPastEvent: bool
   const eventoDate = toMadridTime(new Date(evento.fecha));
   const isEventToday = isToday(eventoDate);
 
+  // Generate a consistent gradient based on event id
+  const gradients = [
+    "from-primary via-primary/80 to-primary/60",
+    "from-orange-500 via-amber-500 to-yellow-500",
+    "from-violet-600 via-purple-500 to-fuchsia-500",
+    "from-emerald-500 via-teal-500 to-cyan-500",
+    "from-rose-500 via-pink-500 to-fuchsia-400",
+    "from-blue-600 via-indigo-500 to-violet-500",
+  ];
+  const gradientIndex = evento.id.charCodeAt(0) % gradients.length;
+  const gradient = gradients[gradientIndex];
+
   return (
-    <Card className={`transition-all hover:shadow-lg ${isPastEvent ? "opacity-70" : ""}`}>
-      <CardHeader>
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-2">
-              {isEventToday && !isPastEvent && (
-                <Badge variant="default" className="bg-primary">Hoy</Badge>
-              )}
-              {isPastEvent && (
-                <Badge variant="secondary">Finalizado</Badge>
-              )}
-            </div>
-            <CardTitle className="text-xl">{evento.titulo}</CardTitle>
+    <div className={`group relative overflow-hidden rounded-2xl transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl ${isPastEvent ? "opacity-60 grayscale-[30%]" : ""}`}>
+      {/* Poster Background */}
+      <div className={`absolute inset-0 bg-gradient-to-br ${gradient}`} />
+      
+      {/* Decorative Elements */}
+      <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
+      <div className="absolute bottom-0 left-0 w-24 h-24 bg-black/10 rounded-full translate-y-1/2 -translate-x-1/2" />
+      
+      {/* Content */}
+      <div className="relative p-6 md:p-8 min-h-[320px] flex flex-col text-white">
+        {/* Header with badges */}
+        <div className="flex items-start justify-between mb-auto">
+          <div className="flex flex-wrap gap-2">
+            {isEventToday && !isPastEvent && (
+              <Badge className="bg-white text-primary font-bold animate-pulse">
+                ¡HOY!
+              </Badge>
+            )}
+            {isPastEvent && (
+              <Badge variant="secondary" className="bg-black/30 text-white border-0">
+                Finalizado
+              </Badge>
+            )}
           </div>
-          <div className="text-right shrink-0">
-            <div className="text-2xl font-bold text-primary">
-              {format(eventoDate, "d", { locale: es })}
-            </div>
-            <div className="text-sm text-muted-foreground uppercase">
-              {format(eventoDate, "MMM yyyy", { locale: es })}
-            </div>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {evento.descripcion && (
-          <CardDescription className="text-base whitespace-pre-line">
-            {evento.descripcion}
-          </CardDescription>
-        )}
-        
-        <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-          <div className="flex items-center gap-1.5">
-            <Clock className="h-4 w-4" />
-            <span>{format(eventoDate, "HH:mm", { locale: es })}h</span>
-          </div>
-          {evento.ubicacion && (
-            <div className="flex items-center gap-1.5">
-              <MapPin className="h-4 w-4" />
-              <span>{evento.ubicacion}</span>
-            </div>
-          )}
           {evento.organizador && (
-            <div className="flex items-center gap-1.5">
-              <Building2 className="h-4 w-4" />
-              <span>Organiza: {evento.organizador}</span>
+            <div className="flex items-center gap-1.5 text-sm bg-white/20 backdrop-blur-sm rounded-full px-3 py-1">
+              <Building2 className="h-3 w-3" />
+              <span className="font-medium">{evento.organizador}</span>
             </div>
           )}
         </div>
 
+        {/* Main Content - Title */}
+        <div className="my-6">
+          <h3 className="text-2xl md:text-3xl font-bold leading-tight drop-shadow-lg">
+            {evento.titulo}
+          </h3>
+          {evento.descripcion && (
+            <p className="mt-3 text-white/90 text-sm md:text-base line-clamp-3">
+              {evento.descripcion}
+            </p>
+          )}
+        </div>
+
+        {/* Date Display - Prominent */}
+        <div className="flex items-end justify-between mt-auto">
+          <div className="bg-white/20 backdrop-blur-sm rounded-xl p-4">
+            <div className="text-4xl md:text-5xl font-black leading-none">
+              {format(eventoDate, "d", { locale: es })}
+            </div>
+            <div className="text-sm md:text-base font-semibold uppercase tracking-wider mt-1">
+              {format(eventoDate, "MMMM", { locale: es })}
+            </div>
+            <div className="text-xs opacity-80 mt-1">
+              {format(eventoDate, "yyyy", { locale: es })}
+            </div>
+          </div>
+
+          <div className="text-right space-y-2">
+            <div className="flex items-center justify-end gap-2 text-sm bg-white/20 backdrop-blur-sm rounded-lg px-3 py-2">
+              <Clock className="h-4 w-4" />
+              <span className="font-bold">{format(eventoDate, "HH:mm", { locale: es })}h</span>
+            </div>
+            {evento.ubicacion && (
+              <div className="flex items-center justify-end gap-2 text-sm bg-white/20 backdrop-blur-sm rounded-lg px-3 py-2">
+                <MapPin className="h-4 w-4" />
+                <span className="truncate max-w-[150px]">{evento.ubicacion}</span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Calendar Buttons */}
         {!isPastEvent && (
-          <div className="flex flex-wrap gap-2 pt-2">
+          <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-white/20">
             <Button 
-              variant="outline" 
+              variant="secondary"
               size="sm"
               onClick={() => addToGoogleCalendar(evento)}
-              className="gap-1.5"
+              className="bg-white/20 hover:bg-white/30 text-white border-0 backdrop-blur-sm gap-1.5 flex-1"
             >
               <CalendarPlus className="h-4 w-4" />
               Google Calendar
             </Button>
             <Button 
-              variant="outline" 
+              variant="secondary"
               size="sm"
               onClick={() => downloadICS(evento)}
-              className="gap-1.5"
+              className="bg-white/20 hover:bg-white/30 text-white border-0 backdrop-blur-sm gap-1.5 flex-1"
             >
               <Download className="h-4 w-4" />
-              Descargar .ics
+              .ics
             </Button>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };
 
@@ -270,7 +305,7 @@ export default function Eventos() {
                     </CardContent>
                   </Card>
                 ) : (
-                  <div className="grid gap-6 md:grid-cols-2">
+                  <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-2">
                     {upcomingEventos.map((evento) => (
                       <EventoCard 
                         key={evento.id} 
@@ -292,7 +327,7 @@ export default function Eventos() {
                     </CardContent>
                   </Card>
                 ) : (
-                  <div className="grid gap-6 md:grid-cols-2">
+                  <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-2">
                     {pastEventos.map((evento) => (
                       <EventoCard 
                         key={evento.id} 
