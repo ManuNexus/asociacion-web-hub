@@ -187,7 +187,7 @@ export default function Eventos() {
       const { data, error } = await supabase
         .from("eventos")
         .select("*")
-        .eq("solo_junta", false)
+        .eq("publico", true)
         .order("fecha", { ascending: true });
 
       if (!error && data) {
