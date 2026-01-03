@@ -19,22 +19,22 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-      <div className="container flex h-16 items-center justify-between md:h-20">
-        <Link to="/" className="flex items-center">
+      <div className="container flex h-16 items-center justify-between lg:h-20">
+        <Link to="/" className="flex items-center shrink-0">
           <img 
             src={logoAhora} 
             alt="AHORA" 
-            className="h-8 md:h-10 w-auto object-contain" 
+            className="h-8 lg:h-10 w-auto object-contain" 
           />
         </Link>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-1">
+        <nav className="hidden lg:flex items-center gap-0.5 xl:gap-1">
           {navLinks.map((link) => (
             <Link
               key={link.href}
               to={link.href}
-              className={`px-4 py-2 text-sm font-medium transition-colors rounded-md hover:bg-ahora-yellow/20 hover:text-ahora-yellow ${
+              className={`px-2.5 xl:px-4 py-2 text-sm font-medium transition-colors rounded-md hover:bg-ahora-yellow/20 hover:text-ahora-yellow whitespace-nowrap ${
                 location.pathname === link.href
                   ? "text-ahora-yellow bg-ahora-yellow/15"
                   : "text-muted-foreground"
@@ -45,7 +45,7 @@ export function Header() {
           ))}
           <Link
             to="/socios"
-            className="ml-2 px-4 py-2 text-sm font-semibold uppercase tracking-wide border-2 border-ahora-yellow text-ahora-yellow rounded-md hover:bg-ahora-yellow hover:text-background transition-colors"
+            className="ml-2 px-3 xl:px-4 py-2 text-sm font-semibold uppercase tracking-wide border-2 border-ahora-yellow text-ahora-yellow rounded-md hover:bg-ahora-yellow hover:text-background transition-colors whitespace-nowrap"
           >
             Espacio Socio
           </Link>
@@ -55,7 +55,7 @@ export function Header() {
         <Button
           variant="ghost"
           size="icon"
-          className="md:hidden"
+          className="lg:hidden"
           onClick={() => setIsMenuOpen(!isMenuOpen)}
           aria-label="Toggle menu"
         >
@@ -65,7 +65,7 @@ export function Header() {
 
       {/* Mobile Navigation */}
       {isMenuOpen && (
-        <nav className="md:hidden border-t border-border bg-background animate-fade-in">
+        <nav className="lg:hidden border-t border-border bg-background animate-fade-in">
           <div className="container py-4 flex flex-col gap-2">
             {navLinks.map((link) => (
               <Link
