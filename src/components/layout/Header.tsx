@@ -8,6 +8,7 @@ const navLinks = [
   { href: "/", label: "Inicio" },
   { href: "/nosotros", label: "Quiénes Somos" },
   { href: "/noticias", label: "Sala de Prensa" },
+  { href: "/eventos", label: "Eventos" },
   { href: "/transparencia", label: "Transparencia" },
   { href: "/hazte-socio", label: "Hazte Socio" },
 ];
