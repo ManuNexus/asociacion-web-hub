@@ -125,6 +125,7 @@ export type Database = {
           descripcion: string | null
           fecha: string
           id: string
+          publico: boolean
           solo_junta: boolean
           titulo: string
           ubicacion: string | null
@@ -135,6 +136,7 @@ export type Database = {
           descripcion?: string | null
           fecha: string
           id?: string
+          publico?: boolean
           solo_junta?: boolean
           titulo: string
           ubicacion?: string | null
@@ -145,6 +147,7 @@ export type Database = {
           descripcion?: string | null
           fecha?: string
           id?: string
+          publico?: boolean
           solo_junta?: boolean
           titulo?: string
           ubicacion?: string | null

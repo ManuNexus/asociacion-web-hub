@@ -15,7 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Pencil, Trash2, Loader2, Calendar, MapPin, Shield } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, Calendar, MapPin, Shield, Globe } from "lucide-react";
 import { formatInMadrid, toDateTimeLocalValue, fromDateTimeLocalValue, toMadridTime } from "@/lib/timezone";
 
 interface Evento {
@@ -25,6 +25,7 @@ interface Evento {
   fecha: string;
   ubicacion: string | null;
   solo_junta: boolean;
+  publico: boolean;
 }
 
 export const AdminEventos = () => {
@@ -40,6 +41,7 @@ export const AdminEventos = () => {
     fecha: "",
     ubicacion: "",
     solo_junta: false,
+    publico: false,
   });
 
   const { toast } = useToast();
@@ -93,7 +95,8 @@ export const AdminEventos = () => {
             descripcion: formData.descripcion || null,
             fecha: fechaUTC,
             ubicacion: formData.ubicacion || null,
-            solo_junta: formData.solo_junta,
+            solo_junta: formData.publico ? false : formData.solo_junta,
+            publico: formData.publico,
           })
           .eq("id", editingEvento.id);
 
@@ -105,7 +108,8 @@ export const AdminEventos = () => {
           descripcion: formData.descripcion || null,
           fecha: fechaUTC,
           ubicacion: formData.ubicacion || null,
-          solo_junta: formData.solo_junta,
+          solo_junta: formData.publico ? false : formData.solo_junta,
+          publico: formData.publico,
         }).select().single();
 
         if (error) throw error;
@@ -169,6 +173,7 @@ export const AdminEventos = () => {
       fecha: evento.fecha ? toDateTimeLocalValue(evento.fecha) : "",
       ubicacion: evento.ubicacion || "",
       solo_junta: evento.solo_junta,
+      publico: evento.publico,
     });
     setDialogOpen(true);
   };
@@ -181,6 +186,7 @@ export const AdminEventos = () => {
       fecha: "",
       ubicacion: "",
       solo_junta: false,
+      publico: false,
     });
   };
 
@@ -249,20 +255,38 @@ export const AdminEventos = () => {
               </div>
               <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
                 <div className="flex items-center gap-2">
-                  <Shield className="h-4 w-4 text-primary" />
+                  <Globe className="h-4 w-4 text-green-600" />
                   <div>
-                    <Label htmlFor="solo_junta">Solo Junta Directiva</Label>
+                    <Label htmlFor="publico">Evento Público</Label>
                     <p className="text-xs text-muted-foreground">
-                      Solo visible para miembros de la junta
+                      Visible en la web pública para todos
                     </p>
                   </div>
                 </div>
                 <Switch
-                  id="solo_junta"
-                  checked={formData.solo_junta}
-                  onCheckedChange={(checked) => setFormData({ ...formData, solo_junta: checked })}
+                  id="publico"
+                  checked={formData.publico}
+                  onCheckedChange={(checked) => setFormData({ ...formData, publico: checked, solo_junta: checked ? false : formData.solo_junta })}
                 />
               </div>
+              {!formData.publico && (
+                <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <Shield className="h-4 w-4 text-primary" />
+                    <div>
+                      <Label htmlFor="solo_junta">Solo Junta Directiva</Label>
+                      <p className="text-xs text-muted-foreground">
+                        Solo visible para miembros de la junta
+                      </p>
+                    </div>
+                  </div>
+                  <Switch
+                    id="solo_junta"
+                    checked={formData.solo_junta}
+                    onCheckedChange={(checked) => setFormData({ ...formData, solo_junta: checked })}
+                  />
+                </div>
+              )}
               <div className="flex justify-end gap-2">
                 <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
                   Cancelar
@@ -309,13 +333,18 @@ export const AdminEventos = () => {
                   </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                  {evento.solo_junta ? (
+                  {evento.publico ? (
+                    <Badge className="bg-green-600">
+                      <Globe className="h-3 w-3 mr-1" />
+                      Público
+                    </Badge>
+                  ) : evento.solo_junta ? (
                     <Badge variant="outline" className="border-primary text-primary">
                       <Shield className="h-3 w-3 mr-1" />
                       Junta
                     </Badge>
                   ) : (
-                    <Badge variant="secondary">Todos</Badge>
+                    <Badge variant="secondary">Socios</Badge>
                   )}
                   {isPastEvent(evento.fecha) ? (
                     <Badge variant="secondary">Pasado</Badge>
