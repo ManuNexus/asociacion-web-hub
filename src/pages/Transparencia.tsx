@@ -135,7 +135,7 @@ const Transparencia = () => {
                     Las cuentas anuales de la asociación se aprueban por la Asamblea General y se publican en esta sección una vez auditadas.
                   </p>
                   <div className="text-sm text-muted-foreground italic">
-                    Al ser una asociación de reciente constitución (2025), las primeras cuentas anuales se publicarán tras el cierre del ejercicio.
+                    Al ser una asociación de reciente constitución (2025), las primeras cuentas anuales se publicarán tras el cierre del ejercicio 2026.
                   </div>
                 </div>
                 <div>
