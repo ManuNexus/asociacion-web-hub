@@ -35,7 +35,7 @@ const PoliticaPrivacidad = () => {
                     <strong>NIF:</strong> Pendiente de aprobación
                   </p>
                   <p>
-                    <strong>Dirección:</strong> C/ Aragón 578, 08026 Barcelona
+                    <strong>Dirección:</strong> C/ Aragón 458, 08013 Barcelona
                   </p>
                   <p>
                     <strong>Email:</strong> info@ahoraorg.es
