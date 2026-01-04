@@ -11,8 +11,8 @@ const documentos = [{
   title: "Acta Fundacional",
   description: "Acta de constitución de la Asociación AHORA, firmada el 13 de junio de 2025.",
   icon: FileText,
-  available: false,
-  url: null
+  available: true,
+  url: "/documentos/acta-fundacional.pdf"
 }, {
   title: "Resolución de Inscripción",
   description: "Resolución del Ministerio del Interior inscribiendo la asociación en el Registro Nacional.",
