@@ -17,8 +17,8 @@ const documentos = [{
   title: "Resolución de Inscripción",
   description: "Resolución del Ministerio del Interior inscribiendo la asociación en el Registro Nacional.",
   icon: Building,
-  available: false,
-  url: null
+  available: true,
+  url: "/documentos/resolucion-inscripcion.pdf"
 }];
 const organos = [{
   cargo: "Presidente",
