@@ -5,8 +5,8 @@ const documentos = [{
   title: "Estatutos de la Asociación",
   description: "Documento fundacional que recoge los fines, organización y funcionamiento de la asociación.",
   icon: FileText,
-  available: false,
-  url: null
+  available: true,
+  url: "/documentos/estatutos-fundacionales.pdf"
 }, {
   title: "Acta Fundacional",
   description: "Acta de constitución de la Asociación AHORA, firmada el 13 de junio de 2025.",
