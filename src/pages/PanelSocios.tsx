@@ -292,32 +292,22 @@ const PanelSocios = () => {
         setOpciones(opcionesData);
       }
 
-      // Fetch vote counts for finished votaciones
+      // Fetch vote counts for finished votaciones using RPC function (bypasses RLS for counts only)
       const finishedVotacionIds = votacionesData
         .filter(v => new Date(v.fecha_fin) < new Date())
         .map(v => v.id);
 
-      if (finishedVotacionIds.length > 0 && opcionesData) {
-        const finishedOpcionIds = opcionesData
-          .filter(o => finishedVotacionIds.includes(o.votacion_id))
-          .map(o => o.id);
+      if (finishedVotacionIds.length > 0) {
+        const { data: voteCounts } = await supabase.rpc("get_vote_counts_for_votaciones", {
+          votacion_ids: finishedVotacionIds
+        });
 
-        if (finishedOpcionIds.length > 0) {
-          const { data: votosData } = await supabase
-            .from("votos")
-            .select("opcion_id")
-            .in("opcion_id", finishedOpcionIds);
-
-          if (votosData) {
-            const counts: VotoCount[] = [];
-            finishedOpcionIds.forEach(opcionId => {
-              counts.push({
-                opcion_id: opcionId,
-                count: votosData.filter(v => v.opcion_id === opcionId).length
-              });
-            });
-            setVotosCount(counts);
-          }
+        if (voteCounts) {
+          const counts: VotoCount[] = voteCounts.map((vc: { opcion_id: string; vote_count: number }) => ({
+            opcion_id: vc.opcion_id,
+            count: vc.vote_count
+          }));
+          setVotosCount(counts);
         }
       }
     }
