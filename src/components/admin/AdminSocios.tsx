@@ -39,7 +39,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Pencil, Search, Trash2, UserX, Shield, Hash, CreditCard } from "lucide-react";
+import { Loader2, Pencil, Search, Trash2, UserX, Shield, Hash, CreditCard, FileText } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 
@@ -86,6 +86,7 @@ export const AdminSocios = () => {
   const [diaCobro, setDiaCobro] = useState<number>(1);
   const [fotoUrl, setFotoUrl] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+  const [resendingSepa, setResendingSepa] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -267,6 +268,33 @@ export const AdminSocios = () => {
     setSaving(false);
   };
 
+  const handleResendSepa = async (socio: SocioWithJunta) => {
+    setResendingSepa(socio.id);
+    try {
+      const response = await supabase.functions.invoke("resend-sepa", {
+        body: { socio_id: socio.id },
+      });
+
+      if (response.error) {
+        throw new Error(response.error.message);
+      }
+
+      toast({
+        title: "SEPA reenviado",
+        description: `Se ha enviado el documento SEPA a ${socio.email}`,
+      });
+    } catch (error: any) {
+      console.error("Error resending SEPA:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "No se pudo reenviar el documento SEPA",
+      });
+    } finally {
+      setResendingSepa(null);
+    }
+  };
+
   const filteredSocios = socios.filter(
     (s) =>
       s.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -434,15 +462,31 @@ export const AdminSocios = () => {
                           <Pencil className="h-4 w-4" />
                         </Button>
                         {socio.activo && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => openBajaDialog(socio)}
-                            title="Dar de baja"
-                            className="text-orange-500 hover:text-orange-600"
-                          >
-                            <UserX className="h-4 w-4" />
-                          </Button>
+                          <>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleResendSepa(socio)}
+                              disabled={resendingSepa === socio.id}
+                              title="Reenviar SEPA"
+                              className="text-blue-500 hover:text-blue-600"
+                            >
+                              {resendingSepa === socio.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <FileText className="h-4 w-4" />
+                              )}
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => openBajaDialog(socio)}
+                              title="Dar de baja"
+                              className="text-orange-500 hover:text-orange-600"
+                            >
+                              <UserX className="h-4 w-4" />
+                            </Button>
+                          </>
                         )}
                         <Button
                           variant="ghost"

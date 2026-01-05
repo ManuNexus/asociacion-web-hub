@@ -6,6 +6,9 @@ verify_jwt = false
 [functions.resend-invite]
 verify_jwt = false
 
+[functions.resend-sepa]
+verify_jwt = false
+
 [functions.baja-socio]
 verify_jwt = false
 
