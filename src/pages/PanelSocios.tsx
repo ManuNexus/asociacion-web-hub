@@ -953,21 +953,62 @@ const PanelSocios = () => {
                                   <p className="text-sm font-medium text-muted-foreground">
                                     Resultados ({getTotalVotos()} votos totales)
                                   </p>
-                                  {yaVotado && (
+                                  <div className="flex gap-2">
+                                    {yaVotado && (
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => handleDownloadCertificado(votacion.id)}
+                                        disabled={downloadingCert === votacion.id}
+                                        title="Certificado de tu voto"
+                                      >
+                                        {downloadingCert === votacion.id ? (
+                                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                        ) : (
+                                          <Download className="h-4 w-4 mr-2" />
+                                        )}
+                                        Mi voto
+                                      </Button>
+                                    )}
                                     <Button
                                       variant="outline"
                                       size="sm"
-                                      onClick={() => handleDownloadCertificado(votacion.id)}
+                                      onClick={async () => {
+                                        try {
+                                          setDownloadingCert(votacion.id);
+                                          const { data, error } = await supabase.functions.invoke("certificado-resultados", {
+                                            body: { votacion_id: votacion.id }
+                                          });
+                                          
+                                          if (error) throw error;
+                                          
+                                          const printWindow = window.open("", "_blank");
+                                          if (printWindow) {
+                                            printWindow.document.write(data.html);
+                                            printWindow.document.close();
+                                          }
+                                        } catch (err: any) {
+                                          console.error("Error generating results certificate:", err);
+                                          toast({
+                                            variant: "destructive",
+                                            title: "Error",
+                                            description: "No se pudo generar el certificado de resultados"
+                                          });
+                                        } finally {
+                                          setDownloadingCert(null);
+                                        }
+                                      }}
                                       disabled={downloadingCert === votacion.id}
+                                      title="Certificado de resultados de la votación"
                                     >
                                       {downloadingCert === votacion.id ? (
                                         <Loader2 className="h-4 w-4 animate-spin mr-2" />
                                       ) : (
-                                        <Download className="h-4 w-4 mr-2" />
+                                        <FileText className="h-4 w-4 mr-2" />
                                       )}
-                                      Certificado
+                                      Resultados
                                     </Button>
-                                  )}
+                                  </div>
                                 </div>
                                 {opcionesVotacion.map((opcion) => {
                                   const percentage = getVotePercentage(opcion.id);
