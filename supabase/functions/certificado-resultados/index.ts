@@ -129,11 +129,11 @@ serve(async (req: Request): Promise<Response> => {
     // Get total eligible voters (socios)
     let totalEligibleVoters = 0;
     if (votacion.solo_junta) {
-      // Count junta members
+      // Count only junta members (not admin-only users)
       const { count } = await supabaseAdmin
         .from("user_roles")
         .select("*", { count: "exact", head: true })
-        .in("role", ["junta", "admin"]);
+        .eq("role", "junta");
       totalEligibleVoters = count || 0;
     } else {
       // Count all active socios
