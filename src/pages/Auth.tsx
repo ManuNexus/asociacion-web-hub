@@ -192,22 +192,34 @@ const Auth = () => {
         return;
       }
       setLoading(true);
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth`,
-      });
-      setLoading(false);
-      if (error) {
+      
+      try {
+        // Use our custom edge function that sends branded emails via Resend
+        const { data, error } = await supabase.functions.invoke("send-password-reset", {
+          body: { email },
+        });
+        
+        if (error) {
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: "No se pudo enviar el email de recuperación",
+          });
+        } else {
+          toast({
+            title: "Email enviado",
+            description: "Revisa tu bandeja de entrada para restablecer tu contraseña",
+          });
+          setMode("login");
+        }
+      } catch (err: any) {
         toast({
           variant: "destructive",
           title: "Error",
-          description: error.message,
+          description: err.message || "Error al procesar la solicitud",
         });
-      } else {
-        toast({
-          title: "Email enviado",
-          description: "Revisa tu bandeja de entrada para restablecer tu contraseña",
-        });
-        setMode("login");
+      } finally {
+        setLoading(false);
       }
       return;
     }
