@@ -67,8 +67,18 @@ serve(async (req: Request): Promise<Response> => {
       );
     }
 
-    // Build a link that goes through Supabase's verify endpoint with our redirect
-    const appUrl = `${supabaseUrl}/auth/v1/verify?token=${encodeURIComponent(tokenHash)}&type=recovery&redirect_to=${encodeURIComponent("https://ahoraorg.es/auth")}`;
+    // Use Supabase's generated action_link, but force our official domain as redirect.
+    // NOTE: redirect_to must be allow-listed in Auth settings, otherwise Supabase will fall back to the project's Site URL.
+    const actionLink = linkData.properties?.action_link;
+
+    let appUrl: string;
+    if (actionLink) {
+      const url = new URL(actionLink);
+      url.searchParams.set("redirect_to", "https://ahoraorg.es/auth");
+      appUrl = url.toString();
+    } else {
+      appUrl = `${supabaseUrl}/auth/v1/verify?token=${encodeURIComponent(tokenHash)}&type=recovery&redirect_to=${encodeURIComponent("https://ahoraorg.es/auth")}`;
+    }
 
     const { data: socioData } = await supabaseAdmin
       .from("socios")
