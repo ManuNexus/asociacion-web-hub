@@ -66,7 +66,9 @@ export function Footer() {
                 Política de Privacidad
               </Link>
               <span>|</span>
-              <p>Registro Nacional de Asociaciones: Nº 631679</p>
+              <p>NIF: G24999484</p>
+              <span>|</span>
+              <p>Registro Nacional: Nº 631679</p>
             </div>
           </div>
           <p className="text-center text-xs text-primary-foreground/40 mt-6">

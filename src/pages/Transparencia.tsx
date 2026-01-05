@@ -170,10 +170,14 @@ const Transparencia = () => {
               Datos Registrales
             </h2>
             <div className="bg-primary rounded-xl p-6 md:p-8 text-primary-foreground">
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-5">
                 <div>
                   <div className="text-primary-foreground/60 text-sm mb-1">Denominación</div>
                   <div className="font-bold">ASOCIACIÓN AHORA</div>
+                </div>
+                <div>
+                  <div className="text-primary-foreground/60 text-sm mb-1">NIF</div>
+                  <div className="font-bold">G24999484</div>
                 </div>
                 <div>
                   <div className="text-primary-foreground/60 text-sm mb-1">Número Nacional</div>
