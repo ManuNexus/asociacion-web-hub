@@ -336,7 +336,7 @@ serve(async (req: Request): Promise<Response> => {
                 <p>Para completar tu alta como socio/a, necesitamos que:</p>
                 <ol>
                   <li>Imprimas el documento adjunto</li>
-                  <li>Lo firmes en el espacio indicado</li>
+                  <li>Lo firmes en el espacio indicado (también puedes firmarlo con firma digital certificada)</li>
                   <li>Nos lo envíes escaneado a <strong>presidencia@ahoraorg.es</strong></li>
                 </ol>
                 <p><em>Este documento autoriza el cobro de la cuota de socio mediante domiciliación bancaria.</em></p>
