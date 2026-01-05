@@ -44,16 +44,18 @@ serve(async (req: Request): Promise<Response> => {
       });
     }
 
-    // Check if user is admin
+    // Check user roles
     const { data: roleData } = await supabase
       .from("user_roles")
       .select("role")
-      .eq("user_id", user.id)
-      .in("role", ["admin", "junta"]);
+      .eq("user_id", user.id);
 
-    const isAdminOrJunta = roleData && roleData.length > 0;
-    if (!isAdminOrJunta) {
-      return new Response(JSON.stringify({ error: "Solo administradores o junta pueden generar este certificado" }), {
+    const userRoles = roleData?.map(r => r.role) || [];
+    const isAdminOrJunta = userRoles.includes("admin") || userRoles.includes("junta");
+    const isSocio = userRoles.includes("socio");
+
+    if (!isAdminOrJunta && !isSocio) {
+      return new Response(JSON.stringify({ error: "No autorizado" }), {
         status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -81,6 +83,15 @@ serve(async (req: Request): Promise<Response> => {
       console.error("Votacion not found:", votacionError);
       return new Response(JSON.stringify({ error: "Votación no encontrada" }), {
         status: 404,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Check if votacion is finished (only allow downloading results after it ends)
+    const fechaFin = new Date(votacion.fecha_fin);
+    if (fechaFin > new Date() && !isAdminOrJunta) {
+      return new Response(JSON.stringify({ error: "Los resultados solo están disponibles cuando la votación ha finalizado" }), {
+        status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
