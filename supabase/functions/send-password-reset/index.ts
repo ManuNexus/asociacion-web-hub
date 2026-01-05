@@ -23,7 +23,6 @@ serve(async (req: Request): Promise<Response> => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-    // Create admin client with service role
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
       auth: {
         autoRefreshToken: false,
@@ -39,30 +38,36 @@ serve(async (req: Request): Promise<Response> => {
 
     console.log(`Processing password reset for: ${email}`);
 
-    // Check if user exists
-    const { data: existingUsers, error: listError } = await supabaseAdmin.auth.admin.listUsers();
-    
-    if (listError) {
-      console.error("Error listing users:", listError);
-      // Don't reveal if user exists or not for security
+    // SECURITY: always return a generic success message to prevent user enumeration.
+
+    // Generate recovery token (we will build a link to our own domain to avoid unexpected redirects)
+    const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
+      type: "recovery",
+      email,
+    });
+
+    if (linkError) {
+      console.error("Error generating reset token:", linkError);
       return new Response(
         JSON.stringify({ success: true, message: "Si el email existe, recibirás un enlace de recuperación" }),
-        { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } },
       );
     }
 
-    const user = existingUsers.users.find(u => u.email?.toLowerCase() === email.toLowerCase());
-    
-    if (!user) {
-      console.log("User not found, returning generic success message");
-      // Don't reveal if user exists or not for security
+    const tokenHash = linkData.properties?.hashed_token;
+
+    if (!tokenHash) {
+      console.error("No hashed_token returned from generateLink");
       return new Response(
         JSON.stringify({ success: true, message: "Si el email existe, recibirás un enlace de recuperación" }),
-        { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } },
       );
     }
 
-    // Get user's name from socios table if available
+    // IMPORTANT: build a link that always lands on our official domain.
+    // Our /auth page will verify the token and enter PASSWORD_RECOVERY flow.
+    const appUrl = `https://ahoraorg.es/auth?type=recovery&token_hash=${encodeURIComponent(tokenHash)}&email=${encodeURIComponent(email)}`;
+
     const { data: socioData } = await supabaseAdmin
       .from("socios")
       .select("nombre")
@@ -71,31 +76,6 @@ serve(async (req: Request): Promise<Response> => {
 
     const nombre = socioData?.nombre || "Usuario";
 
-    // Generate password reset link with redirect to production domain
-    const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
-      type: "recovery",
-      email: email,
-      options: {
-        redirectTo: "https://ahoraorg.es/auth",
-      },
-    });
-
-    if (linkError) {
-      console.error("Error generating reset link:", linkError);
-      throw new Error("Error al generar el enlace de recuperación");
-    }
-
-    // The generated link contains the token, but we need to construct a proper URL
-    // that redirects to our production domain
-    const resetLink = linkData.properties?.action_link;
-    
-    if (!resetLink) {
-      throw new Error("No se pudo generar el enlace de recuperación");
-    }
-
-    console.log("Reset link generated successfully");
-
-    // Send email using Resend with our branding
     const emailResponse = await resend.emails.send({
       from: "AHORA <socios@ahoraorg.es>",
       to: [email],
@@ -123,17 +103,13 @@ serve(async (req: Request): Promise<Response> => {
             <div class="content">
               <p>Hola <strong>${nombre}</strong>,</p>
               <p>Hemos recibido una solicitud para restablecer la contraseña de tu cuenta en AHORA.</p>
-              
               <p style="text-align: center;">
-                <a href="${resetLink}" class="button">Restablecer mi contraseña</a>
+                <a href="${appUrl}" class="button">Restablecer mi contraseña</a>
               </p>
-              
               <div class="warning">
                 <p style="margin: 0;"><strong>⏱️ Este enlace expirará en 1 hora.</strong></p>
               </div>
-              
               <p>Si no has solicitado este cambio, puedes ignorar este mensaje. Tu contraseña actual seguirá siendo válida.</p>
-              
               <p>Si tienes algún problema, contacta con nosotros.</p>
               <p><em>El equipo de AHORA</em></p>
             </div>
@@ -150,23 +126,14 @@ serve(async (req: Request): Promise<Response> => {
     console.log("Password reset email sent successfully:", emailResponse);
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
-        message: "Si el email existe, recibirás un enlace de recuperación" 
-      }),
-      {
-        status: 200,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      }
+      JSON.stringify({ success: true, message: "Si el email existe, recibirás un enlace de recuperación" }),
+      { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } },
     );
   } catch (error: any) {
     console.error("Error in send-password-reset function:", error);
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      }
-    );
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { "Content-Type": "application/json", ...corsHeaders },
+    });
   }
 });

@@ -18,41 +18,108 @@ const authSchema = z.object({
   password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"),
 });
 
-// Helper function to check if URL indicates recovery mode - runs synchronously
-function checkIsRecoveryFromURL(): boolean {
-  // Check hash params
+// Helpers to detect password recovery flows
+function getRecoveryParamsFromURL(): { tokenHash?: string; email?: string; isRecovery: boolean } {
+  const searchParams = new URLSearchParams(window.location.search);
+  const searchType = searchParams.get("type");
+  const tokenHash = searchParams.get("token_hash") || undefined;
+  const email = searchParams.get("email") || undefined;
+
   const hashParams = new URLSearchParams(window.location.hash.substring(1));
   const hashType = hashParams.get("type");
   const hasAccessToken = hashParams.has("access_token");
-  
-  // Check search params  
-  const searchParams = new URLSearchParams(window.location.search);
-  const searchType = searchParams.get("type");
-  
-  const isRecovery = hashType === "recovery" || searchType === "recovery" || 
-    (hasAccessToken && hashType === "recovery");
-  
-  return isRecovery;
+
+  const isRecovery =
+    hashType === "recovery" ||
+    searchType === "recovery" ||
+    (hasAccessToken && hashType === "recovery") ||
+    (!!tokenHash && searchType === "recovery");
+
+  return { tokenHash, email, isRecovery };
+}
+
+function checkIsRecoveryFromURL(): boolean {
+  return getRecoveryParamsFromURL().isRecovery;
 }
 
 const Auth = () => {
-  // Check recovery mode SYNCHRONOUSLY before any state initialization
-  const initialRecoveryMode = useMemo(() => checkIsRecoveryFromURL(), []);
-  
+  const initialRecoveryParams = useMemo(() => getRecoveryParamsFromURL(), []);
+  const initialRecoveryMode = initialRecoveryParams.isRecovery;
+  const needsOtpVerification = !!initialRecoveryParams.tokenHash && !!initialRecoveryParams.email;
+
   // Use ref to persist recovery state across all callbacks
   const isRecoveryModeRef = useRef(initialRecoveryMode);
-  
+
   const [mode, setMode] = useState<AuthMode>(initialRecoveryMode ? "set-password" : "login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [verifyingRecovery, setVerifyingRecovery] = useState(needsOtpVerification);
   const [checkingSession, setCheckingSession] = useState(!initialRecoveryMode); // Skip session check if recovery
   const [errors, setErrors] = useState<{ email?: string; password?: string; confirmPassword?: string }>({});
   
   const { signIn } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (!needsOtpVerification) return;
+
+    const { tokenHash, email: recoveryEmail } = initialRecoveryParams;
+    if (!tokenHash || !recoveryEmail) {
+      setVerifyingRecovery(false);
+      return;
+    }
+
+    let cancelled = false;
+
+    const verify = async () => {
+      try {
+        const { error } = await supabase.auth.verifyOtp({
+          type: "recovery",
+          token_hash: tokenHash,
+          email: recoveryEmail,
+        });
+
+        if (cancelled) return;
+
+        if (error) {
+          toast({
+            variant: "destructive",
+            title: "Enlace inválido",
+            description: "El enlace de recuperación es inválido o ha caducado.",
+          });
+          isRecoveryModeRef.current = false;
+          setMode("login");
+          window.history.replaceState(null, "", window.location.pathname);
+        } else {
+          // Clear the query params (token_hash/email) from URL
+          window.history.replaceState(null, "", window.location.pathname);
+          isRecoveryModeRef.current = true;
+          setMode("set-password");
+        }
+      } catch (err: any) {
+        if (cancelled) return;
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: err.message || "Error al verificar el enlace de recuperación",
+        });
+        isRecoveryModeRef.current = false;
+        setMode("login");
+        window.history.replaceState(null, "", window.location.pathname);
+      } finally {
+        if (!cancelled) setVerifyingRecovery(false);
+      }
+    };
+
+    verify();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [needsOtpVerification, initialRecoveryParams, toast]);
 
   useEffect(() => {
     // If already in recovery mode, don't do anything else
@@ -78,25 +145,27 @@ const Auth = () => {
     checkExistingSession();
 
     // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "PASSWORD_RECOVERY") {
         isRecoveryModeRef.current = true;
         setMode("set-password");
         setCheckingSession(false);
-        return; // Don't do anything else
+        return;
       }
-      
+
       // For SIGNED_IN event, only redirect if NOT in recovery mode
       if (event === "SIGNED_IN" && session?.user) {
-        // Double-check URL again in case we missed it
         if (checkIsRecoveryFromURL() || isRecoveryModeRef.current) {
           isRecoveryModeRef.current = true;
           setMode("set-password");
           setCheckingSession(false);
           return;
         }
-        
-        await redirectBasedOnRole(session.user.id);
+
+        // Defer any async work to avoid auth callback deadlocks
+        setTimeout(() => {
+          void redirectBasedOnRole(session.user.id);
+        }, 0);
       }
     });
 
@@ -259,8 +328,8 @@ const Auth = () => {
     }
   };
 
-  // Show loading only if checking session AND not in recovery mode
-  if (checkingSession && !isRecoveryModeRef.current) {
+  // Show loading while verifying recovery link OR checking existing session
+  if (verifyingRecovery || (checkingSession && !isRecoveryModeRef.current)) {
     return (
       <Layout>
         <section className="py-16 md:py-24">
