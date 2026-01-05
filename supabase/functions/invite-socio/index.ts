@@ -186,7 +186,7 @@ function generateSepaPDF(data: {
   // Footer
   contentStream += `BT /F1 9 Tf ${margin} ${y} Td (${escapeText('UNA VEZ FIRMADA ESTA ORDEN DE DOMICILIACION DEBERA SER ENVIADA AL ACREEDOR PARA SU CUSTODIA.')}) Tj ET\n`;
   y -= lineHeight;
-  contentStream += `BT /F1 9 Tf ${margin} ${y} Td (${escapeText('Puede enviarla escaneada a: socios@ahoraorg.es')}) Tj ET\n`;
+  contentStream += `BT /F1 9 Tf ${margin} ${y} Td (${escapeText('Puede enviarla escaneada a: presidencia@ahoraorg.es')}) Tj ET\n`;
 
   // Build PDF document
   const objects: string[] = [];
@@ -491,7 +491,7 @@ serve(async (req: Request): Promise<Response> => {
                 <ol>
                   <li>Imprimas el documento adjunto</li>
                   <li>Lo firmes en el espacio indicado</li>
-                  <li>Nos lo envíes escaneado a <strong>socios@ahoraorg.es</strong></li>
+                  <li>Nos lo envíes escaneado a <strong>presidencia@ahoraorg.es</strong></li>
                 </ol>
                 <p><em>Este documento autoriza el cobro de la cuota de socio mediante domiciliación bancaria.</em></p>
               </div>
