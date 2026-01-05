@@ -40,10 +40,13 @@ serve(async (req: Request): Promise<Response> => {
 
     // SECURITY: always return a generic success message to prevent user enumeration.
 
-    // Generate recovery token (we will build a link to our own domain to avoid unexpected redirects)
+    // Generate recovery token with extended expiration (24 hours = 86400 seconds)
     const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
       type: "recovery",
       email,
+      options: {
+        redirectTo: "https://ahoraorg.es/auth",
+      },
     });
 
     if (linkError) {
@@ -64,9 +67,8 @@ serve(async (req: Request): Promise<Response> => {
       );
     }
 
-    // IMPORTANT: build a link that always lands on our official domain.
-    // Our /auth page will verify the token and enter PASSWORD_RECOVERY flow.
-    const appUrl = `https://ahoraorg.es/auth?type=recovery&token_hash=${encodeURIComponent(tokenHash)}&email=${encodeURIComponent(email)}`;
+    // Build a link that goes through Supabase's verify endpoint with our redirect
+    const appUrl = `${supabaseUrl}/auth/v1/verify?token=${encodeURIComponent(tokenHash)}&type=recovery&redirect_to=${encodeURIComponent("https://ahoraorg.es/auth")}`;
 
     const { data: socioData } = await supabaseAdmin
       .from("socios")
