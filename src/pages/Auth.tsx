@@ -19,11 +19,10 @@ const authSchema = z.object({
 });
 
 // Helpers to detect password recovery flows
-function getRecoveryParamsFromURL(): { tokenHash?: string; email?: string; isRecovery: boolean } {
+function getRecoveryParamsFromURL(): { tokenHash?: string; isRecovery: boolean } {
   const searchParams = new URLSearchParams(window.location.search);
   const searchType = searchParams.get("type");
   const tokenHash = searchParams.get("token_hash") || undefined;
-  const email = searchParams.get("email") || undefined;
 
   const hashParams = new URLSearchParams(window.location.hash.substring(1));
   const hashType = hashParams.get("type");
@@ -35,7 +34,7 @@ function getRecoveryParamsFromURL(): { tokenHash?: string; email?: string; isRec
     (hasAccessToken && hashType === "recovery") ||
     (!!tokenHash && searchType === "recovery");
 
-  return { tokenHash, email, isRecovery };
+  return { tokenHash, isRecovery };
 }
 
 function checkIsRecoveryFromURL(): boolean {
@@ -45,7 +44,7 @@ function checkIsRecoveryFromURL(): boolean {
 const Auth = () => {
   const initialRecoveryParams = useMemo(() => getRecoveryParamsFromURL(), []);
   const initialRecoveryMode = initialRecoveryParams.isRecovery;
-  const needsOtpVerification = !!initialRecoveryParams.tokenHash && !!initialRecoveryParams.email;
+  const needsOtpVerification = !!initialRecoveryParams.tokenHash;
 
   // Use ref to persist recovery state across all callbacks
   const isRecoveryModeRef = useRef(initialRecoveryMode);
@@ -66,8 +65,8 @@ const Auth = () => {
   useEffect(() => {
     if (!needsOtpVerification) return;
 
-    const { tokenHash, email: recoveryEmail } = initialRecoveryParams;
-    if (!tokenHash || !recoveryEmail) {
+    const { tokenHash } = initialRecoveryParams;
+    if (!tokenHash) {
       setVerifyingRecovery(false);
       return;
     }
@@ -79,7 +78,6 @@ const Auth = () => {
         const { error } = await supabase.auth.verifyOtp({
           type: "recovery",
           token_hash: tokenHash,
-          email: recoveryEmail,
         });
 
         if (cancelled) return;
@@ -94,7 +92,7 @@ const Auth = () => {
           setMode("login");
           window.history.replaceState(null, "", window.location.pathname);
         } else {
-          // Clear the query params (token_hash/email) from URL
+          // Clear the query params (token_hash/type) from URL
           window.history.replaceState(null, "", window.location.pathname);
           isRecoveryModeRef.current = true;
           setMode("set-password");
