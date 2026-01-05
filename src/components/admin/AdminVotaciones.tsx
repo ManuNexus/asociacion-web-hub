@@ -15,10 +15,9 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Pencil, Trash2, Loader2, Vote, X, BarChart3, Shield } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, Vote, X, BarChart3, Shield, Download } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { formatInMadrid, toDateTimeLocalValue, fromDateTimeLocalValue } from "@/lib/timezone";
-
 interface Votacion {
   id: string;
   titulo: string;
@@ -542,10 +541,43 @@ export const AdminVotaciones = () => {
                   );
                 })}
                 
-                <div className="pt-4 border-t">
+                <div className="pt-4 border-t space-y-3">
                   <p className="text-sm text-muted-foreground text-center">
                     Total de votos: <strong>{getTotalVotos()}</strong>
                   </p>
+                  
+                  {selectedVotacionResults && new Date(selectedVotacionResults.fecha_fin) < new Date() && (
+                    <Button 
+                      className="w-full" 
+                      variant="outline"
+                      onClick={async () => {
+                        try {
+                          const { data, error } = await supabase.functions.invoke("certificado-resultados", {
+                            body: { votacion_id: selectedVotacionResults.id }
+                          });
+                          
+                          if (error) throw error;
+                          
+                          // Open in new window for printing
+                          const printWindow = window.open("", "_blank");
+                          if (printWindow) {
+                            printWindow.document.write(data.html);
+                            printWindow.document.close();
+                          }
+                        } catch (err: any) {
+                          console.error("Error generating certificate:", err);
+                          toast({
+                            variant: "destructive",
+                            title: "Error",
+                            description: "No se pudo generar el certificado"
+                          });
+                        }
+                      }}
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      Descargar Certificado de Resultados
+                    </Button>
+                  )}
                 </div>
               </div>
             )}
