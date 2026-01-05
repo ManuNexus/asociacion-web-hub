@@ -40,13 +40,12 @@ serve(async (req: Request): Promise<Response> => {
 
     // SECURITY: always return a generic success message to prevent user enumeration.
 
-    // Generate recovery token with extended expiration (24 hours = 86400 seconds)
+    // Generate recovery token.
+    // We will send the user to OUR domain with token_hash + type=recovery,
+    // and the /auth page will verify the token using supabase.auth.verifyOtp.
     const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
       type: "recovery",
       email,
-      options: {
-        redirectTo: "https://ahoraorg.es/auth",
-      },
     });
 
     if (linkError) {
@@ -67,18 +66,8 @@ serve(async (req: Request): Promise<Response> => {
       );
     }
 
-    // Use Supabase's generated action_link, but force our official domain as redirect.
-    // NOTE: redirect_to must be allow-listed in Auth settings, otherwise Supabase will fall back to the project's Site URL.
-    const actionLink = linkData.properties?.action_link;
-
-    let appUrl: string;
-    if (actionLink) {
-      const url = new URL(actionLink);
-      url.searchParams.set("redirect_to", "https://ahoraorg.es/auth");
-      appUrl = url.toString();
-    } else {
-      appUrl = `${supabaseUrl}/auth/v1/verify?token=${encodeURIComponent(tokenHash)}&type=recovery&redirect_to=${encodeURIComponent("https://ahoraorg.es/auth")}`;
-    }
+    // IMPORTANT: this link ALWAYS lands on our official domain and does NOT depend on redirect allowlists.
+    const appUrl = `https://ahoraorg.es/auth?type=recovery&token_hash=${encodeURIComponent(tokenHash)}`;
 
     const { data: socioData } = await supabaseAdmin
       .from("socios")
