@@ -554,6 +554,13 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_vote_counts_for_votaciones: {
+        Args: { votacion_ids: string[] }
+        Returns: {
+          opcion_id: string
+          vote_count: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
