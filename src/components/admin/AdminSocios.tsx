@@ -43,6 +43,16 @@ import { Loader2, Pencil, Search, Trash2, UserX, Shield, Hash, CreditCard, FileT
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 
+type CargoJunta = 'presidente' | 'vicepresidente' | 'secretario' | 'tesorero' | 'vocal' | null;
+
+const CARGO_JUNTA_LABELS: Record<string, string> = {
+  presidente: 'Presidente/a',
+  vicepresidente: 'Vicepresidente/a',
+  secretario: 'Secretario/a',
+  tesorero: 'Tesorero/a',
+  vocal: 'Vocal',
+};
+
 interface Socio {
   id: string;
   user_id: string;
@@ -60,6 +70,7 @@ interface Socio {
   titular_cuenta: string | null;
   dia_cobro: number | null;
   foto_url: string | null;
+  cargo_junta: CargoJunta;
 }
 
 interface SocioWithJunta extends Socio {
@@ -85,6 +96,7 @@ export const AdminSocios = () => {
   const [titularCuenta, setTitularCuenta] = useState("");
   const [diaCobro, setDiaCobro] = useState<number>(1);
   const [fotoUrl, setFotoUrl] = useState("");
+  const [cargoJunta, setCargoJunta] = useState<CargoJunta>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [resendingSepa, setResendingSepa] = useState<string | null>(null);
   const { toast } = useToast();
@@ -132,6 +144,7 @@ export const AdminSocios = () => {
     setTitularCuenta(socio.titular_cuenta || "");
     setDiaCobro(socio.dia_cobro || 1);
     setFotoUrl(socio.foto_url || "");
+    setCargoJunta(socio.cargo_junta);
     setDialogOpen(true);
   };
 
@@ -144,6 +157,10 @@ export const AdminSocios = () => {
     const isBeingDeactivated = wasActive && !activo;
 
     setSaving(true);
+    
+    // Determine cargo_junta based on esJunta toggle
+    const finalCargoJunta = esJunta ? (cargoJunta || 'vocal') : null;
+    
     const { error } = await supabase
       .from("socios")
       .update({ 
@@ -154,7 +171,8 @@ export const AdminSocios = () => {
         iban: iban || null,
         titular_cuenta: titularCuenta || null,
         dia_cobro: diaCobro,
-        foto_url: fotoUrl || null
+        foto_url: fotoUrl || null,
+        cargo_junta: finalCargoJunta
       })
       .eq("id", editingSocio.id);
 
@@ -419,7 +437,7 @@ export const AdminSocios = () => {
                       {socio.es_junta ? (
                         <Badge variant="outline" className="border-primary text-primary">
                           <Shield className="h-3 w-3 mr-1" />
-                          Junta
+                          {socio.cargo_junta ? CARGO_JUNTA_LABELS[socio.cargo_junta] : 'Junta'}
                         </Badge>
                       ) : (
                         <Badge variant="secondary">Socio</Badge>
@@ -627,21 +645,49 @@ export const AdminSocios = () => {
                   onCheckedChange={setAlCorrientePago}
                 />
               </div>
-              <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
-                <div className="flex items-center gap-2">
-                  <Shield className="h-4 w-4 text-primary" />
-                  <div>
-                    <Label htmlFor="es_junta">Miembro de la Junta</Label>
+              <div className="p-4 bg-muted rounded-lg space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Shield className="h-4 w-4 text-primary" />
+                    <div>
+                      <Label htmlFor="es_junta">Miembro de la Junta</Label>
+                      <p className="text-xs text-muted-foreground">
+                        Acceso a contenido exclusivo de la junta directiva
+                      </p>
+                    </div>
+                  </div>
+                  <Switch
+                    id="es_junta"
+                    checked={esJunta}
+                    onCheckedChange={(checked) => {
+                      setEsJunta(checked);
+                      if (!checked) setCargoJunta(null);
+                    }}
+                  />
+                </div>
+                {esJunta && (
+                  <div className="space-y-2 pt-2 border-t border-border/50">
+                    <Label htmlFor="cargo_junta">Cargo en la Junta</Label>
+                    <Select 
+                      value={cargoJunta || 'vocal'} 
+                      onValueChange={(v) => setCargoJunta(v as CargoJunta)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar cargo" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="presidente">Presidente/a (máx. 1)</SelectItem>
+                        <SelectItem value="vicepresidente">Vicepresidente/a (máx. 1)</SelectItem>
+                        <SelectItem value="secretario">Secretario/a (máx. 1)</SelectItem>
+                        <SelectItem value="tesorero">Tesorero/a (máx. 1)</SelectItem>
+                        <SelectItem value="vocal">Vocal</SelectItem>
+                      </SelectContent>
+                    </Select>
                     <p className="text-xs text-muted-foreground">
-                      Acceso a contenido exclusivo de la junta directiva
+                      Solo puede haber un Presidente, Vicepresidente, Secretario y Tesorero activos
                     </p>
                   </div>
-                </div>
-                <Switch
-                  id="es_junta"
-                  checked={esJunta}
-                  onCheckedChange={setEsJunta}
-                />
+                )}
               </div>
               <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
                 <div>
