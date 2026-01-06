@@ -311,6 +311,7 @@ export type Database = {
           activo: boolean
           al_corriente_pago: boolean
           apellidos: string
+          cargo_junta: Database["public"]["Enums"]["cargo_junta"] | null
           created_at: string
           dia_cobro: number | null
           email: string
@@ -331,6 +332,7 @@ export type Database = {
           activo?: boolean
           al_corriente_pago?: boolean
           apellidos: string
+          cargo_junta?: Database["public"]["Enums"]["cargo_junta"] | null
           created_at?: string
           dia_cobro?: number | null
           email: string
@@ -351,6 +353,7 @@ export type Database = {
           activo?: boolean
           al_corriente_pago?: boolean
           apellidos?: string
+          cargo_junta?: Database["public"]["Enums"]["cargo_junta"] | null
           created_at?: string
           dia_cobro?: number | null
           email?: string
@@ -534,6 +537,10 @@ export type Database = {
     }
     Functions: {
       check_scheduled_news: { Args: never; Returns: undefined }
+      get_cargo_junta_label: {
+        Args: { cargo: Database["public"]["Enums"]["cargo_junta"] }
+        Returns: string
+      }
       get_news_author: {
         Args: { author_socio_id: string }
         Returns: {
@@ -580,6 +587,12 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "user" | "socio" | "junta"
+      cargo_junta:
+        | "presidente"
+        | "vicepresidente"
+        | "secretario"
+        | "tesorero"
+        | "vocal"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -708,6 +721,13 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user", "socio", "junta"],
+      cargo_junta: [
+        "presidente",
+        "vicepresidente",
+        "secretario",
+        "tesorero",
+        "vocal",
+      ],
     },
   },
 } as const
