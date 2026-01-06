@@ -1471,7 +1471,7 @@ const PanelSocios = () => {
             {/* Tab Calendario Junta - Solo junta */}
             {isJunta && (
               <TabsContent value="calendario-junta">
-                <CalendarioJunta canEdit={isAdmin || miSocio?.cargo_junta === 'presidente' || miSocio?.cargo_junta === 'vicepresidente'} />
+                <CalendarioJunta canEdit={isAdmin || miSocio?.cargo_junta === 'presidente' || miSocio?.cargo_junta === 'vicepresidente'} miCargoJunta={miSocio?.cargo_junta} />
               </TabsContent>
             )}
 

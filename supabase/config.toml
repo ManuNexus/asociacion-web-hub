@@ -29,3 +29,18 @@ verify_jwt = false
 
 [functions.publish-scheduled-news]
 verify_jwt = false
+
+[functions.certificado-resultados]
+verify_jwt = false
+
+[functions.send-password-reset]
+verify_jwt = false
+
+[functions.sync-emails]
+verify_jwt = false
+
+[functions.notify-calendario-junta]
+verify_jwt = false
+
+[functions.calendario-reminder]
+verify_jwt = false
