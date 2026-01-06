@@ -39,7 +39,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Pencil, Search, Trash2, UserX, Shield, Hash, CreditCard, FileText } from "lucide-react";
+import { Loader2, Pencil, Search, Trash2, UserX, Shield, Hash, CreditCard, FileText, RefreshCw } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 
@@ -99,6 +99,7 @@ export const AdminSocios = () => {
   const [cargoJunta, setCargoJunta] = useState<CargoJunta>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [resendingSepa, setResendingSepa] = useState<string | null>(null);
+  const [syncingEmails, setSyncingEmails] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -359,26 +360,86 @@ export const AdminSocios = () => {
     setSaving(false);
   };
 
+  const handleSyncEmails = async () => {
+    setSyncingEmails(true);
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+      
+      if (!token) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "No hay sesión activa",
+        });
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke("sync-emails", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (error) throw error;
+
+      if (data.results && data.results.length > 0) {
+        toast({
+          title: "Sincronización completada",
+          description: `Se sincronizaron ${data.results.length} email(s)`,
+        });
+        console.log("Resultados:", data.results);
+      } else {
+        toast({
+          title: "Sin cambios",
+          description: "Todos los emails ya están sincronizados",
+        });
+      }
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message || "No se pudo sincronizar",
+      });
+    } finally {
+      setSyncingEmails(false);
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <CardTitle>Gestión de Socios</CardTitle>
-          {sociosSinNumero.length > 0 && (
+          <div className="flex gap-2 flex-wrap">
             <Button
               variant="outline"
               size="sm"
-              onClick={handleAutoAssignNumbers}
-              disabled={saving}
+              onClick={handleSyncEmails}
+              disabled={syncingEmails}
+              title="Sincronizar emails de socios con emails de acceso"
             >
-              {saving ? (
+              {syncingEmails ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (
-                <Hash className="mr-2 h-4 w-4" />
+                <RefreshCw className="mr-2 h-4 w-4" />
               )}
-              Asignar números ({sociosSinNumero.length})
+              Sincronizar emails
             </Button>
-          )}
+            {sociosSinNumero.length > 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleAutoAssignNumbers}
+                disabled={saving}
+              >
+                {saving ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Hash className="mr-2 h-4 w-4" />
+                )}
+                Asignar números ({sociosSinNumero.length})
+              </Button>
+            )}
+          </div>
         </div>
         <div className="relative mt-4">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
