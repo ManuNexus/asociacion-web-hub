@@ -420,69 +420,93 @@ export function CalendarioJunta({ canEdit, miCargoJunta }: CalendarioJuntaProps)
                 </p>
               ) : (
                 <div className="space-y-3">
-                  {eventosDelDia.map((evento) => (
-                    <Card key={evento.id} className="bg-muted/50">
-                      <CardContent className="p-4">
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="flex-1">
-                            <h4 className="font-medium">{evento.titulo}</h4>
-                            <div className="flex items-center gap-1 text-sm text-muted-foreground mt-1">
-                              <Clock className="h-3 w-3" />
-                              <span>
-                                {formatInMadrid(evento.fecha, "HH:mm")}
-                                {evento.fecha_fin && ` - ${formatInMadrid(evento.fecha_fin, "HH:mm")}`}
-                              </span>
+                  {eventosDelDia.map((evento) => {
+                    // Check if user can edit this specific event
+                    const esMiEvento = miCargoJunta && evento.roles?.includes(miCargoJunta);
+                    const puedeEditarEvento = canEdit || esMiEvento;
+                    
+                    return (
+                      <Card key={evento.id} className="bg-muted/50">
+                        <CardContent className="p-4">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex-1">
+                              <h4 className="font-medium">{evento.titulo}</h4>
+                              <div className="flex items-center gap-1 text-sm text-muted-foreground mt-1">
+                                <Clock className="h-3 w-3" />
+                                <span>
+                                  {formatInMadrid(evento.fecha, "HH:mm")}
+                                  {evento.fecha_fin && ` - ${formatInMadrid(evento.fecha_fin, "HH:mm")}`}
+                                </span>
+                              </div>
+                              {/* Show role badges */}
+                              {evento.roles && evento.roles.length > 0 && (
+                                <div className="flex flex-wrap gap-1 mt-2">
+                                  {evento.roles.map((rol) => {
+                                    const cargoInfo = CARGOS_JUNTA.find(c => c.value === rol);
+                                    const esMiRol = rol === miCargoJunta;
+                                    return (
+                                      <Badge 
+                                        key={rol} 
+                                        variant={esMiRol ? "default" : "secondary"}
+                                        className="text-xs"
+                                      >
+                                        {cargoInfo?.label || rol}
+                                      </Badge>
+                                    );
+                                  })}
+                                </div>
+                              )}
+                              {evento.descripcion && (
+                                <p className="text-sm text-muted-foreground mt-2 whitespace-pre-wrap">
+                                  {evento.descripcion}
+                                </p>
+                              )}
                             </div>
-                            {evento.descripcion && (
-                              <p className="text-sm text-muted-foreground mt-2 whitespace-pre-wrap">
-                                {evento.descripcion}
-                              </p>
+                            {puedeEditarEvento && (
+                              <div className="flex gap-1">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8"
+                                  onClick={() => openEditDialog(evento)}
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-8 w-8 text-destructive hover:text-destructive"
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>¿Eliminar evento?</AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        Esta acción no se puede deshacer.
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                      <AlertDialogAction
+                                        onClick={() => handleDelete(evento.id)}
+                                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                      >
+                                        Eliminar
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
+                              </div>
                             )}
                           </div>
-                          {canEdit && (
-                            <div className="flex gap-1">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8"
-                                onClick={() => openEditDialog(evento)}
-                              >
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                              <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-8 w-8 text-destructive hover:text-destructive"
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                  </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent>
-                                  <AlertDialogHeader>
-                                    <AlertDialogTitle>¿Eliminar evento?</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                      Esta acción no se puede deshacer.
-                                    </AlertDialogDescription>
-                                  </AlertDialogHeader>
-                                  <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                    <AlertDialogAction
-                                      onClick={() => handleDelete(evento.id)}
-                                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                    >
-                                      Eliminar
-                                    </AlertDialogAction>
-                                  </AlertDialogFooter>
-                                </AlertDialogContent>
-                              </AlertDialog>
-                            </div>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -498,31 +522,52 @@ export function CalendarioJunta({ canEdit, miCargoJunta }: CalendarioJuntaProps)
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {proximosEventos.map((evento) => (
-                <div
-                  key={evento.id}
-                  className="flex items-center gap-4 p-3 rounded-lg bg-muted/50 cursor-pointer hover:bg-muted transition-colors"
-                  onClick={() => {
-                    setSelectedDate(toMadridTime(evento.fecha));
-                    setCurrentMonth(toMadridTime(evento.fecha));
-                  }}
-                >
-                  <div className="text-center min-w-[50px]">
-                    <div className="text-2xl font-bold text-primary">
-                      {formatInMadrid(evento.fecha, "d")}
+              {proximosEventos.map((evento) => {
+                const esMiEvento = miCargoJunta && evento.roles?.includes(miCargoJunta);
+                return (
+                  <div
+                    key={evento.id}
+                    className="flex items-center gap-4 p-3 rounded-lg bg-muted/50 cursor-pointer hover:bg-muted transition-colors"
+                    onClick={() => {
+                      setSelectedDate(toMadridTime(evento.fecha));
+                      setCurrentMonth(toMadridTime(evento.fecha));
+                    }}
+                  >
+                    <div className="text-center min-w-[50px]">
+                      <div className="text-2xl font-bold text-primary">
+                        {formatInMadrid(evento.fecha, "d")}
+                      </div>
+                      <div className="text-xs text-muted-foreground uppercase">
+                        {formatInMadrid(evento.fecha, "MMM")}
+                      </div>
                     </div>
-                    <div className="text-xs text-muted-foreground uppercase">
-                      {formatInMadrid(evento.fecha, "MMM")}
+                    <div className="flex-1">
+                      <h4 className="font-medium">{evento.titulo}</h4>
+                      <p className="text-sm text-muted-foreground">
+                        {formatInMadrid(evento.fecha, "EEEE, HH:mm")}
+                      </p>
+                      {/* Show role badges in upcoming events */}
+                      {evento.roles && evento.roles.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {evento.roles.map((rol) => {
+                            const cargoInfo = CARGOS_JUNTA.find(c => c.value === rol);
+                            const esMiRol = rol === miCargoJunta;
+                            return (
+                              <Badge 
+                                key={rol} 
+                                variant={esMiRol ? "default" : "secondary"}
+                                className="text-xs"
+                              >
+                                {cargoInfo?.label || rol}
+                              </Badge>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
                   </div>
-                  <div className="flex-1">
-                    <h4 className="font-medium">{evento.titulo}</h4>
-                    <p className="text-sm text-muted-foreground">
-                      {formatInMadrid(evento.fecha, "EEEE, HH:mm")}
-                    </p>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </CardContent>
         </Card>
