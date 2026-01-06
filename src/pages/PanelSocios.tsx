@@ -56,6 +56,8 @@ interface Socio {
   numero_socio: string | null;
   dia_cobro: number | null;
   cargo_junta: CargoJunta;
+  iban: string | null;
+  titular_cuenta: string | null;
 }
 
 interface SocioWithJunta extends Socio {
@@ -136,6 +138,12 @@ const PanelSocios = () => {
   const [changingPassword, setChangingPassword] = useState(false);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
+  
+  // Bank data edit states
+  const [editIban, setEditIban] = useState("");
+  const [editTitularCuenta, setEditTitularCuenta] = useState("");
+  const [savingBankData, setSavingBankData] = useState(false);
+  const [isEditingIban, setIsEditingIban] = useState(false);
 
   const { user, isSocio, isJunta, isAdmin, loading: authLoading, socioLoading, signOut } = useAuth();
   const navigate = useNavigate();
@@ -191,6 +199,77 @@ const PanelSocios = () => {
       setEditApellidos(data.apellidos);
       setEditEmail(data.email);
       setEditTelefono(data.telefono || "");
+      // Bank data - keep empty unless editing
+      setEditTitularCuenta(data.titular_cuenta || "");
+      setIsEditingIban(false);
+      setEditIban("");
+    }
+  };
+
+  // Mask IBAN to show only last 4 digits
+  const maskIban = (iban: string | null): string => {
+    if (!iban) return "No configurado";
+    const cleanIban = iban.replace(/\s/g, "");
+    if (cleanIban.length <= 4) return cleanIban;
+    return "•••• •••• •••• •••• " + cleanIban.slice(-4);
+  };
+
+  const handleUpdateBankData = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user || !miSocio) return;
+    
+    if (!editTitularCuenta.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "El titular de la cuenta es obligatorio",
+      });
+      return;
+    }
+    
+    // Validate IBAN if provided
+    if (isEditingIban && editIban.trim()) {
+      const cleanIban = editIban.replace(/\s/g, "").toUpperCase();
+      // Basic IBAN validation (ES IBANs have 24 characters)
+      if (!/^ES\d{22}$/.test(cleanIban)) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "El IBAN debe tener formato español válido (ES + 22 dígitos)",
+        });
+        return;
+      }
+    }
+    
+    setSavingBankData(true);
+    
+    try {
+      const updateData: { titular_cuenta: string; iban?: string } = {
+        titular_cuenta: editTitularCuenta.trim(),
+      };
+      
+      // Only update IBAN if user entered a new one
+      if (isEditingIban && editIban.trim()) {
+        updateData.iban = editIban.replace(/\s/g, "").toUpperCase();
+      }
+      
+      const { error } = await supabase
+        .from("socios")
+        .update(updateData)
+        .eq("id", miSocio.id);
+      
+      if (error) throw error;
+      
+      toast({ title: "Datos bancarios actualizados correctamente" });
+      fetchMiSocio();
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message || "No se pudieron actualizar los datos bancarios",
+      });
+    } finally {
+      setSavingBankData(false);
     }
   };
 
@@ -1461,6 +1540,87 @@ const PanelSocios = () => {
                       <Button type="submit" disabled={changingPassword || !newPassword || !confirmPassword}>
                         {changingPassword && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                         Cambiar contraseña
+                      </Button>
+                    </form>
+                  </CardContent>
+                </Card>
+
+                {/* Datos Bancarios */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <CreditCard className="h-5 w-5" />
+                      Datos Bancarios
+                    </CardTitle>
+                    <CardDescription>
+                      Actualiza tu cuenta bancaria para la domiciliación de cuotas
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <form onSubmit={handleUpdateBankData} className="space-y-4 max-w-md">
+                      <div className="space-y-2">
+                        <Label htmlFor="edit-titular">Titular de la cuenta</Label>
+                        <Input
+                          id="edit-titular"
+                          value={editTitularCuenta}
+                          onChange={(e) => setEditTitularCuenta(e.target.value)}
+                          placeholder="Nombre del titular de la cuenta"
+                          disabled={savingBankData}
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="current-iban">IBAN actual</Label>
+                        <div className="flex items-center gap-2">
+                          <div className="flex-1 px-3 py-2 rounded-md border bg-muted/50 text-muted-foreground font-mono text-sm">
+                            {maskIban(miSocio?.iban || null)}
+                          </div>
+                          {!isEditingIban && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setIsEditingIban(true)}
+                            >
+                              Cambiar
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                      
+                      {isEditingIban && (
+                        <div className="space-y-2">
+                          <Label htmlFor="edit-iban">Nuevo IBAN</Label>
+                          <div className="flex items-center gap-2">
+                            <Input
+                              id="edit-iban"
+                              value={editIban}
+                              onChange={(e) => setEditIban(e.target.value.toUpperCase())}
+                              placeholder="ES00 0000 0000 0000 0000 0000"
+                              disabled={savingBankData}
+                              className="font-mono"
+                            />
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                setIsEditingIban(false);
+                                setEditIban("");
+                              }}
+                            >
+                              Cancelar
+                            </Button>
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            Introduce el nuevo número de cuenta en formato IBAN español
+                          </p>
+                        </div>
+                      )}
+                      
+                      <Button type="submit" disabled={savingBankData}>
+                        {savingBankData && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        Guardar datos bancarios
                       </Button>
                     </form>
                   </CardContent>
