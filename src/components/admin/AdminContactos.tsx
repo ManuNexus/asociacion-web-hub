@@ -339,10 +339,7 @@ export const AdminContactos = () => {
                 {filteredContactos.map((contacto) => (
                   <TableRow key={contacto.id}>
                     <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Building2 className="h-4 w-4 text-muted-foreground" />
-                        <span className="font-medium">{contacto.organizacion}</span>
-                      </div>
+                      <span className="font-medium">{contacto.organizacion}</span>
                     </TableCell>
                     <TableCell>{contacto.nombre}</TableCell>
                     <TableCell>
