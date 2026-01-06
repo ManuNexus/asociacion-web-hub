@@ -390,8 +390,11 @@ export type Database = {
           al_corriente_pago: boolean
           apellidos: string
           cargo_junta: Database["public"]["Enums"]["cargo_junta"] | null
+          ciudad: string | null
+          codigo_postal: string | null
           created_at: string
           dia_cobro: number | null
+          direccion: string | null
           email: string
           fecha_alta: string
           foto_url: string | null
@@ -399,6 +402,7 @@ export type Database = {
           id: string
           nombre: string
           numero_socio: string | null
+          provincia: string | null
           telefono: string | null
           tipo_cuota: string
           tipo_pago: string
@@ -411,8 +415,11 @@ export type Database = {
           al_corriente_pago?: boolean
           apellidos: string
           cargo_junta?: Database["public"]["Enums"]["cargo_junta"] | null
+          ciudad?: string | null
+          codigo_postal?: string | null
           created_at?: string
           dia_cobro?: number | null
+          direccion?: string | null
           email: string
           fecha_alta?: string
           foto_url?: string | null
@@ -420,6 +427,7 @@ export type Database = {
           id?: string
           nombre: string
           numero_socio?: string | null
+          provincia?: string | null
           telefono?: string | null
           tipo_cuota?: string
           tipo_pago?: string
@@ -432,8 +440,11 @@ export type Database = {
           al_corriente_pago?: boolean
           apellidos?: string
           cargo_junta?: Database["public"]["Enums"]["cargo_junta"] | null
+          ciudad?: string | null
+          codigo_postal?: string | null
           created_at?: string
           dia_cobro?: number | null
+          direccion?: string | null
           email?: string
           fecha_alta?: string
           foto_url?: string | null
@@ -441,6 +452,7 @@ export type Database = {
           id?: string
           nombre?: string
           numero_socio?: string | null
+          provincia?: string | null
           telefono?: string | null
           tipo_cuota?: string
           tipo_pago?: string
