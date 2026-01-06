@@ -583,50 +583,44 @@ const PanelSocios = () => {
           </Card>
 
           <Tabs defaultValue="carnet" className="w-full">
-            <TabsList className={`grid w-full max-w-4xl mb-6 h-auto gap-1 ${
-              (isAdmin || miSocio?.cargo_junta === 'presidente' || miSocio?.cargo_junta === 'vicepresidente') 
-                ? 'grid-cols-4 sm:grid-cols-8' 
-                : (isJunta) 
-                  ? 'grid-cols-4 sm:grid-cols-7' 
-                  : 'grid-cols-3 sm:grid-cols-6'
-            }`}>
-              <TabsTrigger value="carnet" className="flex items-center gap-2 py-2">
-                <IdCard className="h-4 w-4" />
-                <span className="hidden sm:inline">Carnet</span>
+            <TabsList className="flex flex-wrap w-full max-w-4xl mb-6 h-auto gap-1 p-1">
+              <TabsTrigger value="carnet" className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm">
+                <IdCard className="h-4 w-4 shrink-0" />
+                <span>Carnet</span>
               </TabsTrigger>
               {(isJunta || isAdmin) && (
-                <TabsTrigger value="socios" className="flex items-center gap-2 py-2">
-                  <Users className="h-4 w-4" />
-                  <span className="hidden sm:inline">Socios</span>
+                <TabsTrigger value="socios" className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm">
+                  <Users className="h-4 w-4 shrink-0" />
+                  <span>Socios</span>
                 </TabsTrigger>
               )}
-              <TabsTrigger value="votaciones" className="flex items-center gap-2 py-2">
-                <ClipboardList className="h-4 w-4" />
-                <span className="hidden sm:inline">Votaciones</span>
+              <TabsTrigger value="votaciones" className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm">
+                <ClipboardList className="h-4 w-4 shrink-0" />
+                <span>Votaciones</span>
               </TabsTrigger>
-              <TabsTrigger value="eventos" className="flex items-center gap-2 py-2">
-                <CalendarDays className="h-4 w-4" />
-                <span className="hidden sm:inline">Eventos</span>
+              <TabsTrigger value="eventos" className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm">
+                <CalendarDays className="h-4 w-4 shrink-0" />
+                <span>Eventos</span>
               </TabsTrigger>
-              <TabsTrigger value="documentos" className="flex items-center gap-2 py-2">
-                <FileText className="h-4 w-4" />
-                <span className="hidden sm:inline">Documentos</span>
+              <TabsTrigger value="documentos" className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm">
+                <FileText className="h-4 w-4 shrink-0" />
+                <span>Documentos</span>
               </TabsTrigger>
               {(isAdmin || miSocio?.cargo_junta === 'presidente' || miSocio?.cargo_junta === 'vicepresidente') && (
-                <TabsTrigger value="contactos" className="flex items-center gap-2 py-2">
-                  <BookUser className="h-4 w-4" />
-                  <span className="hidden sm:inline">Contactos</span>
+                <TabsTrigger value="contactos" className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm">
+                  <BookUser className="h-4 w-4 shrink-0" />
+                  <span>Contactos</span>
                 </TabsTrigger>
               )}
-              <TabsTrigger value="cuenta" className="flex items-center gap-2 py-2">
-                <User className="h-4 w-4" />
-                <span className="hidden sm:inline">Mi cuenta</span>
+              <TabsTrigger value="cuenta" className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm">
+                <User className="h-4 w-4 shrink-0" />
+                <span>Mi cuenta</span>
               </TabsTrigger>
-              <TabsTrigger value="avisos" className="flex items-center gap-2 py-2 relative">
-                <Bell className="h-4 w-4" />
-                <span className="hidden sm:inline">Avisos</span>
+              <TabsTrigger value="avisos" className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm relative">
+                <Bell className="h-4 w-4 shrink-0" />
+                <span>Avisos</span>
                 {notificaciones.filter(n => !notificacionesLeidas.includes(n.id)).length > 0 && (
-                  <span className="absolute -top-1 -right-1 h-4 w-4 bg-destructive rounded-full text-[10px] text-destructive-foreground flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 h-5 min-w-5 px-1 bg-destructive rounded-full text-[10px] text-destructive-foreground flex items-center justify-center font-medium">
                     {notificaciones.filter(n => !notificacionesLeidas.includes(n.id)).length}
                   </span>
                 )}
