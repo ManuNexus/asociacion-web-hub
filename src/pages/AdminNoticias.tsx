@@ -588,7 +588,7 @@ const AdminNoticias = () => {
       <section className="py-8">
         <div className="container">
           <Tabs defaultValue="noticias" className="w-full">
-            <TabsList className="flex w-full max-w-5xl mb-6 h-auto gap-1 p-1 overflow-x-auto flex-nowrap">
+            <TabsList className="flex w-full justify-center mb-6 h-auto gap-1 p-1 overflow-x-auto flex-nowrap">
               <TabsTrigger value="noticias" className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm shrink-0">
                 <Newspaper className="h-4 w-4 shrink-0" />
                 <span>Noticias</span>
