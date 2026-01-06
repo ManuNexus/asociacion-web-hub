@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Loader2, ArrowLeft, Calendar, Clock, ChevronRight } from "lucide-react";
 import { formatInMadrid } from "@/lib/timezone";
 import logoIcon from "@/assets/logo-ahora-icon.png";
+import { TweetEmbed, isTweetUrl } from "@/components/TweetEmbed";
 
 interface Categoria {
   id: string;
@@ -286,13 +287,21 @@ const NoticiaDetalle = () => {
           {noticia.contenido && (
             <div className="p-6 md:p-10 pt-8">
               <div className="prose prose-lg max-w-none">
-                {noticia.contenido.split("\n").map((paragraph, index) => (
-                  paragraph.trim() && (
+                {noticia.contenido.split("\n").map((paragraph, index) => {
+                  const trimmedParagraph = paragraph.trim();
+                  if (!trimmedParagraph) return null;
+                  
+                  // Check if the line is a tweet URL
+                  if (isTweetUrl(trimmedParagraph)) {
+                    return <TweetEmbed key={index} tweetUrl={trimmedParagraph} />;
+                  }
+                  
+                  return (
                     <p key={index} className="mb-5 text-foreground/90 leading-relaxed text-base md:text-lg">
                       {paragraph}
                     </p>
-                  )
-                ))}
+                  );
+                })}
               </div>
 
               {/* Footer decoration */}
