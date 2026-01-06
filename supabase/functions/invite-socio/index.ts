@@ -391,7 +391,7 @@ serve(async (req: Request): Promise<Response> => {
       console.error("Error adding socio role:", roleInsertError);
     }
 
-    // Create or update socio record
+    // Create or update socio record with address from solicitud
     const { error: socioError } = await supabaseAdmin
       .from("socios")
       .upsert({
@@ -406,6 +406,11 @@ serve(async (req: Request): Promise<Response> => {
         titular_cuenta: titular_cuenta || null,
         dia_cobro: billingDay,
         activo: true,
+        // Copy address from solicitud as fiscal address for SEPA
+        direccion: solicitud.direccion || null,
+        codigo_postal: solicitud.codigo_postal || null,
+        ciudad: solicitud.ciudad || null,
+        provincia: solicitud.provincia || null,
       }, { onConflict: 'user_id' });
 
     if (socioError) {
