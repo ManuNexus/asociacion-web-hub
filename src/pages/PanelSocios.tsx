@@ -38,6 +38,7 @@ import { Label } from "@/components/ui/label";
 import { formatInMadrid, toMadridTime } from "@/lib/timezone";
 import logoWhite from "@/assets/logo-ahora-white.png";
 import { AdminContactos } from "@/components/admin/AdminContactos";
+import { CalendarioJunta } from "@/components/junta/CalendarioJunta";
 
 type CargoJunta = 'presidente' | 'vicepresidente' | 'secretario' | 'tesorero' | 'vocal' | null;
 
@@ -628,6 +629,12 @@ const PanelSocios = () => {
                 <FileText className="h-4 w-4 shrink-0" />
                 <span>Documentos</span>
               </TabsTrigger>
+              {isJunta && (
+                <TabsTrigger value="calendario-junta" className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm shrink-0">
+                  <CalendarDays className="h-4 w-4 shrink-0" />
+                  <span>Calendario Junta</span>
+                </TabsTrigger>
+              )}
               {(isAdmin || miSocio?.cargo_junta === 'presidente' || miSocio?.cargo_junta === 'vicepresidente') && (
                 <TabsTrigger value="contactos" className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm shrink-0">
                   <BookUser className="h-4 w-4 shrink-0" />
@@ -1460,6 +1467,13 @@ const PanelSocios = () => {
                 </Card>
               </div>
             </TabsContent>
+
+            {/* Tab Calendario Junta - Solo junta */}
+            {isJunta && (
+              <TabsContent value="calendario-junta">
+                <CalendarioJunta canEdit={isAdmin || miSocio?.cargo_junta === 'presidente' || miSocio?.cargo_junta === 'vicepresidente'} />
+              </TabsContent>
+            )}
 
             {/* Tab Contactos - Solo presidente/vicepresidente/admin */}
             {(isAdmin || miSocio?.cargo_junta === 'presidente' || miSocio?.cargo_junta === 'vicepresidente') && (
