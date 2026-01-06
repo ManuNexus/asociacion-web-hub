@@ -65,6 +65,39 @@ export type Database = {
         }
         Relationships: []
       }
+      calendario_junta: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          descripcion: string | null
+          fecha: string
+          fecha_fin: string | null
+          id: string
+          titulo: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          descripcion?: string | null
+          fecha: string
+          fecha_fin?: string | null
+          id?: string
+          titulo: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          descripcion?: string | null
+          fecha?: string
+          fecha_fin?: string | null
+          id?: string
+          titulo?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       categorias_noticia: {
         Row: {
           color: string | null
