@@ -583,7 +583,7 @@ const PanelSocios = () => {
           </Card>
 
           <Tabs defaultValue="carnet" className="w-full">
-            <TabsList className="flex w-full justify-center mb-6 h-auto gap-1 p-1 overflow-x-auto flex-nowrap">
+            <TabsList className="flex w-full justify-center mb-6 h-auto gap-1 p-1 flex-wrap">
               <TabsTrigger value="carnet" className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm shrink-0">
                 <IdCard className="h-4 w-4 shrink-0" />
                 <span>Carnet</span>
