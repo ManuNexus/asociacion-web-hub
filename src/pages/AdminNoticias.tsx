@@ -588,47 +588,47 @@ const AdminNoticias = () => {
       <section className="py-8">
         <div className="container">
           <Tabs defaultValue="noticias" className="w-full">
-            <TabsList className="grid w-full max-w-5xl grid-cols-9 mb-6">
-              <TabsTrigger value="noticias" className="flex items-center gap-2">
-                <Newspaper className="h-4 w-4" />
-                <span className="hidden sm:inline">Noticias</span>
+            <TabsList className="flex flex-wrap w-full max-w-5xl mb-6 h-auto gap-1 p-1">
+              <TabsTrigger value="noticias" className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm">
+                <Newspaper className="h-4 w-4 shrink-0" />
+                <span>Noticias</span>
               </TabsTrigger>
-              <TabsTrigger value="categorias" className="flex items-center gap-2">
-                <Tag className="h-4 w-4" />
-                <span className="hidden sm:inline">Categorías</span>
+              <TabsTrigger value="categorias" className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm">
+                <Tag className="h-4 w-4 shrink-0" />
+                <span>Categorías</span>
               </TabsTrigger>
-              <TabsTrigger value="solicitudes" className="flex items-center gap-2">
-                <Users className="h-4 w-4" />
-                <span className="hidden sm:inline">Solicitudes</span>
+              <TabsTrigger value="solicitudes" className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm relative">
+                <Users className="h-4 w-4 shrink-0" />
+                <span>Solicitudes</span>
                 {solicitudes.filter(s => s.estado === "pendiente").length > 0 && (
-                  <Badge variant="destructive" className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-xs">
+                  <span className="absolute -top-1 -right-1 h-5 min-w-5 px-1 bg-destructive rounded-full text-[10px] text-destructive-foreground flex items-center justify-center font-medium">
                     {solicitudes.filter(s => s.estado === "pendiente").length}
-                  </Badge>
+                  </span>
                 )}
               </TabsTrigger>
-              <TabsTrigger value="socios" className="flex items-center gap-2">
-                <CreditCard className="h-4 w-4" />
-                <span className="hidden sm:inline">Socios</span>
+              <TabsTrigger value="socios" className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm">
+                <CreditCard className="h-4 w-4 shrink-0" />
+                <span>Socios</span>
               </TabsTrigger>
-              <TabsTrigger value="notificaciones" className="flex items-center gap-2">
-                <Bell className="h-4 w-4" />
-                <span className="hidden sm:inline">Avisos</span>
+              <TabsTrigger value="notificaciones" className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm">
+                <Bell className="h-4 w-4 shrink-0" />
+                <span>Avisos</span>
               </TabsTrigger>
-              <TabsTrigger value="votaciones" className="flex items-center gap-2">
-                <Vote className="h-4 w-4" />
-                <span className="hidden sm:inline">Votaciones</span>
+              <TabsTrigger value="votaciones" className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm">
+                <Vote className="h-4 w-4 shrink-0" />
+                <span>Votaciones</span>
               </TabsTrigger>
-              <TabsTrigger value="eventos" className="flex items-center gap-2">
-                <Calendar className="h-4 w-4" />
-                <span className="hidden sm:inline">Eventos</span>
+              <TabsTrigger value="eventos" className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm">
+                <Calendar className="h-4 w-4 shrink-0" />
+                <span>Eventos</span>
               </TabsTrigger>
-              <TabsTrigger value="documentos" className="flex items-center gap-2">
-                <FileText className="h-4 w-4" />
-                <span className="hidden sm:inline">Documentos</span>
+              <TabsTrigger value="documentos" className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm">
+                <FileText className="h-4 w-4 shrink-0" />
+                <span>Documentos</span>
               </TabsTrigger>
-              <TabsTrigger value="contactos" className="flex items-center gap-2">
-                <BookUser className="h-4 w-4" />
-                <span className="hidden sm:inline">Contactos</span>
+              <TabsTrigger value="contactos" className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm">
+                <BookUser className="h-4 w-4 shrink-0" />
+                <span>Contactos</span>
               </TabsTrigger>
             </TabsList>
 
