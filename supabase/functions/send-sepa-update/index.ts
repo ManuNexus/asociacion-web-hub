@@ -329,6 +329,70 @@ serve(async (req: Request): Promise<Response> => {
 
     console.log("Email sent successfully with SEPA attachment:", emailResponse);
 
+    // Mask IBAN for admin notification (show only last 4 digits)
+    const maskedIban = socio.iban 
+      ? "•••• •••• •••• •••• " + socio.iban.slice(-4)
+      : "No configurado";
+
+    // Send notification to presidencia about the IBAN change
+    await new Promise(resolve => setTimeout(resolve, 1000)); // Rate limiting delay
+    
+    const adminNotification = await resend.emails.send({
+      from: "AHORA <socios@ahoraorg.es>",
+      to: ["presidencia@ahoraorg.es"],
+      subject: `Cambio de cuenta bancaria - ${socio.nombre} ${socio.apellidos}`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+            .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+            .footer { text-align: center; margin-top: 20px; color: #666; font-size: 12px; }
+            .info-box { background: #fff; border: 1px solid #ddd; padding: 15px; border-radius: 5px; margin: 20px 0; }
+            .info-box p { margin: 8px 0; }
+            .label { color: #666; font-size: 12px; text-transform: uppercase; }
+            .value { font-weight: bold; color: #1e3a5f; }
+            .alert { background: #fff3cd; border: 1px solid #ffc107; padding: 15px; border-radius: 5px; margin: 20px 0; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1 style="margin: 0;">⚠️ Cambio de Domiciliación</h1>
+            </div>
+            <div class="content">
+              <p>Un socio ha modificado sus datos bancarios y necesita actualizar la domiciliación:</p>
+              
+              <div class="info-box">
+                <p><span class="label">Socio:</span><br><span class="value">${socio.nombre} ${socio.apellidos}</span></p>
+                <p><span class="label">Nº Socio:</span><br><span class="value">${socio.numero_socio || 'Sin asignar'}</span></p>
+                <p><span class="label">Email:</span><br><span class="value">${socio.email}</span></p>
+                <p><span class="label">Nuevo IBAN:</span><br><span class="value" style="font-family: monospace;">${maskedIban}</span></p>
+                <p><span class="label">Titular cuenta:</span><br><span class="value">${socio.titular_cuenta || socio.nombre + ' ' + socio.apellidos}</span></p>
+              </div>
+              
+              <div class="alert">
+                <strong>Acción requerida:</strong>
+                <p>Se ha enviado al socio un nuevo documento SEPA para firmar. Una vez lo recibas firmado, deberás actualizar la domiciliación bancaria.</p>
+              </div>
+              
+              <p>Fecha de la modificación: ${fechaFormateada}</p>
+            </div>
+            <div class="footer">
+              <p>AHORA - Sistema de gestión de socios</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `,
+    });
+
+    console.log("Admin notification sent:", adminNotification);
+
     return new Response(
       JSON.stringify({ 
         success: true, 
