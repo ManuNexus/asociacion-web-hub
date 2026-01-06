@@ -583,44 +583,44 @@ const PanelSocios = () => {
           </Card>
 
           <Tabs defaultValue="carnet" className="w-full">
-            <TabsList className="flex flex-wrap w-full max-w-4xl mb-6 h-auto gap-1 p-1">
-              <TabsTrigger value="carnet" className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm">
+            <TabsList className="flex w-full justify-center mb-6 h-auto gap-1 p-1 overflow-x-auto flex-nowrap">
+              <TabsTrigger value="carnet" className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm shrink-0">
                 <IdCard className="h-4 w-4 shrink-0" />
                 <span>Carnet</span>
               </TabsTrigger>
               {(isJunta || isAdmin) && (
-                <TabsTrigger value="socios" className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm">
+                <TabsTrigger value="socios" className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm shrink-0">
                   <Users className="h-4 w-4 shrink-0" />
                   <span>Socios</span>
                 </TabsTrigger>
               )}
-              <TabsTrigger value="votaciones" className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm">
+              <TabsTrigger value="votaciones" className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm shrink-0">
                 <ClipboardList className="h-4 w-4 shrink-0" />
                 <span>Votaciones</span>
               </TabsTrigger>
-              <TabsTrigger value="eventos" className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm">
+              <TabsTrigger value="eventos" className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm shrink-0">
                 <CalendarDays className="h-4 w-4 shrink-0" />
                 <span>Eventos</span>
               </TabsTrigger>
-              <TabsTrigger value="documentos" className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm">
+              <TabsTrigger value="documentos" className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm shrink-0">
                 <FileText className="h-4 w-4 shrink-0" />
                 <span>Documentos</span>
               </TabsTrigger>
               {(isAdmin || miSocio?.cargo_junta === 'presidente' || miSocio?.cargo_junta === 'vicepresidente') && (
-                <TabsTrigger value="contactos" className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm">
+                <TabsTrigger value="contactos" className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm shrink-0">
                   <BookUser className="h-4 w-4 shrink-0" />
                   <span>Contactos</span>
                 </TabsTrigger>
               )}
-              <TabsTrigger value="cuenta" className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm">
+              <TabsTrigger value="cuenta" className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm shrink-0">
                 <User className="h-4 w-4 shrink-0" />
                 <span>Mi cuenta</span>
               </TabsTrigger>
-              <TabsTrigger value="avisos" className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm relative">
+              <TabsTrigger value="avisos" className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm relative shrink-0">
                 <Bell className="h-4 w-4 shrink-0" />
                 <span>Avisos</span>
                 {notificaciones.filter(n => !notificacionesLeidas.includes(n.id)).length > 0 && (
-                  <span className="absolute -top-1 -right-1 h-5 min-w-5 px-1 bg-destructive rounded-full text-[10px] text-destructive-foreground flex items-center justify-center font-medium">
+                  <span className="absolute -top-1 -right-1 h-5 min-w-5 px-1 bg-destructive rounded-full text-[10px] text-destructive-foreground flex items-center justify-center font-medium leading-none">
                     {notificaciones.filter(n => !notificacionesLeidas.includes(n.id)).length}
                   </span>
                 )}
