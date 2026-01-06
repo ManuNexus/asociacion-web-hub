@@ -390,8 +390,7 @@ export function CalendarioJunta({ canEdit, miCargoJunta }: CalendarioJuntaProps)
                 modifiersStyles={{
                   hasEvent: {
                     fontWeight: "bold",
-                    textDecoration: "underline",
-                    textDecorationColor: "hsl(var(--primary))",
+                    color: "hsl(var(--accent))",
                   },
                 }}
               />
