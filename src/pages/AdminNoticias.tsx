@@ -44,6 +44,7 @@ import { AdminDocumentos } from "@/components/admin/AdminDocumentos";
 import { AdminSocios } from "@/components/admin/AdminSocios";
 import { AdminNotificaciones } from "@/components/admin/AdminNotificaciones";
 import { AdminContactos } from "@/components/admin/AdminContactos";
+import { AdminCalendarioJunta } from "@/components/admin/AdminCalendarioJunta";
 
 interface Categoria {
   id: string;
@@ -630,6 +631,10 @@ const AdminNoticias = () => {
                 <BookUser className="h-4 w-4 shrink-0" />
                 <span>Contactos</span>
               </TabsTrigger>
+              <TabsTrigger value="calendario-junta" className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm shrink-0">
+                <Calendar className="h-4 w-4 shrink-0" />
+                <span>Calendario Junta</span>
+              </TabsTrigger>
             </TabsList>
 
             {/* Tab Noticias */}
@@ -1177,6 +1182,11 @@ const AdminNoticias = () => {
             {/* Tab Contactos */}
             <TabsContent value="contactos">
               <AdminContactos />
+            </TabsContent>
+
+            {/* Tab Calendario Junta */}
+            <TabsContent value="calendario-junta">
+              <AdminCalendarioJunta />
             </TabsContent>
 
             {/* Tab Socios */}

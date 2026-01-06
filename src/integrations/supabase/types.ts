@@ -73,6 +73,7 @@ export type Database = {
           fecha: string
           fecha_fin: string | null
           id: string
+          roles: Database["public"]["Enums"]["cargo_junta"][] | null
           titulo: string
           updated_at: string
         }
@@ -83,6 +84,7 @@ export type Database = {
           fecha: string
           fecha_fin?: string | null
           id?: string
+          roles?: Database["public"]["Enums"]["cargo_junta"][] | null
           titulo: string
           updated_at?: string
         }
@@ -93,6 +95,7 @@ export type Database = {
           fecha?: string
           fecha_fin?: string | null
           id?: string
+          roles?: Database["public"]["Enums"]["cargo_junta"][] | null
           titulo?: string
           updated_at?: string
         }

@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Dialog,
@@ -27,6 +28,14 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { formatInMadrid, toMadridTime, fromMadridTime } from "@/lib/timezone";
@@ -38,9 +47,11 @@ import {
   Trash2,
   Edit,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Users,
+  Mail
 } from "lucide-react";
-import { format, startOfMonth, endOfMonth, isSameDay, addMonths, subMonths } from "date-fns";
+import { format, isSameDay, addMonths, subMonths } from "date-fns";
 import { es } from "date-fns/locale";
 
 type CargoJunta = 'presidente' | 'vicepresidente' | 'secretario' | 'tesorero' | 'vocal';
@@ -64,12 +75,7 @@ const CARGOS_JUNTA: { value: CargoJunta; label: string }[] = [
   { value: 'vocal', label: 'Vocales' },
 ];
 
-interface CalendarioJuntaProps {
-  canEdit: boolean;
-  miCargoJunta?: CargoJunta | null;
-}
-
-export function CalendarioJunta({ canEdit, miCargoJunta }: CalendarioJuntaProps) {
+export function AdminCalendarioJunta() {
   const [eventos, setEventos] = useState<EventoCalendario[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
@@ -77,6 +83,7 @@ export function CalendarioJunta({ canEdit, miCargoJunta }: CalendarioJuntaProps)
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingEvento, setEditingEvento] = useState<EventoCalendario | null>(null);
   const [saving, setSaving] = useState(false);
+  const [sendingNotification, setSendingNotification] = useState(false);
   
   // Form state
   const [titulo, setTitulo] = useState("");
@@ -84,6 +91,7 @@ export function CalendarioJunta({ canEdit, miCargoJunta }: CalendarioJuntaProps)
   const [fechaStr, setFechaStr] = useState("");
   const [horaInicio, setHoraInicio] = useState("10:00");
   const [horaFin, setHoraFin] = useState("");
+  const [selectedRoles, setSelectedRoles] = useState<CargoJunta[]>([]);
   
   const { toast } = useToast();
 
@@ -93,7 +101,7 @@ export function CalendarioJunta({ canEdit, miCargoJunta }: CalendarioJuntaProps)
       const { data, error } = await supabase
         .from("calendario_junta")
         .select("*")
-        .order("fecha", { ascending: true });
+        .order("fecha", { ascending: false });
 
       if (error) throw error;
       setEventos((data as EventoCalendario[]) || []);
@@ -119,6 +127,7 @@ export function CalendarioJunta({ canEdit, miCargoJunta }: CalendarioJuntaProps)
     setFechaStr("");
     setHoraInicio("10:00");
     setHoraFin("");
+    setSelectedRoles([]);
     setEditingEvento(null);
   };
 
@@ -143,7 +152,16 @@ export function CalendarioJunta({ canEdit, miCargoJunta }: CalendarioJuntaProps)
     } else {
       setHoraFin("");
     }
+    setSelectedRoles(evento.roles || []);
     setDialogOpen(true);
+  };
+
+  const toggleRole = (role: CargoJunta) => {
+    setSelectedRoles(prev => 
+      prev.includes(role) 
+        ? prev.filter(r => r !== role)
+        : [...prev, role]
+    );
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -170,6 +188,7 @@ export function CalendarioJunta({ canEdit, miCargoJunta }: CalendarioJuntaProps)
             descripcion: descripcion.trim() || null,
             fecha: fechaInicioUTC,
             fecha_fin: fechaFinUTC,
+            roles: selectedRoles.length > 0 ? selectedRoles : null,
           })
           .eq("id", editingEvento.id);
 
@@ -177,18 +196,26 @@ export function CalendarioJunta({ canEdit, miCargoJunta }: CalendarioJuntaProps)
         toast({ title: "Evento actualizado" });
       } else {
         const { data: { user } } = await supabase.auth.getUser();
-        const { error } = await supabase
+        const { data: newEvento, error } = await supabase
           .from("calendario_junta")
           .insert({
             titulo: titulo.trim(),
             descripcion: descripcion.trim() || null,
             fecha: fechaInicioUTC,
             fecha_fin: fechaFinUTC,
+            roles: selectedRoles.length > 0 ? selectedRoles : null,
             created_by: user?.id,
-          });
+          })
+          .select()
+          .single();
 
         if (error) throw error;
         toast({ title: "Evento creado" });
+
+        // Send notification email to assigned roles
+        if (selectedRoles.length > 0 && newEvento) {
+          sendNotificationEmail(newEvento as EventoCalendario, 'creation');
+        }
       }
 
       setDialogOpen(false);
@@ -203,6 +230,23 @@ export function CalendarioJunta({ canEdit, miCargoJunta }: CalendarioJuntaProps)
       });
     } finally {
       setSaving(false);
+    }
+  };
+
+  const sendNotificationEmail = async (evento: EventoCalendario, type: 'creation' | 'reminder') => {
+    try {
+      const { error } = await supabase.functions.invoke('notify-calendario-junta', {
+        body: {
+          evento_id: evento.id,
+          type,
+        },
+      });
+
+      if (error) {
+        console.error("Error sending notification:", error);
+      }
+    } catch (error) {
+      console.error("Error invoking notification function:", error);
     }
   };
 
@@ -225,6 +269,10 @@ export function CalendarioJunta({ canEdit, miCargoJunta }: CalendarioJuntaProps)
     }
   };
 
+  const getRoleLabel = (role: CargoJunta) => {
+    return CARGOS_JUNTA.find(c => c.value === role)?.label || role;
+  };
+
   // Get events for the selected date
   const eventosDelDia = selectedDate
     ? eventos.filter((e) => isSameDay(toMadridTime(e.fecha), selectedDate))
@@ -232,12 +280,6 @@ export function CalendarioJunta({ canEdit, miCargoJunta }: CalendarioJuntaProps)
 
   // Get dates that have events for highlighting in calendar
   const eventDates = eventos.map((e) => toMadridTime(e.fecha));
-
-  // Get upcoming events (next 7 days)
-  const today = new Date();
-  const proximosEventos = eventos
-    .filter((e) => toMadridTime(e.fecha) >= today)
-    .slice(0, 5);
 
   if (loading) {
     return (
@@ -258,104 +300,128 @@ export function CalendarioJunta({ canEdit, miCargoJunta }: CalendarioJuntaProps)
                 Calendario de la Junta
               </CardTitle>
               <CardDescription>
-                Registro de actividades y reuniones de la Junta Directiva
+                Gestiona eventos y reuniones de la Junta Directiva. Asigna roles para notificar a los miembros correspondientes.
               </CardDescription>
             </div>
-            {canEdit && (
-              <Dialog open={dialogOpen} onOpenChange={(open) => {
-                setDialogOpen(open);
-                if (!open) resetForm();
-              }}>
-                <DialogTrigger asChild>
-                  <Button onClick={() => openNewEventDialog()}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Nuevo evento
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>
-                      {editingEvento ? "Editar evento" : "Nuevo evento"}
-                    </DialogTitle>
-                    <DialogDescription>
-                      {editingEvento
-                        ? "Modifica los datos del evento"
-                        : "Añade un nuevo evento al calendario de la junta"}
-                    </DialogDescription>
-                  </DialogHeader>
-                  <form onSubmit={handleSubmit} className="space-y-4">
+            <Dialog open={dialogOpen} onOpenChange={(open) => {
+              setDialogOpen(open);
+              if (!open) resetForm();
+            }}>
+              <DialogTrigger asChild>
+                <Button onClick={() => openNewEventDialog()}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Nuevo evento
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-lg">
+                <DialogHeader>
+                  <DialogTitle>
+                    {editingEvento ? "Editar evento" : "Nuevo evento"}
+                  </DialogTitle>
+                  <DialogDescription>
+                    {editingEvento
+                      ? "Modifica los datos del evento"
+                      : "Añade un nuevo evento al calendario de la junta. Los miembros asignados recibirán un email de notificación."}
+                  </DialogDescription>
+                </DialogHeader>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="titulo">Título *</Label>
+                    <Input
+                      id="titulo"
+                      value={titulo}
+                      onChange={(e) => setTitulo(e.target.value)}
+                      placeholder="Ej: Reunión de junta"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="descripcion">Descripción</Label>
+                    <Textarea
+                      id="descripcion"
+                      value={descripcion}
+                      onChange={(e) => setDescripcion(e.target.value)}
+                      placeholder="Detalles del evento..."
+                      rows={3}
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="titulo">Título *</Label>
+                      <Label htmlFor="fecha">Fecha *</Label>
                       <Input
-                        id="titulo"
-                        value={titulo}
-                        onChange={(e) => setTitulo(e.target.value)}
-                        placeholder="Ej: Reunión de junta"
+                        id="fecha"
+                        type="date"
+                        value={fechaStr}
+                        onChange={(e) => setFechaStr(e.target.value)}
                         required
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="descripcion">Descripción</Label>
-                      <Textarea
-                        id="descripcion"
-                        value={descripcion}
-                        onChange={(e) => setDescripcion(e.target.value)}
-                        placeholder="Detalles del evento..."
-                        rows={3}
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="fecha">Fecha *</Label>
-                        <Input
-                          id="fecha"
-                          type="date"
-                          value={fechaStr}
-                          onChange={(e) => setFechaStr(e.target.value)}
-                          required
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="hora-inicio">Hora inicio *</Label>
-                        <Input
-                          id="hora-inicio"
-                          type="time"
-                          value={horaInicio}
-                          onChange={(e) => setHoraInicio(e.target.value)}
-                          required
-                        />
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="hora-fin">Hora fin (opcional)</Label>
+                      <Label htmlFor="hora-inicio">Hora inicio *</Label>
                       <Input
-                        id="hora-fin"
+                        id="hora-inicio"
                         type="time"
-                        value={horaFin}
-                        onChange={(e) => setHoraFin(e.target.value)}
+                        value={horaInicio}
+                        onChange={(e) => setHoraInicio(e.target.value)}
+                        required
                       />
                     </div>
-                    <DialogFooter>
-                      <DialogClose asChild>
-                        <Button type="button" variant="outline">
-                          Cancelar
-                        </Button>
-                      </DialogClose>
-                      <Button type="submit" disabled={saving}>
-                        {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        {editingEvento ? "Guardar cambios" : "Crear evento"}
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="hora-fin">Hora fin (opcional)</Label>
+                    <Input
+                      id="hora-fin"
+                      type="time"
+                      value={horaFin}
+                      onChange={(e) => setHoraFin(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-3">
+                    <Label className="flex items-center gap-2">
+                      <Users className="h-4 w-4" />
+                      Roles asignados
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      Selecciona los roles que deben participar. Recibirán emails de notificación.
+                    </p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {CARGOS_JUNTA.map((cargo) => (
+                        <div key={cargo.value} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`role-${cargo.value}`}
+                            checked={selectedRoles.includes(cargo.value)}
+                            onCheckedChange={() => toggleRole(cargo.value)}
+                          />
+                          <Label
+                            htmlFor={`role-${cargo.value}`}
+                            className="text-sm font-normal cursor-pointer"
+                          >
+                            {cargo.label}
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <DialogClose asChild>
+                      <Button type="button" variant="outline">
+                        Cancelar
                       </Button>
-                    </DialogFooter>
-                  </form>
-                </DialogContent>
-              </Dialog>
-            )}
+                    </DialogClose>
+                    <Button type="submit" disabled={saving}>
+                      {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      {editingEvento ? "Guardar cambios" : "Crear evento"}
+                    </Button>
+                  </DialogFooter>
+                </form>
+              </DialogContent>
+            </Dialog>
           </div>
         </CardHeader>
         <CardContent>
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid lg:grid-cols-3 gap-6">
             {/* Calendar */}
-            <div>
+            <div className="lg:col-span-1">
               <div className="flex items-center justify-between mb-4">
                 <Button
                   variant="outline"
@@ -395,7 +461,7 @@ export function CalendarioJunta({ canEdit, miCargoJunta }: CalendarioJuntaProps)
                   },
                 }}
               />
-              {canEdit && selectedDate && (
+              {selectedDate && (
                 <Button
                   variant="outline"
                   className="w-full mt-4"
@@ -407,39 +473,59 @@ export function CalendarioJunta({ canEdit, miCargoJunta }: CalendarioJuntaProps)
               )}
             </div>
 
-            {/* Events for selected date */}
-            <div>
-              <h3 className="font-semibold mb-4">
-                {selectedDate
-                  ? format(selectedDate, "EEEE, d 'de' MMMM", { locale: es })
-                  : "Selecciona una fecha"}
-              </h3>
-              {eventosDelDia.length === 0 ? (
+            {/* Events table */}
+            <div className="lg:col-span-2">
+              <h3 className="font-semibold mb-4">Todos los eventos</h3>
+              {eventos.length === 0 ? (
                 <p className="text-muted-foreground text-sm py-4">
-                  No hay eventos para este día
+                  No hay eventos en el calendario
                 </p>
               ) : (
-                <div className="space-y-3">
-                  {eventosDelDia.map((evento) => (
-                    <Card key={evento.id} className="bg-muted/50">
-                      <CardContent className="p-4">
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="flex-1">
-                            <h4 className="font-medium">{evento.titulo}</h4>
-                            <div className="flex items-center gap-1 text-sm text-muted-foreground mt-1">
-                              <Clock className="h-3 w-3" />
-                              <span>
-                                {formatInMadrid(evento.fecha, "HH:mm")}
-                                {evento.fecha_fin && ` - ${formatInMadrid(evento.fecha_fin, "HH:mm")}`}
-                              </span>
+                <div className="border rounded-lg overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Fecha</TableHead>
+                        <TableHead>Evento</TableHead>
+                        <TableHead>Roles</TableHead>
+                        <TableHead className="w-[100px]">Acciones</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {eventos.map((evento) => (
+                        <TableRow key={evento.id}>
+                          <TableCell className="whitespace-nowrap">
+                            <div className="font-medium">
+                              {formatInMadrid(evento.fecha, "d MMM yyyy")}
                             </div>
+                            <div className="text-sm text-muted-foreground flex items-center gap-1">
+                              <Clock className="h-3 w-3" />
+                              {formatInMadrid(evento.fecha, "HH:mm")}
+                              {evento.fecha_fin && ` - ${formatInMadrid(evento.fecha_fin, "HH:mm")}`}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="font-medium">{evento.titulo}</div>
                             {evento.descripcion && (
-                              <p className="text-sm text-muted-foreground mt-2 whitespace-pre-wrap">
+                              <div className="text-sm text-muted-foreground line-clamp-1">
                                 {evento.descripcion}
-                              </p>
+                              </div>
                             )}
-                          </div>
-                          {canEdit && (
+                          </TableCell>
+                          <TableCell>
+                            {evento.roles && evento.roles.length > 0 ? (
+                              <div className="flex flex-wrap gap-1">
+                                {evento.roles.map((role) => (
+                                  <Badge key={role} variant="secondary" className="text-xs">
+                                    {getRoleLabel(role)}
+                                  </Badge>
+                                ))}
+                              </div>
+                            ) : (
+                              <span className="text-muted-foreground text-sm">Toda la junta</span>
+                            )}
+                          </TableCell>
+                          <TableCell>
                             <div className="flex gap-1">
                               <Button
                                 variant="ghost"
@@ -478,55 +564,17 @@ export function CalendarioJunta({ canEdit, miCargoJunta }: CalendarioJuntaProps)
                                 </AlertDialogContent>
                               </AlertDialog>
                             </div>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
                 </div>
               )}
             </div>
           </div>
         </CardContent>
       </Card>
-
-      {/* Próximos eventos */}
-      {proximosEventos.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Próximos eventos</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {proximosEventos.map((evento) => (
-                <div
-                  key={evento.id}
-                  className="flex items-center gap-4 p-3 rounded-lg bg-muted/50 cursor-pointer hover:bg-muted transition-colors"
-                  onClick={() => {
-                    setSelectedDate(toMadridTime(evento.fecha));
-                    setCurrentMonth(toMadridTime(evento.fecha));
-                  }}
-                >
-                  <div className="text-center min-w-[50px]">
-                    <div className="text-2xl font-bold text-primary">
-                      {formatInMadrid(evento.fecha, "d")}
-                    </div>
-                    <div className="text-xs text-muted-foreground uppercase">
-                      {formatInMadrid(evento.fecha, "MMM")}
-                    </div>
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="font-medium">{evento.titulo}</h4>
-                    <p className="text-sm text-muted-foreground">
-                      {formatInMadrid(evento.fecha, "EEEE, HH:mm")}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 }
