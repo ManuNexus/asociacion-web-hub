@@ -212,13 +212,6 @@ export type Database = {
             foreignKeyName: "noticias_autor_socio_id_fkey"
             columns: ["autor_socio_id"]
             isOneToOne: false
-            referencedRelation: "news_authors"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "noticias_autor_socio_id_fkey"
-            columns: ["autor_socio_id"]
-            isOneToOne: false
             referencedRelation: "socios"
             referencedColumns: ["id"]
           },
@@ -537,30 +530,19 @@ export type Database = {
       }
     }
     Views: {
-      news_authors: {
-        Row: {
-          apellidos: string | null
-          foto_url: string | null
-          id: string | null
-          nombre: string | null
-        }
-        Insert: {
-          apellidos?: string | null
-          foto_url?: string | null
-          id?: string | null
-          nombre?: string | null
-        }
-        Update: {
-          apellidos?: string | null
-          foto_url?: string | null
-          id?: string | null
-          nombre?: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       check_scheduled_news: { Args: never; Returns: undefined }
+      get_news_author: {
+        Args: { author_socio_id: string }
+        Returns: {
+          apellidos: string
+          foto_url: string
+          id: string
+          nombre: string
+        }[]
+      }
       get_socios_for_junta: {
         Args: never
         Returns: {
