@@ -34,7 +34,7 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Pencil, Trash2, Loader2, LogOut, Users, Newspaper, Mail, Phone, Eye, Search, Tag, UserCheck, Send, RefreshCw, Vote, Calendar, FileText, CreditCard, Bell, Link, Clock } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, LogOut, Users, Newspaper, Mail, Phone, Eye, Search, Tag, UserCheck, Send, RefreshCw, Vote, Calendar, FileText, CreditCard, Bell, Link, Clock, BookUser } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { formatInMadrid, toDateTimeLocalValue, fromDateTimeLocalValue } from "@/lib/timezone";
@@ -43,6 +43,7 @@ import { AdminEventos } from "@/components/admin/AdminEventos";
 import { AdminDocumentos } from "@/components/admin/AdminDocumentos";
 import { AdminSocios } from "@/components/admin/AdminSocios";
 import { AdminNotificaciones } from "@/components/admin/AdminNotificaciones";
+import { AdminContactos } from "@/components/admin/AdminContactos";
 
 interface Categoria {
   id: string;
@@ -587,7 +588,7 @@ const AdminNoticias = () => {
       <section className="py-8">
         <div className="container">
           <Tabs defaultValue="noticias" className="w-full">
-            <TabsList className="grid w-full max-w-4xl grid-cols-8 mb-6">
+            <TabsList className="grid w-full max-w-5xl grid-cols-9 mb-6">
               <TabsTrigger value="noticias" className="flex items-center gap-2">
                 <Newspaper className="h-4 w-4" />
                 <span className="hidden sm:inline">Noticias</span>
@@ -624,6 +625,10 @@ const AdminNoticias = () => {
               <TabsTrigger value="documentos" className="flex items-center gap-2">
                 <FileText className="h-4 w-4" />
                 <span className="hidden sm:inline">Documentos</span>
+              </TabsTrigger>
+              <TabsTrigger value="contactos" className="flex items-center gap-2">
+                <BookUser className="h-4 w-4" />
+                <span className="hidden sm:inline">Contactos</span>
               </TabsTrigger>
             </TabsList>
 
@@ -1167,6 +1172,11 @@ const AdminNoticias = () => {
             {/* Tab Documentos */}
             <TabsContent value="documentos">
               <AdminDocumentos />
+            </TabsContent>
+
+            {/* Tab Contactos */}
+            <TabsContent value="contactos">
+              <AdminContactos />
             </TabsContent>
 
             {/* Tab Socios */}

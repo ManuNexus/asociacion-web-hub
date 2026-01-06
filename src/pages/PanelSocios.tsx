@@ -30,13 +30,16 @@ import {
   ArrowLeft,
   Home,
   ClipboardList,
-  CreditCard
+  CreditCard,
+  BookUser
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { formatInMadrid, toMadridTime } from "@/lib/timezone";
 import logoWhite from "@/assets/logo-ahora-white.png";
+import { AdminContactos } from "@/components/admin/AdminContactos";
 
+type CargoJunta = 'presidente' | 'vicepresidente' | 'secretario' | 'tesorero' | 'vocal' | null;
 
 interface Socio {
   id: string;
@@ -51,6 +54,7 @@ interface Socio {
   fecha_alta: string;
   numero_socio: string | null;
   dia_cobro: number | null;
+  cargo_junta: CargoJunta;
 }
 
 interface SocioWithJunta extends Socio {
@@ -579,7 +583,13 @@ const PanelSocios = () => {
           </Card>
 
           <Tabs defaultValue="carnet" className="w-full">
-            <TabsList className={`grid w-full max-w-4xl mb-6 h-auto gap-1 ${(isJunta || isAdmin) ? 'grid-cols-4 sm:grid-cols-7' : 'grid-cols-3 sm:grid-cols-6'}`}>
+            <TabsList className={`grid w-full max-w-4xl mb-6 h-auto gap-1 ${
+              (isAdmin || miSocio?.cargo_junta === 'presidente' || miSocio?.cargo_junta === 'vicepresidente') 
+                ? 'grid-cols-4 sm:grid-cols-8' 
+                : (isJunta) 
+                  ? 'grid-cols-4 sm:grid-cols-7' 
+                  : 'grid-cols-3 sm:grid-cols-6'
+            }`}>
               <TabsTrigger value="carnet" className="flex items-center gap-2 py-2">
                 <IdCard className="h-4 w-4" />
                 <span className="hidden sm:inline">Carnet</span>
@@ -602,6 +612,12 @@ const PanelSocios = () => {
                 <FileText className="h-4 w-4" />
                 <span className="hidden sm:inline">Documentos</span>
               </TabsTrigger>
+              {(isAdmin || miSocio?.cargo_junta === 'presidente' || miSocio?.cargo_junta === 'vicepresidente') && (
+                <TabsTrigger value="contactos" className="flex items-center gap-2 py-2">
+                  <BookUser className="h-4 w-4" />
+                  <span className="hidden sm:inline">Contactos</span>
+                </TabsTrigger>
+              )}
               <TabsTrigger value="cuenta" className="flex items-center gap-2 py-2">
                 <User className="h-4 w-4" />
                 <span className="hidden sm:inline">Mi cuenta</span>
@@ -1428,6 +1444,13 @@ const PanelSocios = () => {
                 </Card>
               </div>
             </TabsContent>
+
+            {/* Tab Contactos - Solo presidente/vicepresidente/admin */}
+            {(isAdmin || miSocio?.cargo_junta === 'presidente' || miSocio?.cargo_junta === 'vicepresidente') && (
+              <TabsContent value="contactos">
+                <AdminContactos />
+              </TabsContent>
+            )}
 
             {/* Tab Avisos */}
             <TabsContent value="avisos">
