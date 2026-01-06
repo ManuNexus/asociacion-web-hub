@@ -17,31 +17,43 @@ declare global {
 
 // Extract tweet ID from various Twitter/X URL formats
 const extractTweetId = (url: string): string | null => {
-  // Match patterns like:
-  // https://twitter.com/user/status/123456789
-  // https://x.com/user/status/123456789
-  // https://twitter.com/user/status/123456789?s=20
   const match = url.match(/(?:twitter\.com|x\.com)\/\w+\/status\/(\d+)/);
   return match ? match[1] : null;
 };
 
 export const TweetEmbed = ({ tweetUrl }: TweetEmbedProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const tweetContainerRef = useRef<HTMLDivElement | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  const tweetId = extractTweetId(tweetUrl);
 
   useEffect(() => {
-    const tweetId = extractTweetId(tweetUrl);
     if (!tweetId || !containerRef.current) {
       setError(true);
       setLoading(false);
       return;
     }
 
-    const loadTwitterScript = () => {
-      return new Promise<void>((resolve) => {
+    // Create a separate container for the tweet that React won't try to manage
+    const tweetDiv = document.createElement("div");
+    tweetDiv.setAttribute("data-tweet-id", tweetId);
+    containerRef.current.appendChild(tweetDiv);
+    tweetContainerRef.current = tweetDiv;
+
+    const loadTwitterScript = (): Promise<void> => {
+      return new Promise((resolve) => {
         if (window.twttr) {
           resolve();
+          return;
+        }
+
+        const existingScript = document.querySelector('script[src="https://platform.twitter.com/widgets.js"]');
+        if (existingScript) {
+          existingScript.addEventListener("load", () => resolve());
+          if (window.twttr) resolve();
           return;
         }
 
@@ -57,13 +69,10 @@ export const TweetEmbed = ({ tweetUrl }: TweetEmbedProps) => {
       try {
         await loadTwitterScript();
         
-        if (window.twttr && containerRef.current) {
-          // Clear container
-          containerRef.current.innerHTML = "";
-          
+        if (window.twttr && tweetContainerRef.current) {
           const element = await window.twttr.widgets.createTweet(
             tweetId,
-            containerRef.current,
+            tweetContainerRef.current,
             {
               theme: document.documentElement.classList.contains("dark") ? "dark" : "light",
               dnt: true,
@@ -74,6 +83,7 @@ export const TweetEmbed = ({ tweetUrl }: TweetEmbedProps) => {
           if (!element) {
             setError(true);
           }
+          setMounted(true);
         }
       } catch (err) {
         console.error("Error embedding tweet:", err);
@@ -84,7 +94,26 @@ export const TweetEmbed = ({ tweetUrl }: TweetEmbedProps) => {
     };
 
     embedTweet();
-  }, [tweetUrl]);
+
+    // Cleanup: manually remove the tweet container we created
+    return () => {
+      if (tweetContainerRef.current && containerRef.current) {
+        try {
+          // Remove all children from our tweet container first
+          while (tweetContainerRef.current.firstChild) {
+            tweetContainerRef.current.removeChild(tweetContainerRef.current.firstChild);
+          }
+          // Then remove the container itself
+          if (tweetContainerRef.current.parentNode === containerRef.current) {
+            containerRef.current.removeChild(tweetContainerRef.current);
+          }
+        } catch (e) {
+          // Ignore cleanup errors
+        }
+        tweetContainerRef.current = null;
+      }
+    };
+  }, [tweetId]);
 
   if (error) {
     return (
@@ -105,8 +134,10 @@ export const TweetEmbed = ({ tweetUrl }: TweetEmbedProps) => {
   }
 
   return (
-    <div className="my-6" ref={containerRef}>
-      {loading && (
+    <div className="my-6">
+      {/* This div is managed by React and stays empty - children are added via DOM manipulation */}
+      <div ref={containerRef} suppressHydrationWarning />
+      {loading && !mounted && (
         <div className="flex justify-center py-8">
           <div className="animate-pulse bg-secondary/50 rounded-xl w-full max-w-[550px] h-[200px]" />
         </div>
