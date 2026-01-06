@@ -86,6 +86,48 @@ export type Database = {
         }
         Relationships: []
       }
+      contactos_directorio: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          direccion: string | null
+          email: string | null
+          id: string
+          nombre: string
+          notas: string | null
+          organizacion: string
+          telefono: string | null
+          tipo: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          direccion?: string | null
+          email?: string | null
+          id?: string
+          nombre: string
+          notas?: string | null
+          organizacion: string
+          telefono?: string | null
+          tipo?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          direccion?: string | null
+          email?: string | null
+          id?: string
+          nombre?: string
+          notas?: string | null
+          organizacion?: string
+          telefono?: string | null
+          tipo?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       documentos_internos: {
         Row: {
           archivo_url: string
@@ -577,6 +619,7 @@ export type Database = {
           vote_count: number
         }[]
       }
+      has_cargo_directivo: { Args: { _user_id: string }; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
