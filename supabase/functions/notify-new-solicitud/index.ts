@@ -29,10 +29,10 @@ const handler = async (req: Request): Promise<Response> => {
     const solicitud: SolicitudData = await req.json();
     console.log("Nueva solicitud de socio recibida:", solicitud.email);
 
-    // Email 1: Notificación al administrador
+    // Email 1: Notificación al administrador y presidencia
     const adminEmailResponse = await resend.emails.send({
       from: "AHORA <socios@ahoraorg.es>",
-      to: ["marrorra2001@gmail.com"],
+      to: ["marrorra2001@gmail.com", "presidencia@ahoraorg.es"],
       subject: `Nueva solicitud de socio: ${solicitud.nombre} ${solicitud.apellidos}`,
       html: `
         <!DOCTYPE html>
