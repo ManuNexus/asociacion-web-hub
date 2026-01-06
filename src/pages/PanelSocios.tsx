@@ -209,19 +209,41 @@ const PanelSocios = () => {
     setSavingProfile(true);
     
     try {
+      const newEmail = editEmail.trim();
+      const emailChanged = newEmail.toLowerCase() !== miSocio.email.toLowerCase();
+      
+      // If email changed, update auth email first
+      if (emailChanged) {
+        const { error: authError } = await supabase.auth.updateUser({
+          email: newEmail,
+        });
+        
+        if (authError) {
+          throw new Error(`Error al actualizar email de acceso: ${authError.message}`);
+        }
+      }
+      
+      // Update socios table
       const { error } = await supabase
         .from("socios")
         .update({
           nombre: editNombre.trim(),
           apellidos: editApellidos.trim(),
-          email: editEmail.trim(),
+          email: newEmail,
           telefono: editTelefono.trim() || null,
         })
         .eq("id", miSocio.id);
       
       if (error) throw error;
       
-      toast({ title: "Datos actualizados correctamente" });
+      if (emailChanged) {
+        toast({ 
+          title: "Datos actualizados", 
+          description: "Se ha enviado un email de confirmación a tu nueva dirección. Debes confirmar el cambio.",
+        });
+      } else {
+        toast({ title: "Datos actualizados correctamente" });
+      }
       fetchMiSocio();
     } catch (error: any) {
       toast({
