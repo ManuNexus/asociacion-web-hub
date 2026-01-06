@@ -242,16 +242,7 @@ serve(async (req: Request): Promise<Response> => {
 
     console.log(`Sending SEPA update to socio: ${socio.id}`);
 
-    // Try to find the original solicitud for address info
-    const { data: solicitud } = await supabaseAdmin
-      .from("solicitudes_socio")
-      .select("direccion, codigo_postal, ciudad, provincia")
-      .eq("email", socio.email)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-
-    // Generate SEPA PDF
+    // Generate SEPA PDF using socio's address data
     const today = new Date();
     const fechaFormateada = today.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
     const referencia = socio.id.substring(0, 8).toUpperCase();
@@ -260,10 +251,10 @@ serve(async (req: Request): Promise<Response> => {
       referencia,
       nombre: socio.nombre,
       apellidos: socio.apellidos,
-      direccion: solicitud?.direccion || 'No indicada',
-      codigoPostal: solicitud?.codigo_postal || '',
-      ciudad: solicitud?.ciudad || '',
-      provincia: solicitud?.provincia || '',
+      direccion: socio.direccion || 'No indicada',
+      codigoPostal: socio.codigo_postal || '',
+      ciudad: socio.ciudad || '',
+      provincia: socio.provincia || '',
       iban: socio.iban || '',
       titularCuenta: socio.titular_cuenta || `${socio.apellidos} ${socio.nombre}`,
       tipoPago: socio.tipo_pago || 'mensual',

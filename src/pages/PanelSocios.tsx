@@ -58,6 +58,10 @@ interface Socio {
   cargo_junta: CargoJunta;
   iban: string | null;
   titular_cuenta: string | null;
+  direccion: string | null;
+  codigo_postal: string | null;
+  ciudad: string | null;
+  provincia: string | null;
 }
 
 interface SocioWithJunta extends Socio {
@@ -142,6 +146,10 @@ const PanelSocios = () => {
   // Bank data edit states
   const [editIban, setEditIban] = useState("");
   const [editTitularCuenta, setEditTitularCuenta] = useState("");
+  const [editDireccion, setEditDireccion] = useState("");
+  const [editCodigoPostal, setEditCodigoPostal] = useState("");
+  const [editCiudad, setEditCiudad] = useState("");
+  const [editProvincia, setEditProvincia] = useState("");
   const [savingBankData, setSavingBankData] = useState(false);
   const [isEditingIban, setIsEditingIban] = useState(false);
 
@@ -201,6 +209,10 @@ const PanelSocios = () => {
       setEditTelefono(data.telefono || "");
       // Bank data - keep empty unless editing
       setEditTitularCuenta(data.titular_cuenta || "");
+      setEditDireccion(data.direccion || "");
+      setEditCodigoPostal(data.codigo_postal || "");
+      setEditCiudad(data.ciudad || "");
+      setEditProvincia(data.provincia || "");
       setIsEditingIban(false);
       setEditIban("");
     }
@@ -227,6 +239,16 @@ const PanelSocios = () => {
       return;
     }
     
+    // Validate address fields are filled
+    if (!editDireccion.trim() || !editCodigoPostal.trim() || !editCiudad.trim() || !editProvincia.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Todos los campos de dirección son obligatorios para el mandato SEPA",
+      });
+      return;
+    }
+    
     // Validate IBAN if provided
     if (isEditingIban && editIban.trim()) {
       const cleanIban = editIban.replace(/\s/g, "").toUpperCase();
@@ -244,8 +266,19 @@ const PanelSocios = () => {
     setSavingBankData(true);
     
     try {
-      const updateData: { titular_cuenta: string; iban?: string } = {
+      const updateData: { 
+        titular_cuenta: string; 
+        direccion: string;
+        codigo_postal: string;
+        ciudad: string;
+        provincia: string;
+        iban?: string;
+      } = {
         titular_cuenta: editTitularCuenta.trim(),
+        direccion: editDireccion.trim(),
+        codigo_postal: editCodigoPostal.trim(),
+        ciudad: editCiudad.trim(),
+        provincia: editProvincia.trim(),
       };
       
       const ibanChanged = isEditingIban && editIban.trim();
@@ -1586,7 +1619,7 @@ const PanelSocios = () => {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <form onSubmit={handleUpdateBankData} className="space-y-4 max-w-md">
+                    <form onSubmit={handleUpdateBankData} className="space-y-4">
                       <div className="space-y-2">
                         <Label htmlFor="edit-titular">Titular de la cuenta</Label>
                         <Input
@@ -1596,6 +1629,57 @@ const PanelSocios = () => {
                           placeholder="Nombre del titular de la cuenta"
                           disabled={savingBankData}
                         />
+                      </div>
+                      
+                      {/* Dirección fiscal para SEPA */}
+                      <div className="p-4 border rounded-lg bg-muted/30 space-y-4">
+                        <p className="text-sm font-medium text-muted-foreground">Dirección fiscal (requerida para el mandato SEPA)</p>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="edit-direccion">Dirección</Label>
+                          <Input
+                            id="edit-direccion"
+                            value={editDireccion}
+                            onChange={(e) => setEditDireccion(e.target.value)}
+                            placeholder="Calle, número, piso..."
+                            disabled={savingBankData}
+                          />
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="edit-cp">Código postal</Label>
+                            <Input
+                              id="edit-cp"
+                              value={editCodigoPostal}
+                              onChange={(e) => setEditCodigoPostal(e.target.value)}
+                              placeholder="00000"
+                              disabled={savingBankData}
+                              maxLength={5}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="edit-ciudad">Ciudad</Label>
+                            <Input
+                              id="edit-ciudad"
+                              value={editCiudad}
+                              onChange={(e) => setEditCiudad(e.target.value)}
+                              placeholder="Ciudad"
+                              disabled={savingBankData}
+                            />
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="edit-provincia">Provincia</Label>
+                          <Input
+                            id="edit-provincia"
+                            value={editProvincia}
+                            onChange={(e) => setEditProvincia(e.target.value)}
+                            placeholder="Provincia"
+                            disabled={savingBankData}
+                          />
+                        </div>
                       </div>
                       
                       <div className="space-y-2">
