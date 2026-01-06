@@ -248,8 +248,10 @@ const PanelSocios = () => {
         titular_cuenta: editTitularCuenta.trim(),
       };
       
+      const ibanChanged = isEditingIban && editIban.trim();
+      
       // Only update IBAN if user entered a new one
-      if (isEditingIban && editIban.trim()) {
+      if (ibanChanged) {
         updateData.iban = editIban.replace(/\s/g, "").toUpperCase();
       }
       
@@ -260,7 +262,34 @@ const PanelSocios = () => {
       
       if (error) throw error;
       
-      toast({ title: "Datos bancarios actualizados correctamente" });
+      // If IBAN changed, send new SEPA document
+      if (ibanChanged) {
+        try {
+          const { error: sepaError } = await supabase.functions.invoke("send-sepa-update");
+          
+          if (sepaError) {
+            console.error("Error sending SEPA:", sepaError);
+            toast({ 
+              title: "Datos bancarios actualizados",
+              description: "Se ha actualizado tu cuenta. Te enviaremos el documento SEPA próximamente.",
+            });
+          } else {
+            toast({ 
+              title: "Datos bancarios actualizados",
+              description: "Te hemos enviado un nuevo documento SEPA para firmar a tu email.",
+            });
+          }
+        } catch (sepaErr) {
+          console.error("Error invoking SEPA function:", sepaErr);
+          toast({ 
+            title: "Datos bancarios actualizados",
+            description: "Se ha actualizado tu cuenta. Te enviaremos el documento SEPA próximamente.",
+          });
+        }
+      } else {
+        toast({ title: "Datos bancarios actualizados correctamente" });
+      }
+      
       fetchMiSocio();
     } catch (error: any) {
       toast({
