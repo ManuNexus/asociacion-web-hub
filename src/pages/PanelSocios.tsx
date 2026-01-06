@@ -608,6 +608,7 @@ const PanelSocios = () => {
               </TabsTrigger>
               {(isAdmin || miSocio?.cargo_junta === 'presidente' || miSocio?.cargo_junta === 'vicepresidente') && (
                 <TabsTrigger value="contactos" className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm shrink-0">
+                  <BookUser className="h-4 w-4 shrink-0" />
                   <span>Contactos</span>
                 </TabsTrigger>
               )}
