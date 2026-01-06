@@ -44,17 +44,31 @@ const NoticiaDetalle = () => {
         return;
       }
 
-      // First try to fetch without publicada filter (admins can see all via RLS)
+      // Fetch the news article (RLS will handle published/admin access)
       let { data, error } = await supabase
         .from("noticias")
-        .select("*, categorias_noticia(*), socios(id, nombre, apellidos, foto_url)")
+        .select("*, categorias_noticia(*)")
         .eq("id", id)
         .maybeSingle();
 
       if (error || !data) {
         setNotFound(true);
       } else {
-        setNoticia(data);
+        // If there's an author socio, fetch their public info via the secure function
+        let authorInfo = null;
+        if (data.autor_socio_id) {
+          const { data: authorData } = await supabase
+            .rpc("get_news_author", { author_socio_id: data.autor_socio_id });
+          if (authorData && authorData.length > 0) {
+            authorInfo = authorData[0];
+          }
+        }
+        
+        setNoticia({
+          ...data,
+          socios: authorInfo
+        });
+        
         // Fetch related news (only published)
         const { data: related } = await supabase
           .from("noticias")
