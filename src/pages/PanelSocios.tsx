@@ -31,7 +31,8 @@ import {
   Home,
   ClipboardList,
   CreditCard,
-  BookUser
+  BookUser,
+  Calculator
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -726,7 +727,7 @@ const PanelSocios = () => {
           <Card className="mb-8 bg-gradient-to-r from-primary/5 to-secondary/5 border-primary/20">
             <CardContent className="py-6">
               <div className="flex items-start justify-between gap-4">
-                <div>
+                <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
                     <h2 className="text-2xl font-bold text-foreground">
                       ¡Hola, {miSocio?.nombre || "socio"}!
@@ -742,6 +743,15 @@ const PanelSocios = () => {
                     Gracias por ser parte de AHORA. Aquí tienes acceso a toda la información y herramientas exclusivas para socios.
                   </p>
                 </div>
+                {(isAdmin || miSocio?.cargo_junta === 'presidente' || miSocio?.cargo_junta === 'tesorero') && (
+                  <Button 
+                    onClick={() => navigate("/contabilidad")}
+                    className="shrink-0"
+                  >
+                    <Calculator className="h-4 w-4 mr-2" />
+                    Contabilidad
+                  </Button>
+                )}
               </div>
             </CardContent>
           </Card>
