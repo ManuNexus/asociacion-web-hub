@@ -10,6 +10,18 @@ export interface CategoriaContabilidad {
   created_at: string;
 }
 
+export interface Proveedor {
+  id: string;
+  nombre: string;
+  nif: string | null;
+  direccion: string | null;
+  email: string | null;
+  telefono: string | null;
+  notas: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Transaccion {
   id: string;
   tipo: "ingreso" | "gasto";
@@ -40,6 +52,7 @@ export interface Factura {
   tercero_nombre: string;
   tercero_nif: string | null;
   tercero_direccion: string | null;
+  proveedor_id: string | null;
   notas: string | null;
   archivo_url: string | null;
   created_by: string | null;
@@ -49,11 +62,13 @@ export interface Factura {
 
 export type TransaccionInsert = Omit<Transaccion, "id" | "created_at" | "updated_at" | "categoria">;
 export type FacturaInsert = Omit<Factura, "id" | "created_at" | "updated_at" | "importe_iva" | "importe_total">;
+export type ProveedorInsert = Omit<Proveedor, "id" | "created_at" | "updated_at">;
 
 export const useContabilidad = () => {
   const [transacciones, setTransacciones] = useState<Transaccion[]>([]);
   const [facturas, setFacturas] = useState<Factura[]>([]);
   const [categorias, setCategorias] = useState<CategoriaContabilidad[]>([]);
+  const [proveedores, setProveedores] = useState<Proveedor[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
@@ -100,9 +115,22 @@ export const useContabilidad = () => {
     setFacturas(data as Factura[]);
   };
 
+  const fetchProveedores = async () => {
+    const { data, error } = await supabase
+      .from("proveedores")
+      .select("*")
+      .order("nombre", { ascending: true });
+
+    if (error) {
+      console.error("Error fetching proveedores:", error);
+      return;
+    }
+    setProveedores(data as Proveedor[]);
+  };
+
   const fetchAll = async () => {
     setLoading(true);
-    await Promise.all([fetchCategorias(), fetchTransacciones(), fetchFacturas()]);
+    await Promise.all([fetchCategorias(), fetchTransacciones(), fetchFacturas(), fetchProveedores()]);
     setLoading(false);
   };
 
@@ -279,6 +307,67 @@ export const useContabilidad = () => {
     return true;
   };
 
+  const addProveedor = async (proveedor: ProveedorInsert) => {
+    const { data, error } = await supabase
+      .from("proveedores")
+      .insert(proveedor)
+      .select()
+      .single();
+
+    if (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "No se pudo crear el proveedor",
+      });
+      return null;
+    }
+
+    toast({ title: "Proveedor guardado" });
+    fetchProveedores();
+    return data as Proveedor;
+  };
+
+  const updateProveedor = async (id: string, updates: Partial<ProveedorInsert>) => {
+    const { error } = await supabase
+      .from("proveedores")
+      .update(updates)
+      .eq("id", id);
+
+    if (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "No se pudo actualizar el proveedor",
+      });
+      return false;
+    }
+
+    toast({ title: "Proveedor actualizado" });
+    fetchProveedores();
+    return true;
+  };
+
+  const deleteProveedor = async (id: string) => {
+    const { error } = await supabase
+      .from("proveedores")
+      .delete()
+      .eq("id", id);
+
+    if (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "No se pudo eliminar el proveedor (puede tener facturas asociadas)",
+      });
+      return false;
+    }
+
+    toast({ title: "Proveedor eliminado" });
+    fetchProveedores();
+    return true;
+  };
+
   // Cálculos para informes
   const getBalance = () => {
     const ingresos = transacciones
@@ -331,6 +420,7 @@ export const useContabilidad = () => {
     transacciones,
     facturas,
     categorias,
+    proveedores,
     loading,
     fetchAll,
     addTransaccion,
@@ -341,6 +431,9 @@ export const useContabilidad = () => {
     deleteFactura,
     addCategoria,
     deleteCategoria,
+    addProveedor,
+    updateProveedor,
+    deleteProveedor,
     getBalance,
     getBalancePorPeriodo,
     getTransaccionesPorCategoria,
