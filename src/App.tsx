@@ -22,6 +22,7 @@ const PoliticaPrivacidad = lazy(() => import("./pages/PoliticaPrivacidad"));
 const Auth = lazy(() => import("./pages/Auth"));
 const AdminNoticias = lazy(() => import("./pages/AdminNoticias"));
 const PanelSocios = lazy(() => import("./pages/PanelSocios"));
+const Contabilidad = lazy(() => import("./pages/Contabilidad"));
 const Eventos = lazy(() => import("./pages/Eventos"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
@@ -49,6 +50,7 @@ const App = () => (
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/admin/noticias" element={<AdminNoticias />} />
                 <Route path="/socios" element={<PanelSocios />} />
+                <Route path="/contabilidad" element={<Contabilidad />} />
                 <Route path="/eventos" element={<Eventos />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
