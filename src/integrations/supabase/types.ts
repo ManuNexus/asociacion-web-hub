@@ -101,6 +101,30 @@ export type Database = {
         }
         Relationships: []
       }
+      categorias_contabilidad: {
+        Row: {
+          color: string | null
+          created_at: string
+          id: string
+          nombre: string
+          tipo: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          nombre: string
+          tipo: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          nombre?: string
+          tipo?: string
+        }
+        Relationships: []
+      }
       categorias_noticia: {
         Row: {
           color: string | null
@@ -235,6 +259,72 @@ export type Database = {
           solo_junta?: boolean
           titulo?: string
           ubicacion?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      facturas: {
+        Row: {
+          archivo_url: string | null
+          concepto: string
+          created_at: string
+          created_by: string | null
+          estado: string
+          fecha_emision: string
+          fecha_vencimiento: string | null
+          id: string
+          importe_base: number
+          importe_iva: number | null
+          importe_total: number | null
+          iva_porcentaje: number | null
+          notas: string | null
+          numero: string
+          tercero_direccion: string | null
+          tercero_nif: string | null
+          tercero_nombre: string
+          tipo: string
+          updated_at: string
+        }
+        Insert: {
+          archivo_url?: string | null
+          concepto: string
+          created_at?: string
+          created_by?: string | null
+          estado?: string
+          fecha_emision?: string
+          fecha_vencimiento?: string | null
+          id?: string
+          importe_base: number
+          importe_iva?: number | null
+          importe_total?: number | null
+          iva_porcentaje?: number | null
+          notas?: string | null
+          numero: string
+          tercero_direccion?: string | null
+          tercero_nif?: string | null
+          tercero_nombre: string
+          tipo: string
+          updated_at?: string
+        }
+        Update: {
+          archivo_url?: string | null
+          concepto?: string
+          created_at?: string
+          created_by?: string | null
+          estado?: string
+          fecha_emision?: string
+          fecha_vencimiento?: string | null
+          id?: string
+          importe_base?: number
+          importe_iva?: number | null
+          importe_total?: number | null
+          iva_porcentaje?: number | null
+          notas?: string | null
+          numero?: string
+          tercero_direccion?: string | null
+          tercero_nif?: string | null
+          tercero_nombre?: string
+          tipo?: string
           updated_at?: string
         }
         Relationships: []
@@ -525,6 +615,63 @@ export type Database = {
         }
         Relationships: []
       }
+      transacciones: {
+        Row: {
+          categoria_id: string | null
+          concepto: string
+          created_at: string
+          created_by: string | null
+          descripcion: string | null
+          factura_id: string | null
+          fecha: string
+          id: string
+          importe: number
+          tipo: string
+          updated_at: string
+        }
+        Insert: {
+          categoria_id?: string | null
+          concepto: string
+          created_at?: string
+          created_by?: string | null
+          descripcion?: string | null
+          factura_id?: string | null
+          fecha?: string
+          id?: string
+          importe: number
+          tipo: string
+          updated_at?: string
+        }
+        Update: {
+          categoria_id?: string | null
+          concepto?: string
+          created_at?: string
+          created_by?: string | null
+          descripcion?: string | null
+          factura_id?: string | null
+          fecha?: string
+          id?: string
+          importe?: number
+          tipo?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transacciones_categoria_id_fkey"
+            columns: ["categoria_id"]
+            isOneToOne: false
+            referencedRelation: "categorias_contabilidad"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transacciones_factura_id_fkey"
+            columns: ["factura_id"]
+            isOneToOne: false
+            referencedRelation: "facturas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -667,6 +814,7 @@ export type Database = {
           vote_count: number
         }[]
       }
+      has_cargo_contable: { Args: { _user_id: string }; Returns: boolean }
       has_cargo_directivo: { Args: { _user_id: string }; Returns: boolean }
       has_role: {
         Args: {
