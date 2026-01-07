@@ -279,6 +279,7 @@ export type Database = {
           iva_porcentaje: number | null
           notas: string | null
           numero: string
+          proveedor_id: string | null
           tercero_direccion: string | null
           tercero_nif: string | null
           tercero_nombre: string
@@ -300,6 +301,7 @@ export type Database = {
           iva_porcentaje?: number | null
           notas?: string | null
           numero: string
+          proveedor_id?: string | null
           tercero_direccion?: string | null
           tercero_nif?: string | null
           tercero_nombre: string
@@ -321,13 +323,22 @@ export type Database = {
           iva_porcentaje?: number | null
           notas?: string | null
           numero?: string
+          proveedor_id?: string | null
           tercero_direccion?: string | null
           tercero_nif?: string | null
           tercero_nombre?: string
           tipo?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "facturas_proveedor_id_fkey"
+            columns: ["proveedor_id"]
+            isOneToOne: false
+            referencedRelation: "proveedores"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       noticias: {
         Row: {
@@ -473,6 +484,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      proveedores: {
+        Row: {
+          created_at: string
+          direccion: string | null
+          email: string | null
+          id: string
+          nif: string | null
+          nombre: string
+          notas: string | null
+          telefono: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          direccion?: string | null
+          email?: string | null
+          id?: string
+          nif?: string | null
+          nombre: string
+          notas?: string | null
+          telefono?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          direccion?: string | null
+          email?: string | null
+          id?: string
+          nif?: string | null
+          nombre?: string
+          notas?: string | null
+          telefono?: string | null
+          updated_at?: string
+        }
+        Relationships: []
       }
       socios: {
         Row: {

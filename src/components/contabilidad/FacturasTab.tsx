@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { Plus, Pencil, Trash2, FileText, Search, Filter, ExternalLink } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -40,13 +40,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Factura, FacturaInsert } from "@/hooks/useContabilidad";
+import { Factura, FacturaInsert, Proveedor, ProveedorInsert } from "@/hooks/useContabilidad";
 
 interface FacturasTabProps {
   facturas: Factura[];
+  proveedores: Proveedor[];
   onAdd: (factura: Omit<FacturaInsert, "created_by">) => Promise<boolean>;
   onUpdate: (id: string, updates: Partial<FacturaInsert>) => Promise<boolean>;
   onDelete: (id: string) => Promise<boolean>;
+  onAddProveedor: (proveedor: ProveedorInsert) => Promise<Proveedor | null>;
 }
 
 const estadoColors: Record<string, { bg: string; text: string }> = {
@@ -65,9 +67,11 @@ const estadoLabels: Record<string, string> = {
 
 export const FacturasTab = ({
   facturas,
+  proveedores,
   onAdd,
   onUpdate,
   onDelete,
+  onAddProveedor,
 }: FacturasTabProps) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -90,6 +94,7 @@ export const FacturasTab = ({
   const [terceroNif, setTerceroNif] = useState("");
   const [terceroDireccion, setTerceroDireccion] = useState("");
   const [notas, setNotas] = useState("");
+  const [proveedorId, setProveedorId] = useState<string | null>(null);
 
   const resetForm = () => {
     setNumero("");
@@ -104,6 +109,7 @@ export const FacturasTab = ({
     setTerceroNif("");
     setTerceroDireccion("");
     setNotas("");
+    setProveedorId(null);
     setEditingId(null);
   };
 
@@ -133,7 +139,39 @@ export const FacturasTab = ({
     setTerceroNif(f.tercero_nif || "");
     setTerceroDireccion(f.tercero_direccion || "");
     setNotas(f.notas || "");
+    setProveedorId(f.proveedor_id);
     setIsDialogOpen(true);
+  };
+
+  const handleProveedorSelect = (provId: string) => {
+    if (provId === "nuevo") {
+      setProveedorId(null);
+      return;
+    }
+    setProveedorId(provId);
+    const proveedor = proveedores.find(p => p.id === provId);
+    if (proveedor) {
+      setTerceroNombre(proveedor.nombre);
+      setTerceroNif(proveedor.nif || "");
+      setTerceroDireccion(proveedor.direccion || "");
+    }
+  };
+
+  const handleSaveProveedor = async () => {
+    if (!terceroNombre.trim()) return;
+    
+    const newProveedor = await onAddProveedor({
+      nombre: terceroNombre.trim(),
+      nif: terceroNif.trim() || null,
+      direccion: terceroDireccion.trim() || null,
+      email: null,
+      telefono: null,
+      notas: null,
+    });
+    
+    if (newProveedor) {
+      setProveedorId(newProveedor.id);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -153,6 +191,7 @@ export const FacturasTab = ({
       tercero_nombre: terceroNombre.trim(),
       tercero_nif: terceroNif.trim() || null,
       tercero_direccion: terceroDireccion.trim() || null,
+      proveedor_id: proveedorId,
       notas: notas.trim() || null,
       archivo_url: null,
     };
@@ -384,7 +423,35 @@ export const FacturasTab = ({
             </div>
 
             <div className="border-t pt-4">
-              <h4 className="font-medium mb-3">{tipo === "emitida" ? "Cliente" : "Proveedor"}</h4>
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="font-medium">{tipo === "emitida" ? "Cliente" : "Proveedor"}</h4>
+                {tipo === "recibida" && terceroNombre.trim() && !proveedorId && (
+                  <Button type="button" variant="outline" size="sm" onClick={handleSaveProveedor}>
+                    <Save className="h-4 w-4 mr-1" />
+                    Guardar proveedor
+                  </Button>
+                )}
+              </div>
+              
+              {tipo === "recibida" && proveedores.length > 0 && (
+                <div className="mb-3">
+                  <Label>Seleccionar proveedor guardado</Label>
+                  <Select value={proveedorId || "nuevo"} onValueChange={handleProveedorSelect}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccionar o escribir nuevo..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="nuevo">-- Nuevo proveedor --</SelectItem>
+                      {proveedores.map((p) => (
+                        <SelectItem key={p.id} value={p.id}>
+                          {p.nombre} {p.nif ? `(${p.nif})` : ""}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+              
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label>Nombre/Razón social *</Label>

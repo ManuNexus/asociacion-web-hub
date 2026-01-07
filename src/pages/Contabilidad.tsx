@@ -21,6 +21,7 @@ const Contabilidad = () => {
     transacciones,
     facturas,
     categorias,
+    proveedores,
     loading,
     addTransaccion,
     updateTransaccion,
@@ -30,6 +31,7 @@ const Contabilidad = () => {
     deleteFactura,
     addCategoria,
     deleteCategoria,
+    addProveedor,
     getBalance,
     getBalancePorPeriodo,
     getTransaccionesPorCategoria,
@@ -133,9 +135,11 @@ const Contabilidad = () => {
           <TabsContent value="facturas">
             <FacturasTab
               facturas={facturas}
+              proveedores={proveedores}
               onAdd={addFactura}
               onUpdate={updateFactura}
               onDelete={deleteFactura}
+              onAddProveedor={addProveedor}
             />
           </TabsContent>
 
