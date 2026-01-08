@@ -10,6 +10,7 @@ import { DashboardTab } from "@/components/contabilidad/DashboardTab";
 import { TransaccionesTab } from "@/components/contabilidad/TransaccionesTab";
 import { FacturasTab } from "@/components/contabilidad/FacturasTab";
 import { TesoreríaTab } from "@/components/contabilidad/TesoreríaTab";
+import { CobrosTab } from "@/components/contabilidad/CobrosTab";
 import { InformesTab } from "@/components/contabilidad/InformesTab";
 import { CategoriasTab } from "@/components/contabilidad/CategoriasTab";
 import { ProveedoresTab } from "@/components/contabilidad/ProveedoresTab";
@@ -134,6 +135,8 @@ const Contabilidad = () => {
             getBalance={getBalance}
           />
         );
+      case "cobros":
+        return <CobrosTab />;
       case "informes":
         return (
           <InformesTab
@@ -172,6 +175,7 @@ const Contabilidad = () => {
     transacciones: "Transacciones",
     facturas: "Facturas",
     tesoreria: "Tesorería",
+    cobros: "Cobros de Cuotas",
     informes: "Informes",
     categorias: "Categorías",
     proveedores: "Proveedores",

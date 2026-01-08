@@ -146,6 +146,53 @@ export type Database = {
         }
         Relationships: []
       }
+      cobros_cuotas: {
+        Row: {
+          created_at: string
+          estado: string
+          fecha_cobro: string | null
+          id: string
+          importe: number
+          notas: string | null
+          periodo_fin: string
+          periodo_inicio: string
+          socio_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          estado?: string
+          fecha_cobro?: string | null
+          id?: string
+          importe: number
+          notas?: string | null
+          periodo_fin: string
+          periodo_inicio: string
+          socio_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          estado?: string
+          fecha_cobro?: string | null
+          id?: string
+          importe?: number
+          notas?: string | null
+          periodo_fin?: string
+          periodo_inicio?: string
+          socio_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cobros_cuotas_socio_id_fkey"
+            columns: ["socio_id"]
+            isOneToOne: false
+            referencedRelation: "socios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contactos_directorio: {
         Row: {
           created_at: string
