@@ -1,9 +1,10 @@
 import { useState, useMemo } from "react";
 import { format, startOfYear, endOfYear, eachMonthOfInterval } from "date-fns";
 import { es } from "date-fns/locale";
-import { TrendingUp, TrendingDown, Wallet, Calendar, PieChart as PieChartIcon } from "lucide-react";
+import { TrendingUp, TrendingDown, Wallet, Calendar, PieChart as PieChartIcon, Download, FileText, FileSpreadsheet } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -11,6 +12,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   BarChart,
   Bar,
@@ -25,6 +32,7 @@ import {
   Legend,
 } from "recharts";
 import { Transaccion, Factura, CategoriaContabilidad } from "@/hooks/useContabilidad";
+import { exportTransaccionesToCSV, exportFacturasToCSV, exportLibroDiarioToPDF, exportResumenToPDF } from "@/lib/exportContabilidad";
 
 interface InformesTabProps {
   transacciones: Transaccion[];
@@ -116,19 +124,48 @@ export const InformesTab = ({
 
   return (
     <div className="space-y-6">
-      {/* Selector de año */}
-      <div className="flex items-center gap-4">
-        <Calendar className="h-5 w-5 text-muted-foreground" />
-        <Select value={String(selectedYear)} onValueChange={(v) => setSelectedYear(parseInt(v))}>
-          <SelectTrigger className="w-[120px]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {availableYears.map(year => (
-              <SelectItem key={year} value={String(year)}>{year}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      {/* Selector de año y exportación */}
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <div className="flex items-center gap-4">
+          <Calendar className="h-5 w-5 text-muted-foreground" />
+          <Select value={String(selectedYear)} onValueChange={(v) => setSelectedYear(parseInt(v))}>
+            <SelectTrigger className="w-[120px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {availableYears.map(year => (
+                <SelectItem key={year} value={String(year)}>{year}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline">
+              <Download className="h-4 w-4 mr-2" />
+              Exportar
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => exportTransaccionesToCSV(transacciones)}>
+              <FileSpreadsheet className="h-4 w-4 mr-2" />
+              Transacciones (CSV)
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => exportFacturasToCSV(facturas)}>
+              <FileSpreadsheet className="h-4 w-4 mr-2" />
+              Facturas (CSV)
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => exportLibroDiarioToPDF(transacciones, selectedYear)}>
+              <FileText className="h-4 w-4 mr-2" />
+              Libro diario {selectedYear} (PDF)
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => exportResumenToPDF(transacciones, facturas, selectedYear, getBalancePorPeriodo)}>
+              <FileText className="h-4 w-4 mr-2" />
+              Informe resumen (PDF)
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* Tarjetas resumen */}
