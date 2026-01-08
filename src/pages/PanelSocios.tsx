@@ -32,7 +32,9 @@ import {
   ClipboardList,
   CreditCard,
   BookUser,
-  Calculator
+  Calculator,
+  Trash2,
+  CheckCheck
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -549,6 +551,25 @@ const PanelSocios = () => {
     });
     
     setNotificacionesLeidas([...notificacionesLeidas, notificacionId]);
+  };
+
+  const marcarTodasLeidas = async () => {
+    if (!user) return;
+    
+    const noLeidas = notificaciones.filter(n => !notificacionesLeidas.includes(n.id));
+    if (noLeidas.length === 0) return;
+
+    const inserts = noLeidas.map(n => ({
+      notificacion_id: n.id,
+      user_id: user.id,
+    }));
+
+    const { error } = await supabase.from("notificaciones_leidas").insert(inserts);
+    
+    if (!error) {
+      setNotificacionesLeidas([...notificacionesLeidas, ...noLeidas.map(n => n.id)]);
+      toast({ title: "Todas las notificaciones marcadas como leídas" });
+    }
   };
 
   const handleVotar = async (votacionId: string, opcionId: string) => {
@@ -1769,13 +1790,28 @@ const PanelSocios = () => {
             <TabsContent value="avisos">
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Bell className="h-5 w-5" />
-                    Comunicados de la Junta
-                  </CardTitle>
-                  <CardDescription>
-                    Avisos y comunicaciones oficiales de la Junta Directiva
-                  </CardDescription>
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div>
+                      <CardTitle className="flex items-center gap-2">
+                        <Bell className="h-5 w-5" />
+                        Comunicados de la Junta
+                      </CardTitle>
+                      <CardDescription>
+                        Avisos y comunicaciones oficiales de la Junta Directiva
+                      </CardDescription>
+                    </div>
+                    {notificaciones.filter(n => !notificacionesLeidas.includes(n.id)).length > 0 && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={marcarTodasLeidas}
+                        className="shrink-0"
+                      >
+                        <CheckCheck className="h-4 w-4 mr-2" />
+                        Marcar todas como leídas
+                      </Button>
+                    )}
+                  </div>
                 </CardHeader>
                 <CardContent>
                   {loading ? (
@@ -1793,8 +1829,7 @@ const PanelSocios = () => {
                         .map((notificacion) => (
                           <Card 
                             key={notificacion.id} 
-                            className="cursor-pointer transition-all border-primary/50 bg-primary/5 hover:bg-primary/10"
-                            onClick={() => marcarLeida(notificacion.id)}
+                            className="transition-all border-primary/50 bg-primary/5 hover:bg-primary/10"
                           >
                             <CardContent className="p-4">
                               <div className="flex items-start justify-between gap-4">
@@ -1816,6 +1851,15 @@ const PanelSocios = () => {
                                     {formatInMadrid(notificacion.created_at, "d 'de' MMMM 'de' yyyy, HH:mm")}
                                   </p>
                                 </div>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => marcarLeida(notificacion.id)}
+                                  title="Marcar como leída"
+                                  className="shrink-0 text-muted-foreground hover:text-destructive"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
                               </div>
                             </CardContent>
                           </Card>
