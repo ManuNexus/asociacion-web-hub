@@ -248,6 +248,30 @@ export const CobrosTab = () => {
 
       if (socioError) throw socioError;
 
+      // Si el pago fue cobrado, crear transacción de ingreso
+      if (pagado) {
+        const mesFormateado = format(periodoInicio, "MMMM yyyy", { locale: es });
+        const concepto = `Cuota ${selectedSocio.nombre} ${selectedSocio.apellidos} - ${mesFormateado}`;
+
+        const { error: transaccionError } = await supabase.from("transacciones").insert({
+          tipo: "ingreso",
+          concepto: concepto,
+          descripcion: `Cobro de cuota ${esMensual ? "mensual" : "anual"} del socio ${selectedSocio.nombre} ${selectedSocio.apellidos}`,
+          importe: selectedSocio.importeCuota,
+          fecha: format(new Date(), "yyyy-MM-dd"),
+        });
+
+        if (transaccionError) {
+          console.error("Error creando transacción:", transaccionError);
+          // No lanzamos error para no bloquear el registro del cobro
+          toast({
+            variant: "destructive",
+            title: "Advertencia",
+            description: "El cobro se registró pero no se pudo crear la transacción automática",
+          });
+        }
+      }
+
       toast({
         title: pagado ? "Pago registrado" : "Impago registrado",
         description: `Cuota de ${selectedSocio.nombre} ${selectedSocio.apellidos} actualizada`,
