@@ -300,23 +300,24 @@ const NoticiaDetalle = () => {
           {/* Content */}
           {noticia.contenido && (
             <div className="p-6 md:p-10 pt-8">
-              <div className="prose prose-lg max-w-none">
-                {noticia.contenido.split("\n").map((paragraph, index) => {
-                  const trimmedParagraph = paragraph.trim();
-                  if (!trimmedParagraph) return null;
-                  
-                  // Check if the line is a tweet URL
-                  if (isTweetUrl(trimmedParagraph)) {
-                    return <TweetEmbed key={index} tweetUrl={trimmedParagraph} />;
-                  }
-                  
-                  return (
-                    <p key={index} className="mb-5 text-foreground/90 leading-relaxed text-base md:text-lg">
-                      {paragraph}
-                    </p>
-                  );
-                })}
-              </div>
+              <div 
+                className="prose prose-lg max-w-none
+                  [&_p]:mb-5 [&_p]:text-foreground/90 [&_p]:leading-relaxed [&_p]:text-base md:[&_p]:text-lg
+                  [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:my-4 [&_h1]:text-foreground
+                  [&_h2]:text-xl [&_h2]:font-bold [&_h2]:my-3 [&_h2]:text-foreground
+                  [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:my-3 [&_h3]:text-foreground
+                  [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:my-4
+                  [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:my-4
+                  [&_li]:mb-2 [&_li]:text-foreground/90
+                  [&_blockquote]:border-l-4 [&_blockquote]:border-primary/30 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:my-4 [&_blockquote]:text-muted-foreground
+                  [&_a]:text-primary [&_a]:underline [&_a]:hover:text-primary/80
+                  [&_strong]:font-bold [&_strong]:text-foreground
+                  [&_em]:italic
+                  [&_u]:underline
+                  [&_s]:line-through
+                "
+                dangerouslySetInnerHTML={{ __html: noticia.contenido }}
+              />
 
               {/* Footer decoration */}
               <div className="mt-12 pt-8 border-t border-border">
