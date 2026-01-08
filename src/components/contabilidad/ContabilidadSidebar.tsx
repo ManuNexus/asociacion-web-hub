@@ -8,7 +8,8 @@ import {
   Building2,
   Settings,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Receipt
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -19,6 +20,7 @@ export type ContabilidadSection =
   | "transacciones" 
   | "facturas" 
   | "tesoreria"
+  | "cobros"
   | "informes" 
   | "categorias" 
   | "proveedores";
@@ -33,6 +35,7 @@ const menuItems = [
   { id: "transacciones" as const, label: "Transacciones", icon: ArrowUpDown },
   { id: "facturas" as const, label: "Facturas", icon: FileText },
   { id: "tesoreria" as const, label: "Tesorería", icon: PiggyBank },
+  { id: "cobros" as const, label: "Cobros Cuotas", icon: Receipt },
   { id: "informes" as const, label: "Informes", icon: BarChart3 },
 ];
 
