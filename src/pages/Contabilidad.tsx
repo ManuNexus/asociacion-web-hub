@@ -1,15 +1,18 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, ArrowUpDown, FileText, BarChart3, Tag, ArrowLeft } from "lucide-react";
+import { Loader2, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useContabilidad } from "@/hooks/useContabilidad";
+import { ContabilidadSidebar, ContabilidadSection } from "@/components/contabilidad/ContabilidadSidebar";
+import { DashboardTab } from "@/components/contabilidad/DashboardTab";
 import { TransaccionesTab } from "@/components/contabilidad/TransaccionesTab";
 import { FacturasTab } from "@/components/contabilidad/FacturasTab";
+import { TesoreríaTab } from "@/components/contabilidad/TesoreríaTab";
 import { InformesTab } from "@/components/contabilidad/InformesTab";
 import { CategoriasTab } from "@/components/contabilidad/CategoriasTab";
+import { ProveedoresTab } from "@/components/contabilidad/ProveedoresTab";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -17,6 +20,7 @@ const Contabilidad = () => {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [activeSection, setActiveSection] = useState<ContabilidadSection>("dashboard");
   const {
     transacciones,
     facturas,
@@ -32,6 +36,8 @@ const Contabilidad = () => {
     addCategoria,
     deleteCategoria,
     addProveedor,
+    updateProveedor,
+    deleteProveedor,
     getBalance,
     getBalancePorPeriodo,
     getTransaccionesPorCategoria,
@@ -46,7 +52,6 @@ const Contabilidad = () => {
         return;
       }
 
-      // Check if user has access (presidente, tesorero, or admin)
       const { data: socio } = await supabase
         .from("socios")
         .select("cargo_junta")
@@ -89,79 +94,112 @@ const Contabilidad = () => {
     );
   }
 
+  const renderContent = () => {
+    switch (activeSection) {
+      case "dashboard":
+        return (
+          <DashboardTab
+            transacciones={transacciones}
+            facturas={facturas}
+            categorias={categorias}
+            getBalance={getBalance}
+            getBalancePorPeriodo={getBalancePorPeriodo}
+          />
+        );
+      case "transacciones":
+        return (
+          <TransaccionesTab
+            transacciones={transacciones}
+            categorias={categorias}
+            onAdd={addTransaccion}
+            onUpdate={updateTransaccion}
+            onDelete={deleteTransaccion}
+          />
+        );
+      case "facturas":
+        return (
+          <FacturasTab
+            facturas={facturas}
+            proveedores={proveedores}
+            onAdd={addFactura}
+            onUpdate={updateFactura}
+            onDelete={deleteFactura}
+            onAddProveedor={addProveedor}
+          />
+        );
+      case "tesoreria":
+        return (
+          <TesoreríaTab
+            facturas={facturas}
+            getBalance={getBalance}
+          />
+        );
+      case "informes":
+        return (
+          <InformesTab
+            transacciones={transacciones}
+            facturas={facturas}
+            categorias={categorias}
+            getBalance={getBalance}
+            getBalancePorPeriodo={getBalancePorPeriodo}
+            getTransaccionesPorCategoria={getTransaccionesPorCategoria}
+          />
+        );
+      case "categorias":
+        return (
+          <CategoriasTab
+            categorias={categorias}
+            onAdd={addCategoria}
+            onDelete={deleteCategoria}
+          />
+        );
+      case "proveedores":
+        return (
+          <ProveedoresTab
+            proveedores={proveedores}
+            onAdd={addProveedor}
+            onUpdate={updateProveedor}
+            onDelete={deleteProveedor}
+          />
+        );
+      default:
+        return null;
+    }
+  };
+
+  const sectionTitles: Record<ContabilidadSection, string> = {
+    dashboard: "Dashboard",
+    transacciones: "Transacciones",
+    facturas: "Facturas",
+    tesoreria: "Tesorería",
+    informes: "Informes",
+    categorias: "Categorías",
+    proveedores: "Proveedores",
+  };
+
   return (
     <Layout>
-      <div className="container py-8">
-        <div className="flex items-center gap-4 mb-6">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/socios")}>
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold">Contabilidad</h1>
-            <p className="text-muted-foreground">Gestión financiera de la asociación</p>
+      <div className="flex min-h-[calc(100vh-4rem)]">
+        <ContabilidadSidebar
+          activeSection={activeSection}
+          onSectionChange={setActiveSection}
+        />
+        
+        <main className="flex-1 overflow-auto">
+          <div className="p-6">
+            <div className="flex items-center gap-4 mb-6">
+              <Button variant="ghost" size="icon" onClick={() => navigate("/socios")}>
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+              <div>
+                <h1 className="text-2xl font-bold">{sectionTitles[activeSection]}</h1>
+                <p className="text-sm text-muted-foreground">Gestión financiera de la asociación</p>
+              </div>
+            </div>
+            
+            {renderContent()}
           </div>
-        </div>
-
-        <Tabs defaultValue="transacciones" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-4 max-w-xl">
-            <TabsTrigger value="transacciones" className="flex items-center gap-2">
-              <ArrowUpDown className="h-4 w-4" />
-              <span className="hidden sm:inline">Transacciones</span>
-            </TabsTrigger>
-            <TabsTrigger value="facturas" className="flex items-center gap-2">
-              <FileText className="h-4 w-4" />
-              <span className="hidden sm:inline">Facturas</span>
-            </TabsTrigger>
-            <TabsTrigger value="informes" className="flex items-center gap-2">
-              <BarChart3 className="h-4 w-4" />
-              <span className="hidden sm:inline">Informes</span>
-            </TabsTrigger>
-            <TabsTrigger value="categorias" className="flex items-center gap-2">
-              <Tag className="h-4 w-4" />
-              <span className="hidden sm:inline">Categorías</span>
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="transacciones">
-            <TransaccionesTab
-              transacciones={transacciones}
-              categorias={categorias}
-              onAdd={addTransaccion}
-              onUpdate={updateTransaccion}
-              onDelete={deleteTransaccion}
-            />
-          </TabsContent>
-
-          <TabsContent value="facturas">
-            <FacturasTab
-              facturas={facturas}
-              proveedores={proveedores}
-              onAdd={addFactura}
-              onUpdate={updateFactura}
-              onDelete={deleteFactura}
-              onAddProveedor={addProveedor}
-            />
-          </TabsContent>
-
-          <TabsContent value="informes">
-            <InformesTab
-              transacciones={transacciones}
-              facturas={facturas}
-              categorias={categorias}
-              getBalance={getBalance}
-              getBalancePorPeriodo={getBalancePorPeriodo}
-              getTransaccionesPorCategoria={getTransaccionesPorCategoria}
-            />
-          </TabsContent>
-
-          <TabsContent value="categorias">
-            <CategoriasTab
-              categorias={categorias}
-              onAdd={addCategoria}
-              onDelete={deleteCategoria}
-            />
-          </TabsContent>
-        </Tabs>
+        </main>
       </div>
     </Layout>
   );
