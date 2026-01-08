@@ -4,6 +4,7 @@ import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -28,6 +29,7 @@ import {
   Folder,
   ChevronRight,
   ArrowLeft,
+  ChevronDown,
   Home,
   ClipboardList,
   CreditCard,
@@ -1813,58 +1815,110 @@ const PanelSocios = () => {
                     )}
                   </div>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="space-y-6">
                   {loading ? (
                     <div className="flex justify-center py-8">
                       <Loader2 className="h-8 w-8 animate-spin text-primary" />
                     </div>
-                  ) : notificaciones.filter(n => !notificacionesLeidas.includes(n.id)).length === 0 ? (
-                    <p className="text-center text-muted-foreground py-8">
-                      No hay comunicados pendientes de leer
-                    </p>
                   ) : (
-                    <div className="space-y-4">
-                      {notificaciones
-                        .filter(n => !notificacionesLeidas.includes(n.id))
-                        .map((notificacion) => (
-                          <Card 
-                            key={notificacion.id} 
-                            className="transition-all border-primary/50 bg-primary/5 hover:bg-primary/10"
-                          >
-                            <CardContent className="p-4">
-                              <div className="flex items-start justify-between gap-4">
-                                <div className="flex-1">
-                                  <div className="flex items-center gap-2 mb-1">
-                                    <span className="h-2 w-2 bg-primary rounded-full" />
-                                    <h3 className="font-semibold">{notificacion.titulo}</h3>
-                                    {notificacion.solo_junta && (
-                                      <Badge variant="outline" className="border-primary text-primary text-xs">
-                                        <Shield className="h-3 w-3 mr-1" />
-                                        Junta
-                                      </Badge>
-                                    )}
+                    <>
+                      {/* Notificaciones no leídas */}
+                      {notificaciones.filter(n => !notificacionesLeidas.includes(n.id)).length === 0 ? (
+                        <p className="text-center text-muted-foreground py-8">
+                          No hay comunicados pendientes de leer
+                        </p>
+                      ) : (
+                        <div className="space-y-4">
+                          {notificaciones
+                            .filter(n => !notificacionesLeidas.includes(n.id))
+                            .map((notificacion) => (
+                              <Card 
+                                key={notificacion.id} 
+                                className="transition-all border-primary/50 bg-primary/5 hover:bg-primary/10"
+                              >
+                                <CardContent className="p-4">
+                                  <div className="flex items-start justify-between gap-4">
+                                    <div className="flex-1">
+                                      <div className="flex items-center gap-2 mb-1">
+                                        <span className="h-2 w-2 bg-primary rounded-full" />
+                                        <h3 className="font-semibold">{notificacion.titulo}</h3>
+                                        {notificacion.solo_junta && (
+                                          <Badge variant="outline" className="border-primary text-primary text-xs">
+                                            <Shield className="h-3 w-3 mr-1" />
+                                            Junta
+                                          </Badge>
+                                        )}
+                                      </div>
+                                      <p className="text-muted-foreground text-sm whitespace-pre-wrap">
+                                        {notificacion.mensaje}
+                                      </p>
+                                      <p className="text-xs text-muted-foreground mt-2">
+                                        {formatInMadrid(notificacion.created_at, "d 'de' MMMM 'de' yyyy, HH:mm")}
+                                      </p>
+                                    </div>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      onClick={() => marcarLeida(notificacion.id)}
+                                      title="Marcar como leída"
+                                      className="shrink-0 text-muted-foreground hover:text-primary"
+                                    >
+                                      <CheckCircle2 className="h-4 w-4" />
+                                    </Button>
                                   </div>
-                                  <p className="text-muted-foreground text-sm whitespace-pre-wrap">
-                                    {notificacion.mensaje}
-                                  </p>
-                                  <p className="text-xs text-muted-foreground mt-2">
-                                    {formatInMadrid(notificacion.created_at, "d 'de' MMMM 'de' yyyy, HH:mm")}
-                                  </p>
-                                </div>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => marcarLeida(notificacion.id)}
-                                  title="Marcar como leída"
-                                  className="shrink-0 text-muted-foreground hover:text-destructive"
+                                </CardContent>
+                              </Card>
+                            ))}
+                        </div>
+                      )}
+
+                      {/* Historial de notificaciones leídas */}
+                      {notificaciones.filter(n => notificacionesLeidas.includes(n.id)).length > 0 && (
+                        <Collapsible>
+                          <CollapsibleTrigger asChild>
+                            <Button variant="ghost" className="w-full justify-between text-muted-foreground hover:text-foreground">
+                              <span className="flex items-center gap-2">
+                                <FileText className="h-4 w-4" />
+                                Historial ({notificaciones.filter(n => notificacionesLeidas.includes(n.id)).length})
+                              </span>
+                              <ChevronDown className="h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                            </Button>
+                          </CollapsibleTrigger>
+                          <CollapsibleContent className="pt-4 space-y-3">
+                            {notificaciones
+                              .filter(n => notificacionesLeidas.includes(n.id))
+                              .map((notificacion) => (
+                                <Card 
+                                  key={notificacion.id} 
+                                  className="border-muted bg-muted/30"
                                 >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        ))}
-                    </div>
+                                  <CardContent className="p-4">
+                                    <div className="flex items-start gap-4">
+                                      <div className="flex-1">
+                                        <div className="flex items-center gap-2 mb-1">
+                                          <h3 className="font-medium text-muted-foreground">{notificacion.titulo}</h3>
+                                          {notificacion.solo_junta && (
+                                            <Badge variant="outline" className="text-xs opacity-60">
+                                              <Shield className="h-3 w-3 mr-1" />
+                                              Junta
+                                            </Badge>
+                                          )}
+                                        </div>
+                                        <p className="text-muted-foreground/80 text-sm whitespace-pre-wrap">
+                                          {notificacion.mensaje}
+                                        </p>
+                                        <p className="text-xs text-muted-foreground/60 mt-2">
+                                          {formatInMadrid(notificacion.created_at, "d 'de' MMMM 'de' yyyy, HH:mm")}
+                                        </p>
+                                      </div>
+                                    </div>
+                                  </CardContent>
+                                </Card>
+                              ))}
+                          </CollapsibleContent>
+                        </Collapsible>
+                      )}
+                    </>
                   )}
                 </CardContent>
               </Card>
