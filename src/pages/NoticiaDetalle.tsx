@@ -316,7 +316,11 @@ const NoticiaDetalle = () => {
                   [&_u]:underline
                   [&_s]:line-through
                 "
-                dangerouslySetInnerHTML={{ __html: noticia.contenido }}
+                dangerouslySetInnerHTML={{ 
+                  __html: noticia.contenido.includes('<') 
+                    ? noticia.contenido 
+                    : noticia.contenido.split('\n').map(p => p.trim() ? `<p>${p}</p>` : '').join('') 
+                }}
               />
 
               {/* Footer decoration */}
