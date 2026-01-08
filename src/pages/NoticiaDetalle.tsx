@@ -307,48 +307,49 @@ const NoticiaDetalle = () => {
                   ? noticia.contenido! 
                   : noticia.contenido!.split('\n').map(p => p.trim() ? `<p>${p}</p>` : '').join('');
                 
-                // Extract tweet URLs from the content
-                const tweetRegex = /https?:\/\/(twitter\.com|x\.com)\/\w+\/status\/\d+\S*/g;
-                const tweetUrls: string[] = [];
-                let match;
-                while ((match = tweetRegex.exec(htmlContent)) !== null) {
-                  tweetUrls.push(match[0].replace(/<[^>]*>/g, '').trim());
-                }
+                // Split content by tweet URLs to render embeds in place
+                const tweetRegex = /(https?:\/\/(?:twitter\.com|x\.com)\/\w+\/status\/\d+\S*)/g;
+                const parts = htmlContent.split(tweetRegex);
                 
-                // Remove tweet URLs from HTML content for clean rendering
-                let cleanedHtml = htmlContent;
-                tweetUrls.forEach(url => {
-                  // Remove the URL and any surrounding paragraph tags
-                  cleanedHtml = cleanedHtml.replace(new RegExp(`<p[^>]*>\\s*${url.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*</p>`, 'g'), '');
-                  cleanedHtml = cleanedHtml.replace(new RegExp(url.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), '');
-                });
-                
-                // Get unique tweet URLs
-                const uniqueTweetUrls = [...new Set(tweetUrls)];
+                const proseClasses = `prose prose-lg max-w-none
+                  [&_p]:mb-5 [&_p]:text-foreground/90 [&_p]:leading-relaxed [&_p]:text-base md:[&_p]:text-lg
+                  [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:my-4 [&_h1]:text-foreground
+                  [&_h2]:text-xl [&_h2]:font-bold [&_h2]:my-3 [&_h2]:text-foreground
+                  [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:my-3 [&_h3]:text-foreground
+                  [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:my-4
+                  [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:my-4
+                  [&_li]:mb-2 [&_li]:text-foreground/90
+                  [&_blockquote]:border-l-4 [&_blockquote]:border-primary/30 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:my-4 [&_blockquote]:text-muted-foreground
+                  [&_a]:text-primary [&_a]:underline [&_a]:hover:text-primary/80
+                  [&_strong]:font-bold [&_strong]:text-foreground
+                  [&_em]:italic
+                  [&_u]:underline
+                  [&_s]:line-through
+                `;
                 
                 return (
                   <>
-                    <div 
-                      className="prose prose-lg max-w-none
-                        [&_p]:mb-5 [&_p]:text-foreground/90 [&_p]:leading-relaxed [&_p]:text-base md:[&_p]:text-lg
-                        [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:my-4 [&_h1]:text-foreground
-                        [&_h2]:text-xl [&_h2]:font-bold [&_h2]:my-3 [&_h2]:text-foreground
-                        [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:my-3 [&_h3]:text-foreground
-                        [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:my-4
-                        [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:my-4
-                        [&_li]:mb-2 [&_li]:text-foreground/90
-                        [&_blockquote]:border-l-4 [&_blockquote]:border-primary/30 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:my-4 [&_blockquote]:text-muted-foreground
-                        [&_a]:text-primary [&_a]:underline [&_a]:hover:text-primary/80
-                        [&_strong]:font-bold [&_strong]:text-foreground
-                        [&_em]:italic
-                        [&_u]:underline
-                        [&_s]:line-through
-                      "
-                      dangerouslySetInnerHTML={{ __html: cleanedHtml }}
-                    />
-                    {uniqueTweetUrls.map((url, index) => (
-                      <TweetEmbed key={`tweet-${index}`} tweetUrl={url} />
-                    ))}
+                    {parts.map((part, index) => {
+                      // Check if this part is a tweet URL
+                      const isTweet = /^https?:\/\/(?:twitter\.com|x\.com)\/\w+\/status\/\d+/.test(part);
+                      
+                      if (isTweet) {
+                        const cleanUrl = part.replace(/<[^>]*>/g, '').trim();
+                        return <TweetEmbed key={`tweet-${index}`} tweetUrl={cleanUrl} />;
+                      }
+                      
+                      // Clean up empty paragraph tags that might be left
+                      const cleanedPart = part.replace(/<p[^>]*>\s*<\/p>/g, '').trim();
+                      if (!cleanedPart) return null;
+                      
+                      return (
+                        <div 
+                          key={`content-${index}`}
+                          className={proseClasses}
+                          dangerouslySetInnerHTML={{ __html: cleanedPart }}
+                        />
+                      );
+                    })}
                   </>
                 );
               })()}
