@@ -35,7 +35,7 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Pencil, Trash2, Loader2, LogOut, Users, Newspaper, Mail, Phone, Eye, Search, Tag, UserCheck, Send, RefreshCw, Vote, Calendar, FileText, CreditCard, Bell, Link, Clock, BookUser } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, LogOut, Users, Newspaper, Mail, Phone, Eye, Search, Tag, UserCheck, Send, RefreshCw, Vote, Calendar, FileText, CreditCard, Bell, Link, Clock, BookUser, Share2 } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { formatInMadrid, toDateTimeLocalValue, fromDateTimeLocalValue } from "@/lib/timezone";
@@ -45,6 +45,7 @@ import { AdminDocumentos } from "@/components/admin/AdminDocumentos";
 import { AdminSocios } from "@/components/admin/AdminSocios";
 import { AdminNotificaciones } from "@/components/admin/AdminNotificaciones";
 import { AdminContactos } from "@/components/admin/AdminContactos";
+import { RedesSociales } from "@/components/junta/RedesSociales";
 
 
 interface Categoria {
@@ -632,6 +633,10 @@ const AdminNoticias = () => {
                 <BookUser className="h-4 w-4 shrink-0" />
                 <span>Contactos</span>
               </TabsTrigger>
+              <TabsTrigger value="redes-sociales" className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm shrink-0">
+                <Share2 className="h-4 w-4 shrink-0" />
+                <span>Redes Sociales</span>
+              </TabsTrigger>
             </TabsList>
 
             {/* Tab Noticias */}
@@ -1179,6 +1184,10 @@ const AdminNoticias = () => {
               <AdminContactos />
             </TabsContent>
 
+            {/* Tab Redes Sociales */}
+            <TabsContent value="redes-sociales">
+              <RedesSociales />
+            </TabsContent>
 
             {/* Tab Socios */}
             <TabsContent value="socios">

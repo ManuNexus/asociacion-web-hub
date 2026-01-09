@@ -36,13 +36,15 @@ import {
   BookUser,
   Calculator,
   Trash2,
-  CheckCheck
+  CheckCheck,
+  Share2
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { formatInMadrid, toMadridTime } from "@/lib/timezone";
 import logoWhite from "@/assets/logo-ahora-white.png";
 import { AdminContactos } from "@/components/admin/AdminContactos";
+import { RedesSociales } from "@/components/junta/RedesSociales";
 
 
 type CargoJunta = 'presidente' | 'vicepresidente' | 'secretario' | 'tesorero' | 'vocal' | null;
@@ -807,6 +809,12 @@ const PanelSocios = () => {
                 <TabsTrigger value="contactos" className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm shrink-0">
                   <BookUser className="h-4 w-4 shrink-0" />
                   <span>Contactos</span>
+                </TabsTrigger>
+              )}
+              {(isAdmin || miSocio?.cargo_junta === 'presidente' || miSocio?.cargo_junta === 'vicepresidente') && (
+                <TabsTrigger value="redes-sociales" className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm shrink-0">
+                  <Share2 className="h-4 w-4 shrink-0" />
+                  <span>Redes Sociales</span>
                 </TabsTrigger>
               )}
               <TabsTrigger value="cuenta" className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm shrink-0">
@@ -1773,6 +1781,13 @@ const PanelSocios = () => {
             {(isAdmin || miSocio?.cargo_junta === 'presidente' || miSocio?.cargo_junta === 'vicepresidente') && (
               <TabsContent value="contactos">
                 <AdminContactos />
+              </TabsContent>
+            )}
+
+            {/* Tab Redes Sociales - Solo presidente/vicepresidente/admin */}
+            {(isAdmin || miSocio?.cargo_junta === 'presidente' || miSocio?.cargo_junta === 'vicepresidente') && (
+              <TabsContent value="redes-sociales">
+                <RedesSociales />
               </TabsContent>
             )}
 
