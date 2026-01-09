@@ -568,6 +568,42 @@ export type Database = {
         }
         Relationships: []
       }
+      redes_sociales: {
+        Row: {
+          contrasena: string
+          created_at: string
+          created_by: string | null
+          id: string
+          nombre: string
+          notas: string | null
+          updated_at: string
+          url: string | null
+          usuario: string
+        }
+        Insert: {
+          contrasena: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          nombre: string
+          notas?: string | null
+          updated_at?: string
+          url?: string | null
+          usuario: string
+        }
+        Update: {
+          contrasena?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          nombre?: string
+          notas?: string | null
+          updated_at?: string
+          url?: string | null
+          usuario?: string
+        }
+        Relationships: []
+      }
       socios: {
         Row: {
           activo: boolean
