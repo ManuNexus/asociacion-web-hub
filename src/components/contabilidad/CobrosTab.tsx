@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { format, addMonths, addYears, isBefore, isAfter, differenceInDays, startOfMonth, setDate } from "date-fns";
+import { format, addMonths, addYears, isBefore, differenceInDays, startOfMonth, setDate } from "date-fns";
 import { es } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -31,6 +31,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   AlertCircle,
   CheckCircle2,
@@ -40,9 +43,10 @@ import {
   RefreshCw,
   Users,
   Euro,
-  Calendar,
+  Calendar as CalendarIcon,
   Search,
   History,
+  Pencil,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -96,6 +100,14 @@ export const CobrosTab = () => {
   const [historialDialogOpen, setHistorialDialogOpen] = useState(false);
   const [notas, setNotas] = useState("");
   const [processing, setProcessing] = useState(false);
+
+  // Edit cobro states
+  const [editCobroDialogOpen, setEditCobroDialogOpen] = useState(false);
+  const [editingCobro, setEditingCobro] = useState<CobroCuota | null>(null);
+  const [editFechaCobro, setEditFechaCobro] = useState<Date | undefined>(undefined);
+  const [editPeriodoInicio, setEditPeriodoInicio] = useState<Date | undefined>(undefined);
+  const [editPeriodoFin, setEditPeriodoFin] = useState<Date | undefined>(undefined);
+  const [editNotas, setEditNotas] = useState("");
 
   const fetchData = async () => {
     setLoading(true);
@@ -280,6 +292,104 @@ export const CobrosTab = () => {
       setDialogOpen(false);
       setSelectedSocio(null);
       setNotas("");
+      fetchData();
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message,
+      });
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  // Abrir diálogo de edición de cobro
+  const openEditCobroDialog = (cobro: CobroCuota) => {
+    setEditingCobro(cobro);
+    setEditFechaCobro(cobro.fecha_cobro ? new Date(cobro.fecha_cobro) : undefined);
+    setEditPeriodoInicio(new Date(cobro.periodo_inicio));
+    setEditPeriodoFin(new Date(cobro.periodo_fin));
+    setEditNotas(cobro.notas || "");
+    setEditCobroDialogOpen(true);
+  };
+
+  // Actualizar cobro con cascada
+  const updateCobro = async () => {
+    if (!editingCobro || !editPeriodoInicio || !editPeriodoFin) return;
+    setProcessing(true);
+
+    try {
+      const newFechaCobro = editFechaCobro ? editFechaCobro.toISOString() : null;
+      const newPeriodoInicio = format(editPeriodoInicio, "yyyy-MM-dd");
+      const newPeriodoFin = format(editPeriodoFin, "yyyy-MM-dd");
+
+      // 1. Actualizar el cobro
+      const { error: cobroError } = await supabase
+        .from("cobros_cuotas")
+        .update({
+          fecha_cobro: newFechaCobro,
+          periodo_inicio: newPeriodoInicio,
+          periodo_fin: newPeriodoFin,
+          notas: editNotas || null,
+        })
+        .eq("id", editingCobro.id);
+
+      if (cobroError) throw cobroError;
+
+      // 2. Buscar y actualizar transacción asociada si existe
+      // Las transacciones de cuotas tienen un concepto específico con el nombre del socio
+      const socio = socios.find(s => s.id === editingCobro.socio_id);
+      if (socio && editingCobro.estado === "cobrado") {
+        // Buscar transacciones que contengan el nombre del socio y sean de cuota
+        const { data: transacciones } = await supabase
+          .from("transacciones")
+          .select("*")
+          .eq("tipo", "ingreso")
+          .ilike("concepto", `%Cuota ${socio.nombre} ${socio.apellidos}%`);
+
+        if (transacciones && transacciones.length > 0) {
+          // Buscar la transacción que coincida con el periodo del cobro original
+          const mesOriginal = format(new Date(editingCobro.periodo_inicio), "MMMM yyyy", { locale: es });
+          const transaccionAsociada = transacciones.find(t => 
+            t.concepto.includes(mesOriginal)
+          );
+
+          if (transaccionAsociada) {
+            // Actualizar fecha y concepto de la transacción
+            const nuevoMes = format(editPeriodoInicio, "MMMM yyyy", { locale: es });
+            const nuevoConcepto = `Cuota ${socio.nombre} ${socio.apellidos} - ${nuevoMes}`;
+            const nuevaFechaTransaccion = editFechaCobro 
+              ? format(editFechaCobro, "yyyy-MM-dd") 
+              : format(new Date(), "yyyy-MM-dd");
+
+            const { error: transError } = await supabase
+              .from("transacciones")
+              .update({
+                concepto: nuevoConcepto,
+                fecha: nuevaFechaTransaccion,
+              })
+              .eq("id", transaccionAsociada.id);
+
+            if (transError) {
+              console.error("Error actualizando transacción:", transError);
+              toast({
+                variant: "destructive",
+                title: "Advertencia",
+                description: "El cobro se actualizó pero no se pudo actualizar la transacción asociada",
+              });
+            }
+          }
+        }
+      }
+
+      toast({
+        title: "Cobro actualizado",
+        description: "Los datos del cobro y la transacción asociada han sido actualizados",
+      });
+
+      setEditCobroDialogOpen(false);
+      setEditingCobro(null);
       fetchData();
     } catch (error: any) {
       toast({
@@ -632,12 +742,13 @@ export const CobrosTab = () => {
                       <TableHead>Estado</TableHead>
                       <TableHead>Fecha cobro</TableHead>
                       <TableHead>Notas</TableHead>
+                      <TableHead className="text-right">Acciones</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {getHistorialSocio(selectedSocio.id).length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={5} className="text-center py-4 text-muted-foreground">
+                        <TableCell colSpan={6} className="text-center py-4 text-muted-foreground">
                           Sin historial de cobros
                         </TableCell>
                       </TableRow>
@@ -669,6 +780,15 @@ export const CobrosTab = () => {
                           <TableCell className="text-sm text-muted-foreground max-w-[150px] truncate">
                             {cobro.notas || "-"}
                           </TableCell>
+                          <TableCell className="text-right">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => openEditCobroDialog(cobro)}
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                          </TableCell>
                         </TableRow>
                       ))
                     )}
@@ -681,6 +801,133 @@ export const CobrosTab = () => {
           <DialogFooter>
             <Button variant="outline" onClick={() => setHistorialDialogOpen(false)}>
               Cerrar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog para editar cobro */}
+      <Dialog open={editCobroDialogOpen} onOpenChange={setEditCobroDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Editar cobro</DialogTitle>
+            <DialogDescription>
+              Modifica los datos del cobro. Los cambios se reflejarán en la transacción asociada.
+            </DialogDescription>
+          </DialogHeader>
+
+          {editingCobro && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>Fecha de cobro</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !editFechaCobro && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {editFechaCobro ? format(editFechaCobro, "PPP", { locale: es }) : "Seleccionar fecha"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={editFechaCobro}
+                      onSelect={setEditFechaCobro}
+                      initialFocus
+                      locale={es}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Periodo inicio</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !editPeriodoInicio && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {editPeriodoInicio ? format(editPeriodoInicio, "PPP", { locale: es }) : "Seleccionar fecha"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={editPeriodoInicio}
+                      onSelect={setEditPeriodoInicio}
+                      initialFocus
+                      locale={es}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Periodo fin</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !editPeriodoFin && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {editPeriodoFin ? format(editPeriodoFin, "PPP", { locale: es }) : "Seleccionar fecha"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={editPeriodoFin}
+                      onSelect={setEditPeriodoFin}
+                      initialFocus
+                      locale={es}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Notas</Label>
+                <Textarea
+                  value={editNotas}
+                  onChange={(e) => setEditNotas(e.target.value)}
+                  placeholder="Notas del cobro..."
+                />
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setEditCobroDialogOpen(false)}
+              disabled={processing}
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={updateCobro}
+              disabled={processing || !editPeriodoInicio || !editPeriodoFin}
+            >
+              {processing ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <CheckCircle2 className="h-4 w-4 mr-2" />
+              )}
+              Guardar cambios
             </Button>
           </DialogFooter>
         </DialogContent>
