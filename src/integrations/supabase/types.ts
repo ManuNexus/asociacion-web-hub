@@ -617,6 +617,7 @@ export type Database = {
           direccion: string | null
           email: string
           fecha_alta: string
+          fecha_primera_cuota: string | null
           foto_url: string | null
           iban: string | null
           id: string
@@ -642,6 +643,7 @@ export type Database = {
           direccion?: string | null
           email: string
           fecha_alta?: string
+          fecha_primera_cuota?: string | null
           foto_url?: string | null
           iban?: string | null
           id?: string
@@ -667,6 +669,7 @@ export type Database = {
           direccion?: string | null
           email?: string
           fecha_alta?: string
+          fecha_primera_cuota?: string | null
           foto_url?: string | null
           iban?: string | null
           id?: string
