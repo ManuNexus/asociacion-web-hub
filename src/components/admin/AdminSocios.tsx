@@ -37,11 +37,14 @@ import {
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Pencil, Search, Trash2, UserX, Shield, Hash, CreditCard, FileText, RefreshCw } from "lucide-react";
+import { Loader2, Pencil, Search, Trash2, UserX, Shield, Hash, CreditCard, FileText, RefreshCw, CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { cn } from "@/lib/utils";
 
 type CargoJunta = 'presidente' | 'vicepresidente' | 'secretario' | 'tesorero' | 'vocal' | null;
 
@@ -64,6 +67,7 @@ interface Socio {
   tipo_cuota: string;
   tipo_pago: string;
   fecha_alta: string;
+  fecha_primera_cuota: string | null;
   numero_socio: string | null;
   al_corriente_pago: boolean;
   iban: string | null;
@@ -97,6 +101,7 @@ export const AdminSocios = () => {
   const [diaCobro, setDiaCobro] = useState<number>(1);
   const [fotoUrl, setFotoUrl] = useState("");
   const [cargoJunta, setCargoJunta] = useState<CargoJunta>(null);
+  const [fechaPrimeraCuota, setFechaPrimeraCuota] = useState<Date | undefined>(undefined);
   const [searchTerm, setSearchTerm] = useState("");
   const [resendingSepa, setResendingSepa] = useState<string | null>(null);
   const [syncingEmails, setSyncingEmails] = useState(false);
@@ -146,6 +151,7 @@ export const AdminSocios = () => {
     setDiaCobro(socio.dia_cobro || 1);
     setFotoUrl(socio.foto_url || "");
     setCargoJunta(socio.cargo_junta);
+    setFechaPrimeraCuota(socio.fecha_primera_cuota ? new Date(socio.fecha_primera_cuota) : undefined);
     setDialogOpen(true);
   };
 
@@ -173,7 +179,8 @@ export const AdminSocios = () => {
         titular_cuenta: titularCuenta || null,
         dia_cobro: diaCobro,
         foto_url: fotoUrl || null,
-        cargo_junta: finalCargoJunta
+        cargo_junta: finalCargoJunta,
+        fecha_primera_cuota: fechaPrimeraCuota ? format(fechaPrimeraCuota, "yyyy-MM-dd") : null
       })
       .eq("id", editingSocio.id);
 
@@ -693,6 +700,54 @@ export const AdminSocios = () => {
                   </Select>
                 </div>
               </div>
+              
+              {/* Fecha primera cuota */}
+              <div className="space-y-2">
+                <Label>Fecha de Primera Cuota</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !fechaPrimeraCuota && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {fechaPrimeraCuota ? (
+                        format(fechaPrimeraCuota, "PPP", { locale: es })
+                      ) : (
+                        <span>Calculada desde fecha de alta</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={fechaPrimeraCuota}
+                      onSelect={setFechaPrimeraCuota}
+                      locale={es}
+                      initialFocus
+                    />
+                    {fechaPrimeraCuota && (
+                      <div className="p-3 border-t">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="w-full"
+                          onClick={() => setFechaPrimeraCuota(undefined)}
+                        >
+                          Usar fecha de alta
+                        </Button>
+                      </div>
+                    )}
+                  </PopoverContent>
+                </Popover>
+                <p className="text-xs text-muted-foreground">
+                  Si no se especifica, la primera cuota se calcula desde la fecha de alta
+                </p>
+              </div>
+              
               <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
                 <div>
                   <Label htmlFor="al_corriente_pago">Al corriente de pago</Label>

@@ -59,6 +59,7 @@ interface Socio {
   tipo_pago: string;
   dia_cobro: number | null;
   fecha_alta: string;
+  fecha_primera_cuota: string | null;
   activo: boolean;
   al_corriente_pago: boolean;
 }
@@ -146,6 +147,10 @@ export const CobrosTab = () => {
       const importeCuota = esMensual ? CUOTA_MENSUAL : CUOTA_ANUAL;
       const fechaAlta = new Date(socio.fecha_alta);
       const diaCobro = socio.dia_cobro || 1;
+      // Usar fecha_primera_cuota si existe, si no calcular desde fecha_alta
+      const fechaPrimeraCuota = socio.fecha_primera_cuota 
+        ? new Date(socio.fecha_primera_cuota) 
+        : null;
 
       // Buscar cobros del socio ordenados por fecha
       const cobrosDelSocio = cobros
@@ -168,8 +173,10 @@ export const CobrosTab = () => {
           proximaCuota = addYears(finUltimoPago, 1);
         }
       } else {
-        // Primera cuota desde fecha de alta
-        if (esMensual) {
+        // Primera cuota: usar fecha_primera_cuota si existe
+        if (fechaPrimeraCuota) {
+          proximaCuota = fechaPrimeraCuota;
+        } else if (esMensual) {
           proximaCuota = setDate(startOfMonth(fechaAlta), diaCobro);
           if (isBefore(proximaCuota, fechaAlta)) {
             proximaCuota = addMonths(proximaCuota, 1);
