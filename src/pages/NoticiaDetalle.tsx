@@ -7,6 +7,7 @@ import { Loader2, ArrowLeft, Calendar, Clock, ChevronRight } from "lucide-react"
 import { formatInMadrid } from "@/lib/timezone";
 import logoIcon from "@/assets/logo-ahora-icon.png";
 import { TweetEmbed, isTweetUrl } from "@/components/TweetEmbed";
+import ArticleCTA from "@/components/ArticleCTA";
 
 interface Categoria {
   id: string;
@@ -327,6 +328,16 @@ const NoticiaDetalle = () => {
                   [&_s]:line-through
                 `;
                 
+                // Calculate midpoint to insert CTA
+                const validParts = parts.filter(part => {
+                  const isTweet = /^https?:\/\/(?:twitter\.com|x\.com)\/\w+\/status\/\d+/.test(part);
+                  if (isTweet) return true;
+                  const cleaned = part.replace(/<p[^>]*>\s*<\/p>/g, '').trim();
+                  return cleaned.length > 0;
+                });
+                const midpoint = Math.floor(validParts.length / 2);
+                let validIndex = 0;
+
                 return (
                   <>
                     {parts.map((part, index) => {
@@ -335,21 +346,33 @@ const NoticiaDetalle = () => {
                       
                       if (isTweet) {
                         const cleanUrl = part.replace(/<[^>]*>/g, '').trim();
-                        return <TweetEmbed key={`tweet-${index}`} tweetUrl={cleanUrl} />;
+                        const currentIndex = validIndex++;
+                        return (
+                          <div key={`tweet-${index}`}>
+                            <TweetEmbed tweetUrl={cleanUrl} />
+                            {currentIndex === midpoint && validParts.length > 2 && <ArticleCTA />}
+                          </div>
+                        );
                       }
                       
                       // Clean up empty paragraph tags that might be left
                       const cleanedPart = part.replace(/<p[^>]*>\s*<\/p>/g, '').trim();
                       if (!cleanedPart) return null;
+
+                      const currentIndex = validIndex++;
                       
                       return (
-                        <div 
-                          key={`content-${index}`}
-                          className={proseClasses}
-                          dangerouslySetInnerHTML={{ __html: cleanedPart }}
-                        />
+                        <div key={`content-${index}`}>
+                          <div 
+                            className={proseClasses}
+                            dangerouslySetInnerHTML={{ __html: cleanedPart }}
+                          />
+                          {currentIndex === midpoint && validParts.length > 2 && <ArticleCTA />}
+                        </div>
                       );
                     })}
+                    {/* Fallback: show CTA at end if article is too short */}
+                    {validParts.length <= 2 && <ArticleCTA />}
                   </>
                 );
               })()}
