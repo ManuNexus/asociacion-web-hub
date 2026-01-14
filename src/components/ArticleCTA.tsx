@@ -1,15 +1,15 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
-import logoIcon from "@/assets/logo-ahora-icon.png";
+import ctaBanner from "@/assets/cta-banner.png";
 
 const ArticleCTA = () => {
   return (
     <div className="my-10 py-6 px-6 bg-gradient-to-r from-muted via-card to-muted border-l-4 border-secondary rounded-r-xl flex flex-col sm:flex-row items-center gap-5 shadow-md">
-      {/* Logo/Image */}
+      {/* Image */}
       <div className="shrink-0">
-        <div className="w-16 h-16 rounded-full bg-secondary/20 border-2 border-secondary flex items-center justify-center">
-          <img src={logoIcon} alt="AHORA" className="w-10 h-10 object-contain" />
+        <div className="w-20 h-20 rounded-lg overflow-hidden border-2 border-secondary shadow-md">
+          <img src={ctaBanner} alt="Únete al movimiento" className="w-full h-full object-cover" />
         </div>
       </div>
       
