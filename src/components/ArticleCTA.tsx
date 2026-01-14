@@ -19,7 +19,7 @@ const ArticleCTA = () => {
           ¡Únete al <span className="text-secondary">movimiento</span>!
         </h4>
         <p className="text-muted-foreground text-sm">
-          AHORA es un proyecto cívico construido con la participación ciudadana. Defiende los valores constitucionales, el pluralismo ideológico y los derechos fundamentales en España.
+          Defiende los valores constitucionales, el pluralismo y los derechos fundamentales en España.
         </p>
       </div>
       
