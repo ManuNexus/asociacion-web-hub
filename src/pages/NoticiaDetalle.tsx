@@ -299,13 +299,13 @@ const NoticiaDetalle = () => {
           )}
 
           {/* CTA Block */}
-          <div className="px-6 md:px-10">
+          <div className="px-6 md:px-10 py-6">
             <ArticleCTA />
           </div>
 
           {/* Content */}
           {noticia.contenido && (
-            <div className="p-6 md:p-10 pt-0">
+            <div className="p-6 md:p-10 pt-0 -mt-4">
               {(() => {
                 // Parse content - convert plain text to HTML if needed
                 const isHtml = noticia.contenido!.includes('<');
