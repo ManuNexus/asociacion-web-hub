@@ -298,9 +298,14 @@ const NoticiaDetalle = () => {
             </div>
           )}
 
+          {/* CTA Block */}
+          <div className="px-6 md:px-10">
+            <ArticleCTA />
+          </div>
+
           {/* Content */}
           {noticia.contenido && (
-            <div className="p-6 md:p-10 pt-8">
+            <div className="p-6 md:p-10 pt-0">
               {(() => {
                 // Parse content - convert plain text to HTML if needed
                 const isHtml = noticia.contenido!.includes('<');
@@ -328,18 +333,6 @@ const NoticiaDetalle = () => {
                   [&_s]:line-through
                 `;
                 
-                // Calculate midpoint to insert CTA
-                const validParts = parts.filter(part => {
-                  const isTweet = /^https?:\/\/(?:twitter\.com|x\.com)\/\w+\/status\/\d+/.test(part);
-                  if (isTweet) return true;
-                  const cleaned = part.replace(/<p[^>]*>\s*<\/p>/g, '').trim();
-                  return cleaned.length > 0;
-                });
-                // Always place CTA in the middle, even for short articles
-                const midpoint = Math.max(0, Math.floor((validParts.length - 1) / 2));
-                let validIndex = 0;
-                let ctaInserted = false;
-
                 return (
                   <>
                     {parts.map((part, index) => {
@@ -348,33 +341,19 @@ const NoticiaDetalle = () => {
                       
                       if (isTweet) {
                         const cleanUrl = part.replace(/<[^>]*>/g, '').trim();
-                        const currentIndex = validIndex++;
-                        const showCta = currentIndex === midpoint && !ctaInserted;
-                        if (showCta) ctaInserted = true;
-                        return (
-                          <div key={`tweet-${index}`}>
-                            <TweetEmbed tweetUrl={cleanUrl} />
-                            {showCta && <ArticleCTA />}
-                          </div>
-                        );
+                        return <TweetEmbed key={`tweet-${index}`} tweetUrl={cleanUrl} />;
                       }
                       
                       // Clean up empty paragraph tags that might be left
                       const cleanedPart = part.replace(/<p[^>]*>\s*<\/p>/g, '').trim();
                       if (!cleanedPart) return null;
-
-                      const currentIndex = validIndex++;
-                      const showCta = currentIndex === midpoint && !ctaInserted;
-                      if (showCta) ctaInserted = true;
                       
                       return (
-                        <div key={`content-${index}`}>
-                          <div 
-                            className={proseClasses}
-                            dangerouslySetInnerHTML={{ __html: cleanedPart }}
-                          />
-                          {showCta && <ArticleCTA />}
-                        </div>
+                        <div 
+                          key={`content-${index}`}
+                          className={proseClasses}
+                          dangerouslySetInnerHTML={{ __html: cleanedPart }}
+                        />
                       );
                     })}
                   </>
