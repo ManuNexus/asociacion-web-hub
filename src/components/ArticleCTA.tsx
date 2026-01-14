@@ -19,7 +19,7 @@ const ArticleCTA = () => {
           Las ideas necesitan <span className="text-secondary">personas</span>
         </h4>
         <p className="text-muted-foreground text-sm">
-          Defiende los valores constitucionales, el pluralismo y los derechos fundamentales en España.
+          AHORA es un proyecto cívico que se construye con quienes creen en el pluralismo y la participación.
         </p>
       </div>
       
