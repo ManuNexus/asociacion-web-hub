@@ -29,7 +29,7 @@ const ArticleCTA = () => {
         className="bg-secondary hover:bg-secondary/90 text-primary font-semibold shrink-0 shadow-lg"
       >
         <Link to="/hazte-socio" className="flex items-center gap-2">
-          Hazte socio
+          Formar parte
           <ArrowRight className="w-4 h-4" />
         </Link>
       </Button>
