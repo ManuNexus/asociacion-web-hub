@@ -335,8 +335,10 @@ const NoticiaDetalle = () => {
                   const cleaned = part.replace(/<p[^>]*>\s*<\/p>/g, '').trim();
                   return cleaned.length > 0;
                 });
-                const midpoint = Math.floor(validParts.length / 2);
+                // Always place CTA in the middle, even for short articles
+                const midpoint = Math.max(0, Math.floor((validParts.length - 1) / 2));
                 let validIndex = 0;
+                let ctaInserted = false;
 
                 return (
                   <>
@@ -347,10 +349,12 @@ const NoticiaDetalle = () => {
                       if (isTweet) {
                         const cleanUrl = part.replace(/<[^>]*>/g, '').trim();
                         const currentIndex = validIndex++;
+                        const showCta = currentIndex === midpoint && !ctaInserted;
+                        if (showCta) ctaInserted = true;
                         return (
                           <div key={`tweet-${index}`}>
                             <TweetEmbed tweetUrl={cleanUrl} />
-                            {currentIndex === midpoint && validParts.length > 2 && <ArticleCTA />}
+                            {showCta && <ArticleCTA />}
                           </div>
                         );
                       }
@@ -360,6 +364,8 @@ const NoticiaDetalle = () => {
                       if (!cleanedPart) return null;
 
                       const currentIndex = validIndex++;
+                      const showCta = currentIndex === midpoint && !ctaInserted;
+                      if (showCta) ctaInserted = true;
                       
                       return (
                         <div key={`content-${index}`}>
@@ -367,12 +373,10 @@ const NoticiaDetalle = () => {
                             className={proseClasses}
                             dangerouslySetInnerHTML={{ __html: cleanedPart }}
                           />
-                          {currentIndex === midpoint && validParts.length > 2 && <ArticleCTA />}
+                          {showCta && <ArticleCTA />}
                         </div>
                       );
                     })}
-                    {/* Fallback: show CTA at end if article is too short */}
-                    {validParts.length <= 2 && <ArticleCTA />}
                   </>
                 );
               })()}
