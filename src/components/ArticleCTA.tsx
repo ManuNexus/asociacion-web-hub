@@ -5,7 +5,7 @@ import ctaBanner from "@/assets/cta-banner.png";
 
 const ArticleCTA = () => {
   return (
-    <div className="my-10 py-6 px-6 bg-gradient-to-r from-muted via-card to-muted border-l-4 border-secondary rounded-r-xl flex flex-col sm:flex-row items-center gap-5 shadow-md">
+    <div className="py-6 px-6 bg-gradient-to-r from-muted via-card to-muted border-l-4 border-secondary rounded-r-xl flex flex-col sm:flex-row items-center gap-5 shadow-md">
       {/* Image */}
       <div className="shrink-0">
         <div className="w-20 h-20 rounded-lg overflow-hidden border-2 border-secondary shadow-md">
