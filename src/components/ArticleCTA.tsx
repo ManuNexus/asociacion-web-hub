@@ -16,7 +16,7 @@ const ArticleCTA = () => {
       {/* Content */}
       <div className="flex-1 text-center sm:text-left">
         <h4 className="text-lg font-bold text-foreground mb-1">
-          Las ideas necesitan <span className="text-secondary">personas</span>
+          ¡Únete al <span className="text-secondary">movimiento</span>!
         </h4>
         <p className="text-muted-foreground text-sm">
           AHORA es un proyecto cívico construido con la participación ciudadana. Defiende los valores constitucionales, el pluralismo ideológico y los derechos fundamentales en España.
