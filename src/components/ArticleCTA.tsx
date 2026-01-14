@@ -19,7 +19,7 @@ const ArticleCTA = () => {
           Las ideas necesitan <span className="text-secondary">personas</span>
         </h4>
         <p className="text-muted-foreground text-sm">
-          AHORA es un proyecto cívico que se construye con quienes creen en el pluralismo y la participación.
+          AHORA es un proyecto cívico construido con la participación ciudadana. Defiende los valores constitucionales, el pluralismo ideológico y los derechos fundamentales en España.
         </p>
       </div>
       
