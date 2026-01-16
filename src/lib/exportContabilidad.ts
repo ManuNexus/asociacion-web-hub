@@ -97,24 +97,35 @@ export const exportLibroDiarioToPDF = (
   doc.setFontSize(10);
   doc.text(`Generado el ${format(new Date(), "dd/MM/yyyy HH:mm")}`, pageWidth / 2, 28, { align: "center" });
 
-  // Tabla
+  // Tabla - Ajustar columnas correctamente
   let y = 40;
   const lineHeight = 7;
   const margins = { left: 15, right: 15 };
-  const colWidths = [25, 60, 35, 35, 25];
+  
+  // Posiciones fijas de columnas (X absoluto)
+  const colX = {
+    fecha: margins.left + 2,
+    concepto: margins.left + 28,
+    debe: margins.left + 105,
+    haber: margins.left + 135,
+    saldo: margins.left + 165
+  };
+  const conceptoMaxWidth = 72; // ancho máximo para concepto
 
   // Encabezados
   doc.setFillColor(240, 240, 240);
   doc.rect(margins.left, y - 5, pageWidth - margins.left - margins.right, lineHeight, "F");
   doc.setFont("helvetica", "bold");
-  doc.text("Fecha", margins.left + 2, y);
-  doc.text("Concepto", margins.left + colWidths[0] + 2, y);
-  doc.text("Debe", margins.left + colWidths[0] + colWidths[1] + 2, y);
-  doc.text("Haber", margins.left + colWidths[0] + colWidths[1] + colWidths[2] + 2, y);
-  doc.text("Saldo", margins.left + colWidths[0] + colWidths[1] + colWidths[2] + colWidths[3] + 2, y);
+  doc.setFontSize(10);
+  doc.text("Fecha", colX.fecha, y);
+  doc.text("Concepto", colX.concepto, y);
+  doc.text("Debe", colX.debe, y, { align: "right" });
+  doc.text("Haber", colX.haber, y, { align: "right" });
+  doc.text("Saldo", colX.saldo, y, { align: "right" });
 
   y += lineHeight;
   doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
 
   let saldoAcumulado = 0;
   let totalDebe = 0;
@@ -124,6 +135,19 @@ export const exportLibroDiarioToPDF = (
     if (y > 270) {
       doc.addPage();
       y = 20;
+      // Re-dibujar encabezados en nueva página
+      doc.setFillColor(240, 240, 240);
+      doc.rect(margins.left, y - 5, pageWidth - margins.left - margins.right, lineHeight, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10);
+      doc.text("Fecha", colX.fecha, y);
+      doc.text("Concepto", colX.concepto, y);
+      doc.text("Debe", colX.debe, y, { align: "right" });
+      doc.text("Haber", colX.haber, y, { align: "right" });
+      doc.text("Saldo", colX.saldo, y, { align: "right" });
+      y += lineHeight;
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
     }
 
     const debe = t.tipo === "ingreso" ? Number(t.importe) : 0;
@@ -137,11 +161,17 @@ export const exportLibroDiarioToPDF = (
       doc.rect(margins.left, y - 5, pageWidth - margins.left - margins.right, lineHeight, "F");
     }
 
-    doc.text(format(new Date(t.fecha), "dd/MM/yyyy"), margins.left + 2, y);
-    doc.text(t.concepto.substring(0, 35), margins.left + colWidths[0] + 2, y);
-    doc.text(debe ? debe.toLocaleString("es-ES", { minimumFractionDigits: 2 }) : "", margins.left + colWidths[0] + colWidths[1] + 2, y);
-    doc.text(haber ? haber.toLocaleString("es-ES", { minimumFractionDigits: 2 }) : "", margins.left + colWidths[0] + colWidths[1] + colWidths[2] + 2, y);
-    doc.text(saldoAcumulado.toLocaleString("es-ES", { minimumFractionDigits: 2 }), margins.left + colWidths[0] + colWidths[1] + colWidths[2] + colWidths[3] + 2, y);
+    // Truncar concepto para que no invada otras columnas
+    let conceptoTruncado = t.concepto;
+    while (doc.getTextWidth(conceptoTruncado) > conceptoMaxWidth && conceptoTruncado.length > 3) {
+      conceptoTruncado = conceptoTruncado.slice(0, -4) + "...";
+    }
+
+    doc.text(format(new Date(t.fecha), "dd/MM/yyyy"), colX.fecha, y);
+    doc.text(conceptoTruncado, colX.concepto, y);
+    doc.text(debe ? debe.toLocaleString("es-ES", { minimumFractionDigits: 2 }) : "", colX.debe, y, { align: "right" });
+    doc.text(haber ? haber.toLocaleString("es-ES", { minimumFractionDigits: 2 }) : "", colX.haber, y, { align: "right" });
+    doc.text(saldoAcumulado.toLocaleString("es-ES", { minimumFractionDigits: 2 }), colX.saldo, y, { align: "right" });
 
     y += lineHeight;
   });
@@ -149,12 +179,13 @@ export const exportLibroDiarioToPDF = (
   // Totales
   y += 5;
   doc.setFont("helvetica", "bold");
+  doc.setFontSize(10);
   doc.setFillColor(230, 230, 230);
   doc.rect(margins.left, y - 5, pageWidth - margins.left - margins.right, lineHeight, "F");
-  doc.text("TOTALES", margins.left + 2, y);
-  doc.text(totalDebe.toLocaleString("es-ES", { minimumFractionDigits: 2 }), margins.left + colWidths[0] + colWidths[1] + 2, y);
-  doc.text(totalHaber.toLocaleString("es-ES", { minimumFractionDigits: 2 }), margins.left + colWidths[0] + colWidths[1] + colWidths[2] + 2, y);
-  doc.text(saldoAcumulado.toLocaleString("es-ES", { minimumFractionDigits: 2 }), margins.left + colWidths[0] + colWidths[1] + colWidths[2] + colWidths[3] + 2, y);
+  doc.text("TOTALES", colX.fecha, y);
+  doc.text(totalDebe.toLocaleString("es-ES", { minimumFractionDigits: 2 }), colX.debe, y, { align: "right" });
+  doc.text(totalHaber.toLocaleString("es-ES", { minimumFractionDigits: 2 }), colX.haber, y, { align: "right" });
+  doc.text(saldoAcumulado.toLocaleString("es-ES", { minimumFractionDigits: 2 }), colX.saldo, y, { align: "right" });
 
   // Guardar
   const filename = month !== undefined 
