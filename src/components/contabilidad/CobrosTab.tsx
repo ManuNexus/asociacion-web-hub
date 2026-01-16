@@ -164,16 +164,9 @@ export const CobrosTab = () => {
       let estadoCuota: "al_dia" | "pendiente" | "vencido";
 
       if (ultimoCobroPagado) {
-        // La próxima cuota es cuando termina el periodo del último pago
-        const finUltimoPago = new Date(ultimoCobroPagado.periodo_fin);
-        if (esMensual) {
-          // Para mensual, la próxima cuota es el día de cobro del mes siguiente al fin del periodo
-          proximaCuota = addMonths(finUltimoPago, 1);
-          proximaCuota = setDate(proximaCuota, diaCobro);
-        } else {
-          // Para anual, la próxima cuota es directamente el fin del periodo actual
-          proximaCuota = finUltimoPago;
-        }
+        // La próxima cuota es cuando termina el periodo del último pago (periodo_fin)
+        // El periodo_fin ya representa el fin del periodo cubierto por ese pago
+        proximaCuota = new Date(ultimoCobroPagado.periodo_fin);
       } else {
         // Primera cuota: usar fecha_primera_cuota si existe
         if (fechaPrimeraCuota) {
