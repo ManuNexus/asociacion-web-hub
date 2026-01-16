@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { format, startOfYear, endOfYear, eachMonthOfInterval } from "date-fns";
 import { es } from "date-fns/locale";
-import { TrendingUp, TrendingDown, Wallet, Calendar, PieChart as PieChartIcon, Download, FileText, FileSpreadsheet } from "lucide-react";
+import { TrendingUp, TrendingDown, Wallet, Calendar, PieChart as PieChartIcon, Download, FileText, FileSpreadsheet, ChevronRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,11 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 import {
   BarChart,
@@ -32,7 +37,15 @@ import {
   Legend,
 } from "recharts";
 import { Transaccion, Factura, CategoriaContabilidad } from "@/hooks/useContabilidad";
-import { exportTransaccionesToCSV, exportFacturasToCSV, exportLibroDiarioToPDF, exportResumenToPDF } from "@/lib/exportContabilidad";
+import { 
+  exportTransaccionesToCSV, 
+  exportFacturasToCSV, 
+  exportLibroDiarioToPDF, 
+  exportResumenToPDF,
+  exportPyGToPDF,
+  exportCashFlowToPDF,
+  exportInformeMensualToPDF
+} from "@/lib/exportContabilidad";
 
 interface InformesTabProps {
   transacciones: Transaccion[];
@@ -147,7 +160,8 @@ export const InformesTab = ({
               Exportar
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
+          <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuLabel>Exportar datos</DropdownMenuLabel>
             <DropdownMenuItem onClick={() => exportTransaccionesToCSV(transacciones)}>
               <FileSpreadsheet className="h-4 w-4 mr-2" />
               Transacciones (CSV)
@@ -156,14 +170,76 @@ export const InformesTab = ({
               <FileSpreadsheet className="h-4 w-4 mr-2" />
               Facturas (CSV)
             </DropdownMenuItem>
+
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel>Informes anuales</DropdownMenuLabel>
             <DropdownMenuItem onClick={() => exportLibroDiarioToPDF(transacciones, selectedYear)}>
               <FileText className="h-4 w-4 mr-2" />
-              Libro diario {selectedYear} (PDF)
+              Libro diario {selectedYear}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => exportResumenToPDF(transacciones, facturas, selectedYear, getBalancePorPeriodo)}>
               <FileText className="h-4 w-4 mr-2" />
-              Informe resumen (PDF)
+              Informe resumen {selectedYear}
             </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => exportPyGToPDF(transacciones, selectedYear)}>
+              <FileText className="h-4 w-4 mr-2" />
+              Cuenta P&G {selectedYear}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => exportCashFlowToPDF(transacciones, selectedYear)}>
+              <FileText className="h-4 w-4 mr-2" />
+              Cash Flow {selectedYear}
+            </DropdownMenuItem>
+
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel>Informes mensuales</DropdownMenuLabel>
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger>
+                <FileText className="h-4 w-4 mr-2" />
+                Informe mensual completo
+              </DropdownMenuSubTrigger>
+              <DropdownMenuSubContent>
+                {Array.from({ length: 12 }, (_, i) => (
+                  <DropdownMenuItem 
+                    key={i} 
+                    onClick={() => exportInformeMensualToPDF(transacciones, selectedYear, i)}
+                  >
+                    {format(new Date(selectedYear, i), "MMMM", { locale: es })}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuSubContent>
+            </DropdownMenuSub>
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger>
+                <FileText className="h-4 w-4 mr-2" />
+                P&G mensual
+              </DropdownMenuSubTrigger>
+              <DropdownMenuSubContent>
+                {Array.from({ length: 12 }, (_, i) => (
+                  <DropdownMenuItem 
+                    key={i} 
+                    onClick={() => exportPyGToPDF(transacciones, selectedYear, i)}
+                  >
+                    {format(new Date(selectedYear, i), "MMMM", { locale: es })}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuSubContent>
+            </DropdownMenuSub>
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger>
+                <FileText className="h-4 w-4 mr-2" />
+                Cash Flow mensual
+              </DropdownMenuSubTrigger>
+              <DropdownMenuSubContent>
+                {Array.from({ length: 12 }, (_, i) => (
+                  <DropdownMenuItem 
+                    key={i} 
+                    onClick={() => exportCashFlowToPDF(transacciones, selectedYear, i)}
+                  >
+                    {format(new Date(selectedYear, i), "MMMM", { locale: es })}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuSubContent>
+            </DropdownMenuSub>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
