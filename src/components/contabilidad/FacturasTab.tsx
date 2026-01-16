@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { Plus, Pencil, Trash2, Search, Save } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, Save, Eye, Link } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -94,6 +94,7 @@ export const FacturasTab = ({
   const [terceroNif, setTerceroNif] = useState("");
   const [terceroDireccion, setTerceroDireccion] = useState("");
   const [notas, setNotas] = useState("");
+  const [archivoUrl, setArchivoUrl] = useState("");
   const [proveedorId, setProveedorId] = useState<string | null>(null);
 
   const resetForm = () => {
@@ -109,6 +110,7 @@ export const FacturasTab = ({
     setTerceroNif("");
     setTerceroDireccion("");
     setNotas("");
+    setArchivoUrl("");
     setProveedorId(null);
     setEditingId(null);
   };
@@ -139,6 +141,7 @@ export const FacturasTab = ({
     setTerceroNif(f.tercero_nif || "");
     setTerceroDireccion(f.tercero_direccion || "");
     setNotas(f.notas || "");
+    setArchivoUrl(f.archivo_url || "");
     setProveedorId(f.proveedor_id);
     setIsDialogOpen(true);
   };
@@ -193,7 +196,7 @@ export const FacturasTab = ({
       tercero_direccion: terceroDireccion.trim() || null,
       proveedor_id: proveedorId,
       notas: notas.trim() || null,
-      archivo_url: null,
+      archivo_url: archivoUrl.trim() || null,
     };
 
     const success = editingId
@@ -331,6 +334,16 @@ export const FacturasTab = ({
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1">
+                        {f.archivo_url && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => window.open(f.archivo_url!, "_blank")}
+                            title="Ver documento"
+                          >
+                            <Eye className="h-4 w-4 text-primary" />
+                          </Button>
+                        )}
                         <Button
                           variant="ghost"
                           size="icon"
@@ -526,6 +539,19 @@ export const FacturasTab = ({
                   })}
                 </div>
               </div>
+            </div>
+
+            <div>
+              <Label className="flex items-center gap-1">
+                <Link className="h-3 w-3" />
+                Enlace al documento (Google Drive, etc.)
+              </Label>
+              <Input
+                type="url"
+                value={archivoUrl}
+                onChange={(e) => setArchivoUrl(e.target.value)}
+                placeholder="https://drive.google.com/..."
+              />
             </div>
 
             <div>
