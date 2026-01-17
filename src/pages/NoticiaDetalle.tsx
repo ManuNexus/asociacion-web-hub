@@ -3,11 +3,12 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, ArrowLeft, Calendar, Clock, ChevronRight, Star } from "lucide-react";
+import { Loader2, ArrowLeft, Calendar, Clock, ChevronRight, Star, Lock } from "lucide-react";
 import { formatInMadrid } from "@/lib/timezone";
 import logoIcon from "@/assets/logo-ahora-icon.png";
 import { TweetEmbed, isTweetUrl } from "@/components/TweetEmbed";
 import ArticleCTA from "@/components/ArticleCTA";
+import { useAuth } from "@/hooks/useAuth";
 
 interface Categoria {
   id: string;
@@ -33,10 +34,14 @@ interface Noticia {
 const NoticiaDetalle = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user, isSocio, isAdmin } = useAuth();
   const [noticia, setNoticia] = useState<Noticia | null>(null);
   const [relatedNoticias, setRelatedNoticias] = useState<Noticia[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  
+  // Check if user can view exclusive content
+  const canViewExclusive = isSocio || isAdmin;
 
   useEffect(() => {
     const fetchNoticia = async () => {
@@ -307,88 +312,123 @@ const NoticiaDetalle = () => {
             </div>
           )}
 
-          {/* CTA Block */}
-          <div className="px-6 md:px-10 py-6">
-            <ArticleCTA />
-          </div>
-
-          {/* Content */}
-          {noticia.contenido && (
-            <div className="p-6 md:p-10 pt-0 -mt-4">
-              {(() => {
-                // Parse content - convert plain text to HTML if needed
-                const isHtml = noticia.contenido!.includes('<');
-                const htmlContent = isHtml 
-                  ? noticia.contenido! 
-                  : noticia.contenido!.split('\n').map(p => p.trim() ? `<p>${p}</p>` : '').join('');
-                
-                // Split content by tweet URLs to render embeds in place
-                const tweetRegex = /(https?:\/\/(?:twitter\.com|x\.com)\/\w+\/status\/\d+\S*)/g;
-                const parts = htmlContent.split(tweetRegex);
-                
-                const proseClasses = `prose prose-lg max-w-none
-                  [&_p]:mb-5 [&_p]:text-foreground/90 [&_p]:leading-relaxed [&_p]:text-base md:[&_p]:text-lg
-                  [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:my-4 [&_h1]:text-foreground
-                  [&_h2]:text-xl [&_h2]:font-bold [&_h2]:my-3 [&_h2]:text-foreground
-                  [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:my-3 [&_h3]:text-foreground
-                  [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:my-4
-                  [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:my-4
-                  [&_li]:mb-2 [&_li]:text-foreground/90
-                  [&_blockquote]:border-l-4 [&_blockquote]:border-primary/30 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:my-4 [&_blockquote]:text-muted-foreground
-                  [&_a]:text-primary [&_a]:underline [&_a]:hover:text-primary/80
-                  [&_strong]:font-bold [&_strong]:text-foreground
-                  [&_em]:italic
-                  [&_u]:underline
-                  [&_s]:line-through
-                `;
-                
-                return (
-                  <>
-                    {parts.map((part, index) => {
-                      // Check if this part is a tweet URL
-                      const isTweet = /^https?:\/\/(?:twitter\.com|x\.com)\/\w+\/status\/\d+/.test(part);
-                      
-                      if (isTweet) {
-                        const cleanUrl = part.replace(/<[^>]*>/g, '').trim();
-                        return <TweetEmbed key={`tweet-${index}`} tweetUrl={cleanUrl} />;
-                      }
-                      
-                      // Clean up empty paragraph tags that might be left
-                      const cleanedPart = part.replace(/<p[^>]*>\s*<\/p>/g, '').trim();
-                      if (!cleanedPart) return null;
-                      
-                      return (
-                        <div 
-                          key={`content-${index}`}
-                          className={proseClasses}
-                          dangerouslySetInnerHTML={{ __html: cleanedPart }}
-                        />
-                      );
-                    })}
-                  </>
-                );
-              })()}
-
-              {/* Footer decoration */}
-              <div className="mt-12 pt-8 border-t border-border">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <img src={logoIcon} alt="AHORA" className="w-10 h-10 object-contain opacity-50" />
-                    <div className="text-sm text-muted-foreground">
-                      <p className="font-medium text-foreground">Asociación AHORA</p>
-                      <p>Actuar en el presente para construir el futuro</p>
-                    </div>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => navigate("/noticias")}
+          {/* Exclusive Content Gate */}
+          {noticia.solo_socios && !canViewExclusive ? (
+            <div className="px-6 md:px-10 py-12">
+              <div className="bg-gradient-to-br from-primary/5 via-secondary/30 to-primary/5 rounded-xl border border-primary/20 p-8 text-center">
+                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Lock className="h-8 w-8 text-primary" />
+                </div>
+                <h3 className="text-xl md:text-2xl font-bold text-foreground mb-3">
+                  Contenido exclusivo para socios
+                </h3>
+                <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                  Para leer esta noticia completa debes ser socio de AHORA. 
+                  Inicia sesión si ya eres socio o únete a nuestra comunidad.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                  <Button 
+                    onClick={() => navigate("/auth")}
+                    className="bg-primary hover:bg-primary/90"
                   >
-                    Más noticias
+                    Iniciar sesión
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    onClick={() => navigate("/hazte-socio")}
+                    className="border-primary text-primary hover:bg-primary/10"
+                  >
+                    Únete a AHORA
                   </Button>
                 </div>
               </div>
             </div>
+          ) : (
+            <>
+              {/* CTA Block */}
+              <div className="px-6 md:px-10 py-6">
+                <ArticleCTA />
+              </div>
+
+              {/* Content */}
+              {noticia.contenido && (
+                <div className="p-6 md:p-10 pt-0 -mt-4">
+                  {(() => {
+                    // Parse content - convert plain text to HTML if needed
+                    const isHtml = noticia.contenido!.includes('<');
+                    const htmlContent = isHtml 
+                      ? noticia.contenido! 
+                      : noticia.contenido!.split('\n').map(p => p.trim() ? `<p>${p}</p>` : '').join('');
+                    
+                    // Split content by tweet URLs to render embeds in place
+                    const tweetRegex = /(https?:\/\/(?:twitter\.com|x\.com)\/\w+\/status\/\d+\S*)/g;
+                    const parts = htmlContent.split(tweetRegex);
+                    
+                    const proseClasses = `prose prose-lg max-w-none
+                      [&_p]:mb-5 [&_p]:text-foreground/90 [&_p]:leading-relaxed [&_p]:text-base md:[&_p]:text-lg
+                      [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:my-4 [&_h1]:text-foreground
+                      [&_h2]:text-xl [&_h2]:font-bold [&_h2]:my-3 [&_h2]:text-foreground
+                      [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:my-3 [&_h3]:text-foreground
+                      [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:my-4
+                      [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:my-4
+                      [&_li]:mb-2 [&_li]:text-foreground/90
+                      [&_blockquote]:border-l-4 [&_blockquote]:border-primary/30 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:my-4 [&_blockquote]:text-muted-foreground
+                      [&_a]:text-primary [&_a]:underline [&_a]:hover:text-primary/80
+                      [&_strong]:font-bold [&_strong]:text-foreground
+                      [&_em]:italic
+                      [&_u]:underline
+                      [&_s]:line-through
+                    `;
+                    
+                    return (
+                      <>
+                        {parts.map((part, index) => {
+                          // Check if this part is a tweet URL
+                          const isTweet = /^https?:\/\/(?:twitter\.com|x\.com)\/\w+\/status\/\d+/.test(part);
+                          
+                          if (isTweet) {
+                            const cleanUrl = part.replace(/<[^>]*>/g, '').trim();
+                            return <TweetEmbed key={`tweet-${index}`} tweetUrl={cleanUrl} />;
+                          }
+                          
+                          // Clean up empty paragraph tags that might be left
+                          const cleanedPart = part.replace(/<p[^>]*>\s*<\/p>/g, '').trim();
+                          if (!cleanedPart) return null;
+                          
+                          return (
+                            <div 
+                              key={`content-${index}`}
+                              className={proseClasses}
+                              dangerouslySetInnerHTML={{ __html: cleanedPart }}
+                            />
+                          );
+                        })}
+                      </>
+                    );
+                  })()}
+
+                  {/* Footer decoration */}
+                  <div className="mt-12 pt-8 border-t border-border">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <img src={logoIcon} alt="AHORA" className="w-10 h-10 object-contain opacity-50" />
+                        <div className="text-sm text-muted-foreground">
+                          <p className="font-medium text-foreground">Asociación AHORA</p>
+                          <p>Actuar en el presente para construir el futuro</p>
+                        </div>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => navigate("/noticias")}
+                      >
+                        Más noticias
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
 
