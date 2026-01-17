@@ -109,6 +109,7 @@ const AdminNoticias = () => {
   const [invitingId, setInvitingId] = useState<string | null>(null);
   const [resendingId, setResendingId] = useState<string | null>(null);
   const [diaCobro, setDiaCobro] = useState<number>(1);
+  const [notifyingId, setNotifyingId] = useState<string | null>(null);
 
   const solicitudesFiltradas = solicitudes.filter((s) => {
     const matchesSearch = 
@@ -271,9 +272,6 @@ const AdminNoticias = () => {
     }
 
     try {
-      let insertedNoticiaId: string | null = null;
-      const isNewExclusiveArticle = !editingNoticia && formData.solo_socios && formData.publicada;
-      
       if (editingNoticia) {
         const { error } = await supabase
           .from("noticias")
@@ -295,7 +293,7 @@ const AdminNoticias = () => {
         if (error) throw error;
         toast({ title: "Noticia actualizada" });
       } else {
-        const { data: insertedData, error } = await supabase.from("noticias").insert({
+        const { error } = await supabase.from("noticias").insert({
           titulo: formData.titulo,
           extracto: formData.extracto || null,
           contenido: formData.contenido || null,
@@ -307,37 +305,10 @@ const AdminNoticias = () => {
           categoria_id: formData.categoria_id || null,
           fecha_publicacion: fechaPublicacion,
           fecha_publicacion_programada: fechaProgramada,
-        }).select("id").single();
+        });
 
         if (error) throw error;
-        insertedNoticiaId = insertedData?.id || null;
         toast({ title: "Noticia creada" });
-      }
-
-      // Send notification to socios if this is a new exclusive article
-      if (isNewExclusiveArticle && insertedNoticiaId) {
-        try {
-          const { data: session } = await supabase.auth.getSession();
-          await supabase.functions.invoke("notify-exclusive-news", {
-            body: {
-              noticia_id: insertedNoticiaId,
-              titulo: formData.titulo,
-              extracto: formData.extracto || undefined,
-            },
-          });
-          toast({ 
-            title: "Notificación enviada", 
-            description: "Los socios han sido notificados del artículo exclusivo" 
-          });
-        } catch (notifyError) {
-          console.error("Error sending exclusive news notification:", notifyError);
-          // Don't throw - article was saved successfully
-          toast({ 
-            variant: "destructive",
-            title: "Aviso",
-            description: "El artículo se guardó pero hubo un error al notificar a los socios" 
-          });
-        }
       }
 
       setDialogOpen(false);
@@ -845,7 +816,7 @@ const AdminNoticias = () => {
                           </div>
                           {formData.solo_socios && (
                             <p className="text-xs text-muted-foreground ml-6 bg-yellow-50 dark:bg-yellow-900/20 p-2 rounded border border-yellow-200 dark:border-yellow-800">
-                              Este artículo solo será visible para los socios registrados. Al publicarlo, recibirán una notificación por email.
+                              Este artículo solo será visible para los socios registrados. Podrás notificarles desde la tabla de noticias.
                             </p>
                           )}
                           
@@ -975,6 +946,45 @@ const AdminNoticias = () => {
                               </TableCell>
                               <TableCell className="text-right">
                                 <div className="flex justify-end gap-2">
+                                  {noticia.solo_socios && noticia.publicada && (
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      disabled={notifyingId === noticia.id}
+                                      onClick={async () => {
+                                        setNotifyingId(noticia.id);
+                                        try {
+                                          await supabase.functions.invoke("notify-exclusive-news", {
+                                            body: {
+                                              noticia_id: noticia.id,
+                                              titulo: noticia.titulo,
+                                              extracto: noticia.extracto || undefined,
+                                            },
+                                          });
+                                          toast({
+                                            title: "Notificación enviada",
+                                            description: "Los socios han sido notificados del artículo exclusivo",
+                                          });
+                                        } catch (error) {
+                                          console.error("Error sending notification:", error);
+                                          toast({
+                                            variant: "destructive",
+                                            title: "Error",
+                                            description: "No se pudo enviar la notificación",
+                                          });
+                                        } finally {
+                                          setNotifyingId(null);
+                                        }
+                                      }}
+                                      title="Notificar a socios"
+                                    >
+                                      {notifyingId === noticia.id ? (
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                      ) : (
+                                        <Bell className="h-4 w-4 text-yellow-600" />
+                                      )}
+                                    </Button>
+                                  )}
                                   <Button
                                     variant="ghost"
                                     size="icon"
