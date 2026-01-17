@@ -120,7 +120,7 @@ serve(async (req) => {
         <style>
           body { font-family: Arial, sans-serif; line-height: 1.6; color: #333333; }
           .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-          .header { background: #1e3a5f; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+          .header { background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
           .header-title { color: #ffffff; font-size: 28px; font-weight: bold; margin: 0 0 10px 0; letter-spacing: 1px; }
           .header-subtitle { color: #f1c40f; font-size: 14px; letter-spacing: 2px; margin: 0; font-weight: 600; }
           .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
