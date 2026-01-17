@@ -400,6 +400,7 @@ export type Database = {
           id: string
           imagen_url: string | null
           publicada: boolean
+          solo_socios: boolean
           titulo: string
           updated_at: string
         }
@@ -415,6 +416,7 @@ export type Database = {
           id?: string
           imagen_url?: string | null
           publicada?: boolean
+          solo_socios?: boolean
           titulo: string
           updated_at?: string
         }
@@ -430,6 +432,7 @@ export type Database = {
           id?: string
           imagen_url?: string | null
           publicada?: boolean
+          solo_socios?: boolean
           titulo?: string
           updated_at?: string
         }

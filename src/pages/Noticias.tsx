@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { Layout } from "@/components/layout/Layout";
-import { ChevronRight, Calendar, Loader2, Search, Filter } from "lucide-react";
+import { ChevronRight, Calendar, Loader2, Search, Filter, Star } from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { formatInMadrid } from "@/lib/timezone";
 import { Input } from "@/components/ui/input";
+import { useAuth } from "@/hooks/useAuth";
 import {
   Select,
   SelectContent,
@@ -35,6 +36,7 @@ interface Noticia {
   imagen_url: string | null;
   fecha_publicacion: string | null;
   categoria_id: string | null;
+  solo_socios: boolean;
   categorias_noticia: Categoria | null;
 }
 
@@ -47,9 +49,14 @@ const Noticias = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategoria, setSelectedCategoria] = useState<string>("todas");
   const [currentPage, setCurrentPage] = useState(1);
+  const { user } = useAuth();
 
   useEffect(() => {
     const fetchData = async () => {
+      // Noticias will be filtered by RLS policies:
+      // - Anon users: only published, non-exclusive articles
+      // - Socios: all published articles (including exclusive)
+      // - Admins: all articles
       const [noticiasRes, categoriasRes] = await Promise.all([
         supabase
           .from("noticias")
@@ -73,7 +80,7 @@ const Noticias = () => {
     };
 
     fetchData();
-  }, []);
+  }, [user]); // Refetch when user auth state changes
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return "";
@@ -188,6 +195,12 @@ const Noticias = () => {
                       )}
                       <div className="p-6 md:p-8">
                         <div className="flex flex-wrap items-center gap-4 mb-4">
+                          {noticia.solo_socios && (
+                            <span className="px-3 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-700 flex items-center gap-1">
+                              <Star className="h-3 w-3" />
+                              Exclusivo
+                            </span>
+                          )}
                           {noticia.categorias_noticia ? (
                             <span
                               className="px-3 py-1 text-xs font-medium rounded-full text-white"
