@@ -35,7 +35,7 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Pencil, Trash2, Loader2, LogOut, Users, Newspaper, Mail, Phone, Eye, Search, Tag, UserCheck, Send, RefreshCw, Vote, Calendar, FileText, CreditCard, Bell, Link, Clock, BookUser, Share2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, LogOut, Users, Newspaper, Mail, Phone, Eye, Search, Tag, UserCheck, Send, RefreshCw, Vote, Calendar, FileText, CreditCard, Bell, Link, Clock, BookUser, Share2, Star } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { formatInMadrid, toDateTimeLocalValue, fromDateTimeLocalValue } from "@/lib/timezone";
@@ -63,6 +63,7 @@ interface Noticia {
   autor: string | null;
   autor_socio_id: string | null;
   publicada: boolean;
+  solo_socios: boolean;
   fecha_publicacion: string | null;
   fecha_publicacion_programada: string | null;
   created_at: string;
@@ -130,6 +131,7 @@ const AdminNoticias = () => {
     autor: "AHORA",
     autor_socio_id: "",
     publicada: false,
+    solo_socios: false,
     categoria_id: "",
     fecha_publicacion_programada: "",
   });
@@ -269,6 +271,9 @@ const AdminNoticias = () => {
     }
 
     try {
+      let insertedNoticiaId: string | null = null;
+      const isNewExclusiveArticle = !editingNoticia && formData.solo_socios && formData.publicada;
+      
       if (editingNoticia) {
         const { error } = await supabase
           .from("noticias")
@@ -280,6 +285,7 @@ const AdminNoticias = () => {
             autor: formData.autor || "AHORA",
             autor_socio_id: formData.autor_socio_id || null,
             publicada: formData.publicada,
+            solo_socios: formData.solo_socios,
             categoria_id: formData.categoria_id || null,
             fecha_publicacion_programada: fechaProgramada,
             fecha_publicacion: fechaPublicacion,
@@ -289,7 +295,7 @@ const AdminNoticias = () => {
         if (error) throw error;
         toast({ title: "Noticia actualizada" });
       } else {
-        const { error } = await supabase.from("noticias").insert({
+        const { data: insertedData, error } = await supabase.from("noticias").insert({
           titulo: formData.titulo,
           extracto: formData.extracto || null,
           contenido: formData.contenido || null,
@@ -297,13 +303,41 @@ const AdminNoticias = () => {
           autor: formData.autor || "AHORA",
           autor_socio_id: formData.autor_socio_id || null,
           publicada: formData.publicada,
+          solo_socios: formData.solo_socios,
           categoria_id: formData.categoria_id || null,
           fecha_publicacion: fechaPublicacion,
           fecha_publicacion_programada: fechaProgramada,
-        });
+        }).select("id").single();
 
         if (error) throw error;
+        insertedNoticiaId = insertedData?.id || null;
         toast({ title: "Noticia creada" });
+      }
+
+      // Send notification to socios if this is a new exclusive article
+      if (isNewExclusiveArticle && insertedNoticiaId) {
+        try {
+          const { data: session } = await supabase.auth.getSession();
+          await supabase.functions.invoke("notify-exclusive-news", {
+            body: {
+              noticia_id: insertedNoticiaId,
+              titulo: formData.titulo,
+              extracto: formData.extracto || undefined,
+            },
+          });
+          toast({ 
+            title: "Notificación enviada", 
+            description: "Los socios han sido notificados del artículo exclusivo" 
+          });
+        } catch (notifyError) {
+          console.error("Error sending exclusive news notification:", notifyError);
+          // Don't throw - article was saved successfully
+          toast({ 
+            variant: "destructive",
+            title: "Aviso",
+            description: "El artículo se guardó pero hubo un error al notificar a los socios" 
+          });
+        }
       }
 
       setDialogOpen(false);
@@ -516,6 +550,7 @@ const AdminNoticias = () => {
       autor: noticia.autor || "AHORA",
       autor_socio_id: noticia.autor_socio_id || "",
       publicada: noticia.publicada,
+      solo_socios: noticia.solo_socios || false,
       categoria_id: noticia.categoria_id || "",
       fecha_publicacion_programada: fechaProgramadaLocal,
     });
@@ -532,6 +567,7 @@ const AdminNoticias = () => {
       autor: "AHORA",
       autor_socio_id: "",
       publicada: false,
+      solo_socios: false,
       categoria_id: "",
       fecha_publicacion_programada: "",
     });
@@ -796,6 +832,25 @@ const AdminNoticias = () => {
                         <div className="space-y-4 pt-4 border-t">
                           <div className="flex items-center space-x-2">
                             <Switch
+                              id="solo_socios"
+                              checked={formData.solo_socios}
+                              onCheckedChange={(checked) =>
+                                setFormData({ ...formData, solo_socios: checked })
+                              }
+                            />
+                            <Label htmlFor="solo_socios" className="flex items-center gap-2">
+                              <Star className="h-4 w-4 text-yellow-500" />
+                              Exclusivo para socios
+                            </Label>
+                          </div>
+                          {formData.solo_socios && (
+                            <p className="text-xs text-muted-foreground ml-6 bg-yellow-50 dark:bg-yellow-900/20 p-2 rounded border border-yellow-200 dark:border-yellow-800">
+                              Este artículo solo será visible para los socios registrados. Al publicarlo, recibirán una notificación por email.
+                            </p>
+                          )}
+                          
+                          <div className="flex items-center space-x-2">
+                            <Switch
                               id="publicada"
                               checked={formData.publicada}
                               onCheckedChange={(checked) =>
@@ -883,20 +938,28 @@ const AdminNoticias = () => {
                                 )}
                               </TableCell>
                               <TableCell>
-                                {noticia.publicada ? (
-                                  <span className="px-2 py-1 text-xs rounded-full bg-green-100 text-green-700">
-                                    Publicada
-                                  </span>
-                                ) : noticia.fecha_publicacion_programada ? (
-                                  <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-700 flex items-center gap-1 w-fit">
-                                    <Clock className="h-3 w-3" />
-                                    Programada
-                                  </span>
-                                ) : (
-                                  <span className="px-2 py-1 text-xs rounded-full bg-muted text-muted-foreground">
-                                    Borrador
-                                  </span>
-                                )}
+                                <div className="flex flex-wrap gap-1">
+                                  {noticia.publicada ? (
+                                    <span className="px-2 py-1 text-xs rounded-full bg-green-100 text-green-700">
+                                      Publicada
+                                    </span>
+                                  ) : noticia.fecha_publicacion_programada ? (
+                                    <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-700 flex items-center gap-1 w-fit">
+                                      <Clock className="h-3 w-3" />
+                                      Programada
+                                    </span>
+                                  ) : (
+                                    <span className="px-2 py-1 text-xs rounded-full bg-muted text-muted-foreground">
+                                      Borrador
+                                    </span>
+                                  )}
+                                  {noticia.solo_socios && (
+                                    <span className="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-700 flex items-center gap-1 w-fit">
+                                      <Star className="h-3 w-3" />
+                                      Socios
+                                    </span>
+                                  )}
+                                </div>
                               </TableCell>
                               <TableCell className="text-muted-foreground text-sm">
                                 {noticia.fecha_publicacion_programada && !noticia.publicada ? (

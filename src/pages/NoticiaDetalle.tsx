@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, ArrowLeft, Calendar, Clock, ChevronRight } from "lucide-react";
+import { Loader2, ArrowLeft, Calendar, Clock, ChevronRight, Star } from "lucide-react";
 import { formatInMadrid } from "@/lib/timezone";
 import logoIcon from "@/assets/logo-ahora-icon.png";
 import { TweetEmbed, isTweetUrl } from "@/components/TweetEmbed";
@@ -25,6 +25,7 @@ interface Noticia {
   autor_socio_id: string | null;
   fecha_publicacion: string | null;
   categoria_id: string | null;
+  solo_socios: boolean;
   categorias_noticia: Categoria | null;
   socios?: { id: string; nombre: string; apellidos: string; foto_url: string | null } | null;
 }
@@ -207,21 +208,29 @@ const NoticiaDetalle = () => {
         <div className="bg-card rounded-2xl shadow-xl border border-border/50 overflow-hidden">
           {/* Header */}
           <header className="p-6 md:p-10">
-            {/* Category Tag */}
-            {noticia.categorias_noticia ? (
-              <div
-                className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium mb-4 text-white"
-                style={{ backgroundColor: noticia.categorias_noticia.color }}
-              >
-                <span className="w-2 h-2 bg-white/50 rounded-full"></span>
-                {noticia.categorias_noticia.nombre}
-              </div>
-            ) : (
-              <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium mb-4">
-                <span className="w-2 h-2 bg-primary rounded-full"></span>
-                General
-              </div>
-            )}
+            {/* Tags */}
+            <div className="flex flex-wrap items-center gap-2 mb-4">
+              {noticia.solo_socios && (
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-700">
+                  <Star className="h-3 w-3" />
+                  Exclusivo para socios
+                </div>
+              )}
+              {noticia.categorias_noticia ? (
+                <div
+                  className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium text-white"
+                  style={{ backgroundColor: noticia.categorias_noticia.color }}
+                >
+                  <span className="w-2 h-2 bg-white/50 rounded-full"></span>
+                  {noticia.categorias_noticia.nombre}
+                </div>
+              ) : (
+                <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium">
+                  <span className="w-2 h-2 bg-primary rounded-full"></span>
+                  General
+                </div>
+              )}
+            </div>
 
             {/* Title */}
             <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold text-foreground leading-tight mb-6">
