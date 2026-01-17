@@ -113,77 +113,55 @@ serve(async (req) => {
     const noticiaUrl = `https://ahoraorg.es/noticias/${noticia_id}`;
 
     const emailHtml = `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-</head>
-<body style="margin: 0; padding: 0; background-color: #f4f4f4; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #f4f4f4;">
-    <tr>
-      <td align="center" style="padding: 40px 20px;">
-        <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-          <!-- Header with gradient -->
-          <tr>
-            <td style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); padding: 40px 30px; text-align: center;">
-              <img src="https://ahoraorg.es/logo-ahora-white.png" alt="AHORA" width="120" style="margin-bottom: 16px;">
-              <p style="color: #ffd700; font-size: 14px; font-weight: 600; letter-spacing: 2px; margin: 0;">CONTENIDO EXCLUSIVO PARA SOCIOS</p>
-            </td>
-          </tr>
-          
-          <!-- Content -->
-          <tr>
-            <td style="padding: 40px 30px;">
-              <div style="background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%); padding: 4px; border-radius: 8px; margin-bottom: 24px;">
-                <div style="background: #ffffff; padding: 16px; border-radius: 6px;">
-                  <p style="margin: 0; font-size: 14px; color: #1a1a2e; font-weight: 600;">⭐ ¡Nuevo artículo exclusivo disponible!</p>
-                </div>
-              </div>
-              
-              <h1 style="color: #1a1a2e; font-size: 24px; font-weight: 700; margin: 0 0 16px 0; line-height: 1.3;">
-                ${titulo}
-              </h1>
-              
-              ${extracto ? `
-              <p style="color: #666666; font-size: 16px; line-height: 1.6; margin: 0 0 24px 0;">
-                ${extracto}
-              </p>
-              ` : ''}
-              
-              <p style="color: #666666; font-size: 15px; line-height: 1.6; margin: 0 0 32px 0;">
-                Como socio/a de AHORA, tienes acceso anticipado a este contenido antes de su publicación general. ¡Gracias por formar parte de nuestra comunidad!
-              </p>
-              
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
-                <tr>
-                  <td align="center">
-                    <a href="${noticiaUrl}" style="display: inline-block; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 8px; font-weight: 600; font-size: 16px;">
-                      Leer artículo exclusivo
-                    </a>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-          
-          <!-- Footer -->
-          <tr>
-            <td style="background-color: #f8f9fa; padding: 30px; text-align: center; border-top: 1px solid #e9ecef;">
-              <p style="color: #666666; font-size: 13px; margin: 0 0 8px 0;">
-                Este email es exclusivo para socios de AHORA.
-              </p>
-              <p style="color: #999999; font-size: 12px; margin: 0;">
-                © ${new Date().getFullYear()} Asociación AHORA. Todos los derechos reservados.
-              </p>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+          .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+          .button { display: inline-block; background: #f1c40f; color: #1e3a5f; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; margin: 20px 0; }
+          .footer { text-align: center; margin-top: 20px; color: #666; font-size: 12px; }
+          .info-box { background: #fff; border-left: 4px solid #f1c40f; padding: 15px; border-radius: 0 5px 5px 0; margin: 20px 0; }
+          .exclusive-badge { display: inline-block; background: #f1c40f; color: #1e3a5f; padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: bold; margin-bottom: 10px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <img src="https://ahoraorg.es/logo-ahora-white.png" alt="AHORA" width="120" style="margin-bottom: 10px;">
+            <p style="margin: 0; font-size: 14px; letter-spacing: 2px; color: #f1c40f;">CONTENIDO EXCLUSIVO PARA SOCIOS</p>
+          </div>
+          <div class="content">
+            <p style="text-align: center;">
+              <span class="exclusive-badge">⭐ ¡Nuevo artículo exclusivo disponible!</span>
+            </p>
+            
+            <h2 style="color: #1e3a5f; margin-top: 10px; text-align: center;">${titulo}</h2>
+            
+            ${extracto ? `
+            <div class="info-box">
+              <p style="margin: 0;">${extracto}</p>
+            </div>
+            ` : ''}
+            
+            <p>Como socio/a de AHORA, tienes acceso anticipado a este contenido antes de su publicación general. ¡Gracias por formar parte de nuestra comunidad!</p>
+            
+            <p style="text-align: center;">
+              <a href="${noticiaUrl}" class="button">Leer artículo exclusivo</a>
+            </p>
+            
+            <p>Un cordial saludo,<br><em>El equipo de AHORA</em></p>
+          </div>
+          <div class="footer">
+            <p>Este email es exclusivo para socios de AHORA.</p>
+            <p>AHORA - Actuar en el presente para construir el futuro</p>
+          </div>
+        </div>
+      </body>
+      </html>
     `;
 
     let sentCount = 0;
