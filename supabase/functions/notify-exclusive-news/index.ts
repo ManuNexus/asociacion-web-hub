@@ -120,7 +120,9 @@ serve(async (req) => {
         <style>
           body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
           .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-          .header { background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+          .header { background: #f1c40f; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+          .header-title { color: #1e3a5f; font-size: 28px; font-weight: bold; margin: 0 0 10px 0; letter-spacing: 1px; }
+          .header-subtitle { color: #1e3a5f; font-size: 14px; letter-spacing: 2px; margin: 0; font-weight: 600; }
           .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
           .button { display: inline-block; background: #f1c40f; color: #1e3a5f; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; margin: 20px 0; }
           .footer { text-align: center; margin-top: 20px; color: #666; font-size: 12px; }
@@ -131,8 +133,8 @@ serve(async (req) => {
       <body>
         <div class="container">
           <div class="header">
-            <img src="https://ahoraorg.es/logo-ahora-white.png" alt="AHORA" width="120" style="margin-bottom: 10px;">
-            <p style="margin: 0; font-size: 14px; letter-spacing: 2px; color: #f1c40f;">CONTENIDO EXCLUSIVO PARA SOCIOS</p>
+            <p class="header-title">AHORA</p>
+            <p class="header-subtitle">CONTENIDO EXCLUSIVO PARA SOCIOS</p>
           </div>
           <div class="content">
             <p style="text-align: center;">
