@@ -118,15 +118,15 @@ serve(async (req) => {
       <head>
         <meta charset="utf-8">
         <style>
-          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333333; }
           .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-          .header { background: #f1c40f; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
-          .header-title { color: #1e3a5f; font-size: 28px; font-weight: bold; margin: 0 0 10px 0; letter-spacing: 1px; }
-          .header-subtitle { color: #1e3a5f; font-size: 14px; letter-spacing: 2px; margin: 0; font-weight: 600; }
+          .header { background: #1e3a5f; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+          .header-title { color: #ffffff; font-size: 28px; font-weight: bold; margin: 0 0 10px 0; letter-spacing: 1px; }
+          .header-subtitle { color: #f1c40f; font-size: 14px; letter-spacing: 2px; margin: 0; font-weight: 600; }
           .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
-          .button { display: inline-block; background: #f1c40f; color: #1e3a5f; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; margin: 20px 0; }
-          .footer { text-align: center; margin-top: 20px; color: #666; font-size: 12px; }
-          .info-box { background: #fff; border-left: 4px solid #f1c40f; padding: 15px; border-radius: 0 5px 5px 0; margin: 20px 0; }
+          .button { display: inline-block; background: #f1c40f; color: #1e3a5f !important; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; margin: 20px 0; }
+          .footer { text-align: center; margin-top: 20px; color: #666666; font-size: 12px; }
+          .info-box { background: #ffffff; border-left: 4px solid #f1c40f; padding: 15px; border-radius: 0 5px 5px 0; margin: 20px 0; }
           .exclusive-badge { display: inline-block; background: #f1c40f; color: #1e3a5f; padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: bold; margin-bottom: 10px; }
         </style>
       </head>
@@ -152,7 +152,7 @@ serve(async (req) => {
             <p>Como socio/a de AHORA, tienes acceso anticipado a este contenido antes de su publicación general. ¡Gracias por formar parte de nuestra comunidad!</p>
             
             <p style="text-align: center;">
-              <a href="${noticiaUrl}" class="button">Leer artículo exclusivo</a>
+              <a href="${noticiaUrl}" style="display: inline-block; background: #f1c40f; color: #1e3a5f; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; margin: 20px 0;">Leer artículo exclusivo</a>
             </p>
             
             <p>Un cordial saludo,<br><em>El equipo de AHORA</em></p>
