@@ -37,12 +37,16 @@ import {
   Calculator,
   Trash2,
   CheckCheck,
-  Share2
+  Share2,
+  Camera,
+  ImagePlus
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { formatInMadrid, toMadridTime } from "@/lib/timezone";
 import logoWhite from "@/assets/logo-ahora-white.png";
+import logoIcon from "@/assets/logo-ahora-icon.png";
 import { AdminContactos } from "@/components/admin/AdminContactos";
 import { RedesSociales } from "@/components/junta/RedesSociales";
 
@@ -69,6 +73,7 @@ interface Socio {
   codigo_postal: string | null;
   ciudad: string | null;
   provincia: string | null;
+  foto_url: string | null;
 }
 
 interface SocioWithJunta extends Socio {
@@ -159,6 +164,9 @@ const PanelSocios = () => {
   const [editProvincia, setEditProvincia] = useState("");
   const [savingBankData, setSavingBankData] = useState(false);
   const [isEditingIban, setIsEditingIban] = useState(false);
+  
+  // Photo upload state
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
   const { user, isSocio, isJunta, isAdmin, loading: authLoading, socioLoading, signOut } = useAuth();
   const navigate = useNavigate();
@@ -703,6 +711,97 @@ const PanelSocios = () => {
       });
     } finally {
       setChangingPassword(false);
+    }
+  };
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user || !miSocio) return;
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "El archivo debe ser una imagen",
+      });
+      return;
+    }
+
+    // Validate file size (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "La imagen no puede superar los 2MB",
+      });
+      return;
+    }
+
+    setUploadingPhoto(true);
+
+    try {
+      // Generate unique file name
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${user.id}/profile.${fileExt}`;
+
+      // Upload to storage
+      const { error: uploadError } = await supabase.storage
+        .from("socios-fotos")
+        .upload(fileName, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: urlData } = supabase.storage
+        .from("socios-fotos")
+        .getPublicUrl(fileName);
+
+      // Update socio record
+      const { error: updateError } = await supabase
+        .from("socios")
+        .update({ foto_url: urlData.publicUrl })
+        .eq("id", miSocio.id);
+
+      if (updateError) throw updateError;
+
+      toast({ title: "Foto de perfil actualizada" });
+      fetchMiSocio();
+    } catch (error: any) {
+      console.error("Error uploading photo:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message || "No se pudo subir la foto",
+      });
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
+  const handleRemovePhoto = async () => {
+    if (!miSocio) return;
+
+    setUploadingPhoto(true);
+
+    try {
+      const { error } = await supabase
+        .from("socios")
+        .update({ foto_url: null })
+        .eq("id", miSocio.id);
+
+      if (error) throw error;
+
+      toast({ title: "Foto de perfil eliminada" });
+      fetchMiSocio();
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message || "No se pudo eliminar la foto",
+      });
+    } finally {
+      setUploadingPhoto(false);
     }
   };
 
@@ -1528,6 +1627,68 @@ const PanelSocios = () => {
             {/* Tab Mi Cuenta */}
             <TabsContent value="cuenta">
               <div className="space-y-6">
+                {/* Foto de Perfil */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Camera className="h-5 w-5" />
+                      Foto de Perfil
+                    </CardTitle>
+                    <CardDescription>
+                      Tu foto aparecerá en el menú y en las noticias que escribas
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center gap-6">
+                      <Avatar className="h-24 w-24">
+                        <AvatarImage src={miSocio?.foto_url || undefined} alt={miSocio?.nombre} />
+                        <AvatarFallback className="bg-primary/10">
+                          <img src={logoIcon} alt="AHORA" className="h-10 w-10" />
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex flex-col gap-2">
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={uploadingPhoto}
+                            onClick={() => document.getElementById("photo-upload")?.click()}
+                          >
+                            {uploadingPhoto ? (
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            ) : (
+                              <ImagePlus className="mr-2 h-4 w-4" />
+                            )}
+                            {miSocio?.foto_url ? "Cambiar foto" : "Subir foto"}
+                          </Button>
+                          {miSocio?.foto_url && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              disabled={uploadingPhoto}
+                              onClick={handleRemovePhoto}
+                              className="text-destructive hover:text-destructive"
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Eliminar
+                            </Button>
+                          )}
+                        </div>
+                        <input
+                          id="photo-upload"
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={handlePhotoUpload}
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          Formatos: JPG, PNG, GIF. Máximo 2MB.
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
                 {/* Editar Datos Personales */}
                 <Card>
                   <CardHeader>
