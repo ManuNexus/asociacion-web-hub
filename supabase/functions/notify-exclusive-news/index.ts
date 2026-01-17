@@ -13,6 +13,7 @@ interface NotifyExclusiveNewsRequest {
   noticia_id: string;
   titulo: string;
   extracto?: string;
+  test_email?: string; // If provided, send only to this email for testing
 }
 
 function delay(ms: number): Promise<void> {
@@ -67,7 +68,7 @@ serve(async (req) => {
     }
 
     // Parse request body
-    const { noticia_id, titulo, extracto }: NotifyExclusiveNewsRequest = await req.json();
+    const { noticia_id, titulo, extracto, test_email }: NotifyExclusiveNewsRequest = await req.json();
 
     if (!noticia_id || !titulo) {
       return new Response(
@@ -76,28 +77,38 @@ serve(async (req) => {
       );
     }
 
-    // Fetch all active socios
-    const { data: socios, error: sociosError } = await supabase
-      .from("socios")
-      .select("email, nombre, apellidos")
-      .eq("activo", true);
+    // If test_email is provided, only send to that email
+    let recipients: { email: string; nombre: string; apellidos: string }[] = [];
+    
+    if (test_email) {
+      console.log(`Test mode: sending only to ${test_email}`);
+      recipients = [{ email: test_email, nombre: "Test", apellidos: "User" }];
+    } else {
+      // Fetch all active socios
+      const { data: socios, error: sociosError } = await supabase
+        .from("socios")
+        .select("email, nombre, apellidos")
+        .eq("activo", true);
 
-    if (sociosError) {
-      console.error("Error fetching socios:", sociosError);
-      return new Response(
-        JSON.stringify({ error: "Failed to fetch socios" }),
-        { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
-      );
+      if (sociosError) {
+        console.error("Error fetching socios:", sociosError);
+        return new Response(
+          JSON.stringify({ error: "Failed to fetch socios" }),
+          { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        );
+      }
+
+      if (!socios || socios.length === 0) {
+        return new Response(
+          JSON.stringify({ message: "No active socios to notify" }),
+          { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        );
+      }
+      
+      recipients = socios;
     }
 
-    if (!socios || socios.length === 0) {
-      return new Response(
-        JSON.stringify({ message: "No active socios to notify" }),
-        { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
-      );
-    }
-
-    console.log(`Sending exclusive news notification to ${socios.length} socios`);
+    console.log(`Sending exclusive news notification to ${recipients.length} recipient(s)`);
 
     const noticiaUrl = `https://ahoraorg.es/noticias/${noticia_id}`;
 
@@ -179,21 +190,23 @@ serve(async (req) => {
     let failedCount = 0;
 
     // Send emails sequentially with delay to avoid rate limiting
-    for (const socio of socios) {
+    for (const recipient of recipients) {
       try {
         await resend.emails.send({
           from: "AHORA <socios@ahoraorg.es>",
-          to: [socio.email],
+          to: [recipient.email],
           subject: `⭐ Exclusivo para socios: ${titulo}`,
           html: emailHtml,
         });
         sentCount++;
-        console.log(`Email sent to ${socio.email}`);
+        console.log(`Email sent to ${recipient.email}`);
         
-        // Wait 1 second between emails to avoid rate limiting
-        await delay(1000);
+        // Wait 1 second between emails to avoid rate limiting (skip for single test email)
+        if (recipients.length > 1) {
+          await delay(1000);
+        }
       } catch (emailError) {
-        console.error(`Failed to send email to ${socio.email}:`, emailError);
+        console.error(`Failed to send email to ${recipient.email}:`, emailError);
         failedCount++;
       }
     }
@@ -205,7 +218,8 @@ serve(async (req) => {
         success: true, 
         sent: sentCount, 
         failed: failedCount,
-        total: socios.length 
+        total: recipients.length,
+        test_mode: !!test_email
       }),
       { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
