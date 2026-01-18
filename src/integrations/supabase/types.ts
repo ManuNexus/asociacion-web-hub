@@ -203,6 +203,7 @@ export type Database = {
           nombre: string
           notas: string | null
           organizacion: string
+          responsable_socio_id: string | null
           telefono: string | null
           tipo: string
           updated_at: string
@@ -216,6 +217,7 @@ export type Database = {
           nombre: string
           notas?: string | null
           organizacion: string
+          responsable_socio_id?: string | null
           telefono?: string | null
           tipo?: string
           updated_at?: string
@@ -229,11 +231,20 @@ export type Database = {
           nombre?: string
           notas?: string | null
           organizacion?: string
+          responsable_socio_id?: string | null
           telefono?: string | null
           tipo?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "contactos_directorio_responsable_socio_id_fkey"
+            columns: ["responsable_socio_id"]
+            isOneToOne: false
+            referencedRelation: "socios"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       documentos_internos: {
         Row: {
