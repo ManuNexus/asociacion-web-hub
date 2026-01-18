@@ -51,6 +51,13 @@ import {
   BookUser
 } from "lucide-react";
 
+interface MiembroJunta {
+  id: string;
+  nombre: string;
+  apellidos: string;
+  cargo_junta: string | null;
+}
+
 interface Contacto {
   id: string;
   nombre: string;
@@ -60,7 +67,9 @@ interface Contacto {
   telefono: string | null;
   direccion: string | null;
   notas: string | null;
+  responsable_socio_id: string | null;
   created_at: string;
+  responsable?: MiembroJunta | null;
 }
 
 const TIPOS_CONTACTO = [
@@ -94,6 +103,7 @@ const getTipoColor = (tipo: string) => {
 
 export const AdminContactos = () => {
   const [contactos, setContactos] = useState<Contacto[]>([]);
+  const [miembrosJunta, setMiembrosJunta] = useState<MiembroJunta[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -111,24 +121,50 @@ export const AdminContactos = () => {
   const [telefono, setTelefono] = useState("");
   const [direccion, setDireccion] = useState("");
   const [notas, setNotas] = useState("");
+  const [responsableSocioId, setResponsableSocioId] = useState<string>("");
   
   const { toast } = useToast();
 
   useEffect(() => {
     fetchContactos();
+    fetchMiembrosJunta();
   }, []);
 
   const fetchContactos = async () => {
     setLoading(true);
     const { data, error } = await supabase
       .from("contactos_directorio")
-      .select("*")
+      .select("*, responsable:socios!responsable_socio_id(id, nombre, apellidos, cargo_junta)")
       .order("organizacion");
 
     if (!error && data) {
-      setContactos(data);
+      setContactos(data as Contacto[]);
     }
     setLoading(false);
+  };
+
+  const fetchMiembrosJunta = async () => {
+    const { data, error } = await supabase
+      .from("socios")
+      .select("id, nombre, apellidos, cargo_junta")
+      .not("cargo_junta", "is", null)
+      .eq("activo", true)
+      .order("cargo_junta");
+
+    if (!error && data) {
+      setMiembrosJunta(data);
+    }
+  };
+
+  const getCargoLabel = (cargo: string | null) => {
+    const labels: Record<string, string> = {
+      presidente: 'Presidente/a',
+      vicepresidente: 'Vicepresidente/a',
+      secretario: 'Secretario/a',
+      tesorero: 'Tesorero/a',
+      vocal: 'Vocal',
+    };
+    return cargo ? labels[cargo] || cargo : '';
   };
 
   const resetForm = () => {
@@ -139,6 +175,7 @@ export const AdminContactos = () => {
     setTelefono("");
     setDireccion("");
     setNotas("");
+    setResponsableSocioId("");
     setEditingContacto(null);
   };
 
@@ -156,6 +193,7 @@ export const AdminContactos = () => {
     setTelefono(contacto.telefono || "");
     setDireccion(contacto.direccion || "");
     setNotas(contacto.notas || "");
+    setResponsableSocioId(contacto.responsable_socio_id || "");
     setDialogOpen(true);
   };
 
@@ -181,6 +219,7 @@ export const AdminContactos = () => {
       telefono: telefono.trim() || null,
       direccion: direccion.trim() || null,
       notas: notas.trim() || null,
+      responsable_socio_id: responsableSocioId || null,
     };
 
     if (editingContacto) {
@@ -330,6 +369,7 @@ export const AdminContactos = () => {
                   <TableHead>Organización</TableHead>
                   <TableHead>Contacto</TableHead>
                   <TableHead>Tipo</TableHead>
+                  <TableHead>Responsable</TableHead>
                   <TableHead>Teléfono</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead className="text-right">Acciones</TableHead>
@@ -346,6 +386,20 @@ export const AdminContactos = () => {
                       <Badge className={getTipoColor(contacto.tipo)}>
                         {getTipoLabel(contacto.tipo)}
                       </Badge>
+                    </TableCell>
+                    <TableCell>
+                      {contacto.responsable ? (
+                        <div className="text-sm">
+                          <span className="font-medium">{contacto.responsable.nombre} {contacto.responsable.apellidos}</span>
+                          {contacto.responsable.cargo_junta && (
+                            <span className="text-muted-foreground text-xs block">
+                              {getCargoLabel(contacto.responsable.cargo_junta)}
+                            </span>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground text-sm">-</span>
+                      )}
                     </TableCell>
                     <TableCell>
                       {contacto.telefono ? (
@@ -478,6 +532,22 @@ export const AdminContactos = () => {
                 onChange={(e) => setDireccion(e.target.value)}
                 placeholder="Dirección completa"
               />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="responsable">Miembro de junta responsable</Label>
+              <Select value={responsableSocioId} onValueChange={setResponsableSocioId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Sin asignar" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Sin asignar</SelectItem>
+                  {miembrosJunta.map((m) => (
+                    <SelectItem key={m.id} value={m.id}>
+                      {m.nombre} {m.apellidos} ({getCargoLabel(m.cargo_junta)})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
               <Label htmlFor="notas">Notas</Label>
