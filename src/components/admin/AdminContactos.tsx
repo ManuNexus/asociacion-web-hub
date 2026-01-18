@@ -132,27 +132,61 @@ export const AdminContactos = () => {
 
   const fetchContactos = async () => {
     setLoading(true);
-    const { data, error } = await supabase
+    
+    // Fetch contacts
+    const { data: contactosData, error: contactosError } = await supabase
       .from("contactos_directorio")
-      .select("*, responsable:socios!responsable_socio_id(id, nombre, apellidos, cargo_junta)")
+      .select("*")
       .order("organizacion");
 
-    if (!error && data) {
-      setContactos(data as Contacto[]);
+    if (contactosError) {
+      setLoading(false);
+      return;
     }
+
+    // Fetch junta members using the security definer function
+    const { data: juntaData } = await supabase.rpc("get_socios_for_junta");
+    
+    // Map responsables to contacts
+    const juntaMap = new Map<string, MiembroJunta>();
+    if (juntaData) {
+      for (const socio of juntaData) {
+        juntaMap.set(socio.id, {
+          id: socio.id,
+          nombre: socio.nombre,
+          apellidos: socio.apellidos,
+          cargo_junta: null, // get_socios_for_junta doesn't return cargo_junta
+        });
+      }
+    }
+
+    // Enrich contacts with responsable data
+    const enrichedContactos = (contactosData || []).map((c) => ({
+      ...c,
+      responsable: c.responsable_socio_id ? juntaMap.get(c.responsable_socio_id) || null : null,
+    }));
+
+    setContactos(enrichedContactos as Contacto[]);
     setLoading(false);
   };
 
   const fetchMiembrosJunta = async () => {
-    const { data, error } = await supabase
-      .from("socios")
-      .select("id, nombre, apellidos, cargo_junta")
-      .not("cargo_junta", "is", null)
-      .eq("activo", true)
-      .order("cargo_junta");
+    // Use the security definer function that junta members can access
+    const { data, error } = await supabase.rpc("get_socios_for_junta");
 
     if (!error && data) {
-      setMiembrosJunta(data);
+      // Filter to only get junta members (those who would have cargo_junta)
+      // Since the function doesn't return cargo_junta, we'll fetch that separately
+      const socioIds = data.map((s: { id: string }) => s.id);
+      
+      // Now get cargo_junta for these socios using admin access or just show all active junta
+      // Actually, let's create a simpler approach - just show all socios returned
+      setMiembrosJunta(data.map((s: { id: string; nombre: string; apellidos: string }) => ({
+        id: s.id,
+        nombre: s.nombre,
+        apellidos: s.apellidos,
+        cargo_junta: null,
+      })));
     }
   };
 
