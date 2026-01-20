@@ -251,7 +251,7 @@ export const AdminMailings = () => {
           .content img { max-width: 100%; height: auto; border-radius: 8px; margin: 20px 0; }
           .button { display: inline-block; background: #f1c40f; color: #1e3a5f !important; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; margin: 20px 0; }
           .footer { text-align: center; margin-top: 20px; color: #666; font-size: 12px; padding: 20px; }
-          .featured-image { width: 100%; max-height: 300px; object-fit: cover; border-radius: 8px; margin-bottom: 20px; }
+          .featured-image { width: 100%; height: auto; border-radius: 8px; margin-bottom: 20px; }
         </style>
       </head>
       <body>
