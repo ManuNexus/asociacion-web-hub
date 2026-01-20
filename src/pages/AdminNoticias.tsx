@@ -45,6 +45,7 @@ import { AdminDocumentos } from "@/components/admin/AdminDocumentos";
 import { AdminSocios } from "@/components/admin/AdminSocios";
 import { AdminNotificaciones } from "@/components/admin/AdminNotificaciones";
 import { AdminContactos } from "@/components/admin/AdminContactos";
+import { AdminMailings } from "@/components/admin/AdminMailings";
 import { RedesSociales } from "@/components/junta/RedesSociales";
 
 
@@ -643,6 +644,10 @@ const AdminNoticias = () => {
               <TabsTrigger value="redes-sociales" className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm shrink-0">
                 <Share2 className="h-4 w-4 shrink-0" />
                 <span>Redes Sociales</span>
+              </TabsTrigger>
+              <TabsTrigger value="mailings" className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm shrink-0">
+                <Send className="h-4 w-4 shrink-0" />
+                <span>Mailings</span>
               </TabsTrigger>
             </TabsList>
 
@@ -1260,6 +1265,11 @@ const AdminNoticias = () => {
             {/* Tab Redes Sociales */}
             <TabsContent value="redes-sociales">
               <RedesSociales />
+            </TabsContent>
+
+            {/* Tab Mailings */}
+            <TabsContent value="mailings">
+              <AdminMailings />
             </TabsContent>
 
             {/* Tab Socios */}
