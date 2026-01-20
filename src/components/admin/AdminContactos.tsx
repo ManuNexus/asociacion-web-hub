@@ -145,7 +145,7 @@ export const AdminContactos = () => {
     }
 
     // Fetch junta members using the security definer function
-    const { data: juntaData } = await supabase.rpc("get_socios_for_junta");
+    const { data: juntaData } = await supabase.rpc("get_miembros_junta");
     
     // Map responsables to contacts
     const juntaMap = new Map<string, MiembroJunta>();
@@ -155,7 +155,7 @@ export const AdminContactos = () => {
           id: socio.id,
           nombre: socio.nombre,
           apellidos: socio.apellidos,
-          cargo_junta: null, // get_socios_for_junta doesn't return cargo_junta
+          cargo_junta: socio.cargo_junta,
         });
       }
     }
@@ -171,21 +171,15 @@ export const AdminContactos = () => {
   };
 
   const fetchMiembrosJunta = async () => {
-    // Use the security definer function that junta members can access
-    const { data, error } = await supabase.rpc("get_socios_for_junta");
+    // Use the security definer function that directivos can access
+    const { data, error } = await supabase.rpc("get_miembros_junta");
 
     if (!error && data) {
-      // Filter to only get junta members (those who would have cargo_junta)
-      // Since the function doesn't return cargo_junta, we'll fetch that separately
-      const socioIds = data.map((s: { id: string }) => s.id);
-      
-      // Now get cargo_junta for these socios using admin access or just show all active junta
-      // Actually, let's create a simpler approach - just show all socios returned
-      setMiembrosJunta(data.map((s: { id: string; nombre: string; apellidos: string }) => ({
+      setMiembrosJunta(data.map((s: { id: string; nombre: string; apellidos: string; cargo_junta: string | null }) => ({
         id: s.id,
         nombre: s.nombre,
         apellidos: s.apellidos,
-        cargo_junta: null,
+        cargo_junta: s.cargo_junta,
       })));
     }
   };

@@ -925,6 +925,15 @@ export type Database = {
         Args: { cargo: Database["public"]["Enums"]["cargo_junta"] }
         Returns: string
       }
+      get_miembros_junta: {
+        Args: never
+        Returns: {
+          apellidos: string
+          cargo_junta: Database["public"]["Enums"]["cargo_junta"]
+          id: string
+          nombre: string
+        }[]
+      }
       get_news_author: {
         Args: { author_socio_id: string }
         Returns: {
