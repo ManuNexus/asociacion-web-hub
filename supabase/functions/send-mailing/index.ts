@@ -102,7 +102,7 @@ serve(async (req: Request): Promise<Response> => {
           .content { background: #ffffff; padding: 30px; border-radius: 0 0 10px 10px; }
           .content h1, .content h2, .content h3 { color: #1e3a5f; }
           .content img { max-width: 100%; height: auto; }
-          .featured-image { width: 100%; max-height: 300px; object-fit: cover; border-radius: 8px; margin-bottom: 20px; }
+          .featured-image { width: 100%; height: auto; border-radius: 8px; margin-bottom: 20px; }
           .button { display: inline-block; background: #f1c40f; color: #1e3a5f !important; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; margin: 20px 0; }
           .footer { text-align: center; margin-top: 20px; color: #666666; font-size: 12px; padding: 20px; }
           ul, ol { padding-left: 20px; }
