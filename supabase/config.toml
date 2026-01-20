@@ -44,3 +44,12 @@ verify_jwt = false
 
 [functions.calendario-reminder]
 verify_jwt = false
+
+[functions.notify-exclusive-news]
+verify_jwt = false
+
+[functions.send-sepa-update]
+verify_jwt = false
+
+[functions.send-mailing]
+verify_jwt = false
