@@ -631,6 +631,7 @@ export type Database = {
           direccion: string | null
           email: string
           fecha_alta: string
+          fecha_nacimiento: string | null
           fecha_primera_cuota: string | null
           foto_url: string | null
           iban: string | null
@@ -657,6 +658,7 @@ export type Database = {
           direccion?: string | null
           email: string
           fecha_alta?: string
+          fecha_nacimiento?: string | null
           fecha_primera_cuota?: string | null
           foto_url?: string | null
           iban?: string | null
@@ -683,6 +685,7 @@ export type Database = {
           direccion?: string | null
           email?: string
           fecha_alta?: string
+          fecha_nacimiento?: string | null
           fecha_primera_cuota?: string | null
           foto_url?: string | null
           iban?: string | null
@@ -710,6 +713,7 @@ export type Database = {
           dni: string
           email: string
           estado: string
+          fecha_nacimiento: string | null
           iban: string | null
           id: string
           motivacion: string | null
@@ -730,6 +734,7 @@ export type Database = {
           dni: string
           email: string
           estado?: string
+          fecha_nacimiento?: string | null
           iban?: string | null
           id?: string
           motivacion?: string | null
@@ -750,6 +755,7 @@ export type Database = {
           dni?: string
           email?: string
           estado?: string
+          fecha_nacimiento?: string | null
           iban?: string | null
           id?: string
           motivacion?: string | null
