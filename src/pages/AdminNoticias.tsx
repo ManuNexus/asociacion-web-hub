@@ -47,6 +47,7 @@ import { AdminNotificaciones } from "@/components/admin/AdminNotificaciones";
 import { AdminContactos } from "@/components/admin/AdminContactos";
 import { AdminMailings } from "@/components/admin/AdminMailings";
 import { RedesSociales } from "@/components/junta/RedesSociales";
+import { BirthdayPopup } from "@/components/admin/BirthdayPopup";
 
 
 interface Categoria {
@@ -1459,6 +1460,9 @@ const AdminNoticias = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Birthday Popup */}
+      <BirthdayPopup />
     </Layout>
   );
 };

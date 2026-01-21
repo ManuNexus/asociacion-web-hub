@@ -53,3 +53,6 @@ verify_jwt = false
 
 [functions.send-mailing]
 verify_jwt = false
+
+[functions.send-birthday-email]
+verify_jwt = false
