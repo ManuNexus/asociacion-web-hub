@@ -68,6 +68,7 @@ interface Socio {
   tipo_pago: string;
   fecha_alta: string;
   fecha_primera_cuota: string | null;
+  fecha_nacimiento: string | null;
   numero_socio: string | null;
   al_corriente_pago: boolean;
   iban: string | null;
@@ -102,6 +103,7 @@ export const AdminSocios = () => {
   const [fotoUrl, setFotoUrl] = useState("");
   const [cargoJunta, setCargoJunta] = useState<CargoJunta>(null);
   const [fechaPrimeraCuota, setFechaPrimeraCuota] = useState<Date | undefined>(undefined);
+  const [fechaNacimiento, setFechaNacimiento] = useState<Date | undefined>(undefined);
   const [searchTerm, setSearchTerm] = useState("");
   const [resendingSepa, setResendingSepa] = useState<string | null>(null);
   const [syncingEmails, setSyncingEmails] = useState(false);
@@ -152,6 +154,7 @@ export const AdminSocios = () => {
     setFotoUrl(socio.foto_url || "");
     setCargoJunta(socio.cargo_junta);
     setFechaPrimeraCuota(socio.fecha_primera_cuota ? new Date(socio.fecha_primera_cuota) : undefined);
+    setFechaNacimiento(socio.fecha_nacimiento ? new Date(socio.fecha_nacimiento) : undefined);
     setDialogOpen(true);
   };
 
@@ -180,7 +183,8 @@ export const AdminSocios = () => {
         dia_cobro: diaCobro,
         foto_url: fotoUrl || null,
         cargo_junta: finalCargoJunta,
-        fecha_primera_cuota: fechaPrimeraCuota ? format(fechaPrimeraCuota, "yyyy-MM-dd") : null
+        fecha_primera_cuota: fechaPrimeraCuota ? format(fechaPrimeraCuota, "yyyy-MM-dd") : null,
+        fecha_nacimiento: fechaNacimiento ? format(fechaNacimiento, "yyyy-MM-dd") : null
       })
       .eq("id", editingSocio.id);
 
@@ -746,6 +750,53 @@ export const AdminSocios = () => {
                 <p className="text-xs text-muted-foreground">
                   Si no se especifica, la primera cuota se calcula desde la fecha de alta
                 </p>
+              </div>
+              
+              {/* Fecha de nacimiento */}
+              <div className="space-y-2">
+                <Label>Fecha de Nacimiento</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !fechaNacimiento && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {fechaNacimiento ? (
+                        format(fechaNacimiento, "PPP", { locale: es })
+                      ) : (
+                        <span>Seleccionar fecha</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={fechaNacimiento}
+                      onSelect={setFechaNacimiento}
+                      locale={es}
+                      initialFocus
+                      captionLayout="dropdown-buttons"
+                      fromYear={1920}
+                      toYear={new Date().getFullYear()}
+                    />
+                    {fechaNacimiento && (
+                      <div className="p-3 border-t">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="w-full"
+                          onClick={() => setFechaNacimiento(undefined)}
+                        >
+                          Quitar fecha
+                        </Button>
+                      </div>
+                    )}
+                  </PopoverContent>
+                </Popover>
               </div>
               
               <div className="flex items-center justify-between p-4 bg-muted rounded-lg">

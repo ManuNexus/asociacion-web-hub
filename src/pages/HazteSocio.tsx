@@ -20,6 +20,7 @@ const membershipSchema = z.object({
     /^[0-9]{8}[A-Za-z]$|^[XYZ][0-9]{7}[A-Za-z]$/,
     "Formato de DNI/NIE inválido (ej: 12345678A o X1234567A)"
   ),
+  fechaNacimiento: z.string().trim().optional().or(z.literal("")),
   email: z.string().trim().min(1, "El email es obligatorio").email("Email inválido").max(255, "Máximo 255 caracteres"),
   telefono: z.string().trim().max(20, "Máximo 20 caracteres").regex(/^[0-9+\s()-]*$/, "Formato de teléfono inválido").optional().or(z.literal("")),
   direccion: z.string().trim().max(200, "Máximo 200 caracteres").optional().or(z.literal("")),
@@ -65,6 +66,7 @@ const HazteSocio = () => {
     nombre: "",
     apellidos: "",
     dni: "",
+    fechaNacimiento: "",
     email: "",
     telefono: "",
     direccion: "",
@@ -126,6 +128,7 @@ const HazteSocio = () => {
         nombre: validData.nombre,
         apellidos: validData.apellidos,
         dni: validData.dni.toUpperCase(),
+        fecha_nacimiento: validData.fechaNacimiento || null,
         email: validData.email,
         telefono: validData.telefono || null,
         direccion: validData.direccion || null,
@@ -163,6 +166,7 @@ const HazteSocio = () => {
         nombre: "",
         apellidos: "",
         dni: "",
+        fechaNacimiento: "",
         email: "",
         telefono: "",
         direccion: "",
@@ -330,19 +334,31 @@ const HazteSocio = () => {
                     {formErrors.dni && <p className="text-sm text-destructive">{formErrors.dni}</p>}
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="telefono">Teléfono</Label>
+                    <Label htmlFor="fechaNacimiento">Fecha de Nacimiento</Label>
                     <Input
-                      id="telefono"
-                      name="telefono"
-                      type="tel"
-                      value={formData.telefono}
+                      id="fechaNacimiento"
+                      name="fechaNacimiento"
+                      type="date"
+                      value={formData.fechaNacimiento}
                       onChange={handleInputChange}
-                      placeholder="600 000 000"
-                      maxLength={20}
-                      className={formErrors.telefono ? "border-destructive" : ""}
+                      className={formErrors.fechaNacimiento ? "border-destructive" : ""}
                     />
-                    {formErrors.telefono && <p className="text-sm text-destructive">{formErrors.telefono}</p>}
+                    {formErrors.fechaNacimiento && <p className="text-sm text-destructive">{formErrors.fechaNacimiento}</p>}
                   </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="telefono">Teléfono</Label>
+                  <Input
+                    id="telefono"
+                    name="telefono"
+                    type="tel"
+                    value={formData.telefono}
+                    onChange={handleInputChange}
+                    placeholder="600 000 000"
+                    maxLength={20}
+                    className={formErrors.telefono ? "border-destructive" : ""}
+                  />
+                  {formErrors.telefono && <p className="text-sm text-destructive">{formErrors.telefono}</p>}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="email">Email *</Label>
