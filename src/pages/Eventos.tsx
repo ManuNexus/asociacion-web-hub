@@ -87,17 +87,8 @@ const EventoCard = ({ evento, isPastEvent }: { evento: Evento; isPastEvent: bool
   const eventoDate = toMadridTime(new Date(evento.fecha));
   const isEventToday = isToday(eventoDate);
 
-  // Generate a consistent gradient based on event id
-  const gradients = [
-    "from-primary via-primary/80 to-primary/60",
-    "from-orange-500 via-amber-500 to-yellow-500",
-    "from-violet-600 via-purple-500 to-fuchsia-500",
-    "from-emerald-500 via-teal-500 to-cyan-500",
-    "from-rose-500 via-pink-500 to-fuchsia-400",
-    "from-blue-600 via-indigo-500 to-violet-500",
-  ];
-  const gradientIndex = evento.id.charCodeAt(0) % gradients.length;
-  const gradient = gradients[gradientIndex];
+  // Use brand colors only - primary (blue) with secondary (yellow) accents
+  const gradient = "from-primary via-primary/90 to-primary/80";
 
   return (
     <div className={`group relative overflow-hidden rounded-2xl transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl ${isPastEvent ? "opacity-60 grayscale-[30%]" : ""}`}>
