@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Calendar, MapPin, Clock, Download, CalendarPlus, Building2 } from "lucide-react";
+import { Calendar, MapPin, Clock, Download, CalendarPlus, Building2, X } from "lucide-react";
 import { format, isPast, isFuture, isToday } from "date-fns";
 import { es } from "date-fns/locale";
 import { Layout } from "@/components/layout/Layout";
@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toMadridTime } from "@/lib/timezone";
 
@@ -83,7 +84,7 @@ const addToGoogleCalendar = (evento: Evento) => {
   window.open(`https://calendar.google.com/calendar/render?${params.toString()}`, "_blank");
 };
 
-const EventoCard = ({ evento, isPastEvent }: { evento: Evento; isPastEvent: boolean }) => {
+const EventoCard = ({ evento, isPastEvent, onSelect }: { evento: Evento; isPastEvent: boolean; onSelect: (evento: Evento) => void }) => {
   const eventoDate = toMadridTime(new Date(evento.fecha));
   const isEventToday = isToday(eventoDate);
 
@@ -91,7 +92,10 @@ const EventoCard = ({ evento, isPastEvent }: { evento: Evento; isPastEvent: bool
   const gradient = "from-primary via-primary/90 to-primary/80";
 
   return (
-    <div className={`group relative overflow-hidden rounded-2xl transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl ${isPastEvent ? "opacity-60 grayscale-[30%]" : ""}`}>
+    <div 
+      className={`group relative overflow-hidden rounded-2xl transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl cursor-pointer ${isPastEvent ? "opacity-60 grayscale-[30%]" : ""}`}
+      onClick={() => onSelect(evento)}
+    >
       {/* Poster Background - Gradient only */}
       <div className={`absolute inset-0 bg-gradient-to-br ${gradient}`} />
       
@@ -176,31 +180,165 @@ const EventoCard = ({ evento, isPastEvent }: { evento: Evento; isPastEvent: bool
           </div>
         </div>
 
-        {/* Calendar Buttons */}
-        {!isPastEvent && (
-          <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-secondary/50">
-            <Button 
-              variant="secondary"
-              size="sm"
-              onClick={() => addToGoogleCalendar(evento)}
-              className="bg-secondary hover:bg-secondary/80 text-primary border-0 gap-1.5 flex-1 font-semibold"
-            >
-              <CalendarPlus className="h-4 w-4" />
-              Google Calendar
-            </Button>
-            <Button 
-              variant="secondary"
-              size="sm"
-              onClick={() => downloadICS(evento)}
-              className="bg-white/20 hover:bg-white/30 text-white border border-secondary/50 backdrop-blur-sm gap-1.5 flex-1"
-            >
-              <Download className="h-4 w-4" />
-              .ics
-            </Button>
-          </div>
-        )}
+        {/* Click hint */}
+        <div className="absolute bottom-2 left-1/2 -translate-x-1/2">
+          <div className="w-12 h-1 bg-secondary/60 rounded-full group-hover:bg-secondary transition-colors" />
+        </div>
       </div>
     </div>
+  );
+};
+
+const EventoDetailDialog = ({ 
+  evento, 
+  open, 
+  onOpenChange 
+}: { 
+  evento: Evento | null; 
+  open: boolean; 
+  onOpenChange: (open: boolean) => void;
+}) => {
+  if (!evento) return null;
+  
+  const eventoDate = toMadridTime(new Date(evento.fecha));
+  const isPastEvent = isPast(eventoDate) && !isToday(eventoDate);
+  const isEventToday = isToday(eventoDate);
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-0">
+        {/* Header with gradient */}
+        <div className="relative bg-gradient-to-br from-primary via-primary/90 to-primary/80 p-6 text-white">
+          {/* Decorative elements */}
+          <div className="absolute top-0 right-0 w-24 h-24 bg-secondary/20 rounded-full -translate-y-1/2 translate-x-1/2" />
+          <div className="absolute top-4 left-4 w-1.5 h-12 bg-secondary rounded-full" />
+          
+          <div className="relative">
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex flex-wrap gap-2">
+                {isEventToday && !isPastEvent && (
+                  <Badge className="bg-secondary text-primary font-bold">
+                    ¡HOY!
+                  </Badge>
+                )}
+                {isPastEvent && (
+                  <Badge variant="secondary" className="bg-black/30 text-white border-0">
+                    Finalizado
+                  </Badge>
+                )}
+              </div>
+              {evento.organizador && (
+                <div className="flex items-center gap-1.5 text-sm bg-secondary/90 text-primary rounded-full px-3 py-1 font-medium">
+                  <Building2 className="h-3 w-3" />
+                  <span>{evento.organizador}</span>
+                </div>
+              )}
+            </div>
+            
+            <DialogTitle className="text-2xl md:text-3xl font-bold text-white pr-8">
+              {evento.titulo}
+            </DialogTitle>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="p-6 space-y-6">
+          {/* Event Image */}
+          {evento.imagen_url && (
+            <div className="rounded-xl overflow-hidden border shadow-lg">
+              <img 
+                src={evento.imagen_url} 
+                alt={evento.titulo}
+                className="w-full h-64 object-cover"
+              />
+            </div>
+          )}
+
+          {/* Date and Location Info */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="flex items-center gap-4 p-4 bg-secondary/10 rounded-xl border border-secondary/30">
+              <div className="bg-secondary text-primary rounded-xl p-3 text-center min-w-[70px]">
+                <div className="text-2xl font-black leading-none">
+                  {format(eventoDate, "d", { locale: es })}
+                </div>
+                <div className="text-xs font-semibold uppercase mt-1">
+                  {format(eventoDate, "MMM", { locale: es })}
+                </div>
+              </div>
+              <div>
+                <p className="font-semibold text-foreground">
+                  {format(eventoDate, "EEEE", { locale: es })}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {format(eventoDate, "d 'de' MMMM 'de' yyyy", { locale: es })}
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-xl border">
+              <div className="bg-primary/10 text-primary rounded-xl p-3">
+                <Clock className="h-6 w-6" />
+              </div>
+              <div>
+                <p className="font-semibold text-foreground">Hora</p>
+                <p className="text-sm text-muted-foreground">
+                  {format(eventoDate, "HH:mm", { locale: es })}h
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {evento.ubicacion && (
+            <div className="flex items-start gap-4 p-4 bg-muted/50 rounded-xl border">
+              <div className="bg-primary/10 text-primary rounded-xl p-3">
+                <MapPin className="h-6 w-6" />
+              </div>
+              <div>
+                <p className="font-semibold text-foreground">Ubicación</p>
+                <p className="text-muted-foreground">{evento.ubicacion}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Description */}
+          {evento.descripcion && (
+            <div className="space-y-2">
+              <h4 className="font-semibold text-foreground">Descripción</h4>
+              <p className="text-muted-foreground whitespace-pre-wrap leading-relaxed">
+                {evento.descripcion}
+              </p>
+            </div>
+          )}
+
+          {/* Calendar Buttons */}
+          {!isPastEvent && (
+            <div className="flex flex-wrap gap-3 pt-4 border-t">
+              <Button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  addToGoogleCalendar(evento);
+                }}
+                className="flex-1 gap-2"
+              >
+                <CalendarPlus className="h-4 w-4" />
+                Añadir a Google Calendar
+              </Button>
+              <Button 
+                variant="outline"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  downloadICS(evento);
+                }}
+                className="flex-1 gap-2"
+              >
+                <Download className="h-4 w-4" />
+                Descargar .ics
+              </Button>
+            </div>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 
@@ -229,6 +367,8 @@ const EventosSkeleton = () => (
 export default function Eventos() {
   const [eventos, setEventos] = useState<Evento[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedEvento, setSelectedEvento] = useState<Evento | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   useEffect(() => {
     const fetchEventos = async () => {
@@ -246,6 +386,11 @@ export default function Eventos() {
 
     fetchEventos();
   }, []);
+
+  const handleSelectEvento = (evento: Evento) => {
+    setSelectedEvento(evento);
+    setDialogOpen(true);
+  };
 
   const now = new Date();
   const upcomingEventos = eventos.filter((e) => !isPast(new Date(e.fecha)) || isToday(new Date(e.fecha)));
@@ -315,7 +460,8 @@ export default function Eventos() {
                       <EventoCard 
                         key={evento.id} 
                         evento={evento} 
-                        isPastEvent={false} 
+                        isPastEvent={false}
+                        onSelect={handleSelectEvento}
                       />
                     ))}
                   </div>
@@ -337,7 +483,8 @@ export default function Eventos() {
                       <EventoCard 
                         key={evento.id} 
                         evento={evento} 
-                        isPastEvent={true} 
+                        isPastEvent={true}
+                        onSelect={handleSelectEvento}
                       />
                     ))}
                   </div>
@@ -347,6 +494,12 @@ export default function Eventos() {
           )}
         </div>
       </div>
+
+      <EventoDetailDialog 
+        evento={selectedEvento}
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+      />
     </Layout>
   );
 }
