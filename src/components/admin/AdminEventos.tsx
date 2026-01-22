@@ -15,7 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Pencil, Trash2, Loader2, Calendar, MapPin, Shield, Globe, Building2, Send, ImageIcon } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, Calendar, MapPin, Shield, Globe, Building2, Send, ImageIcon, Mail } from "lucide-react";
 import { formatInMadrid, toDateTimeLocalValue, fromDateTimeLocalValue, toMadridTime } from "@/lib/timezone";
 
 interface Evento {
@@ -47,6 +47,7 @@ export const AdminEventos = () => {
     publico: false,
     organizador: "AHORA",
     imagen_url: "",
+    enviar_notificacion: true,
   });
 
   const { toast } = useToast();
@@ -123,26 +124,30 @@ export const AdminEventos = () => {
 
         if (error) throw error;
         
-        // Send notification to socios
-        try {
-          const { data: { session } } = await supabase.auth.getSession();
-          await supabase.functions.invoke("notify-socios", {
-            body: {
-              tipo: "evento",
-              titulo: formData.titulo,
-              descripcion: formData.descripcion || null,
-              fecha: formData.fecha,
-              ubicacion: formData.ubicacion || null,
-              solo_junta: formData.solo_junta,
-            },
-            headers: session ? {
-              Authorization: `Bearer ${session.access_token}`
-            } : undefined,
-          });
-          toast({ title: "Evento creado y notificaciones enviadas" });
-        } catch (notifyError) {
-          console.error("Error sending notifications:", notifyError);
-          toast({ title: "Evento creado (notificaciones fallidas)" });
+        // Send notification to socios only if selected
+        if (formData.enviar_notificacion) {
+          try {
+            const { data: { session } } = await supabase.auth.getSession();
+            await supabase.functions.invoke("notify-socios", {
+              body: {
+                tipo: "evento",
+                titulo: formData.titulo,
+                descripcion: formData.descripcion || null,
+                fecha: formData.fecha,
+                ubicacion: formData.ubicacion || null,
+                solo_junta: formData.solo_junta,
+              },
+              headers: session ? {
+                Authorization: `Bearer ${session.access_token}`
+              } : undefined,
+            });
+            toast({ title: "Evento creado y notificaciones enviadas" });
+          } catch (notifyError) {
+            console.error("Error sending notifications:", notifyError);
+            toast({ title: "Evento creado (notificaciones fallidas)" });
+          }
+        } else {
+          toast({ title: "Evento creado" });
         }
       }
 
@@ -189,6 +194,7 @@ export const AdminEventos = () => {
       publico: evento.publico,
       organizador: evento.organizador || "AHORA",
       imagen_url: evento.imagen_url || "",
+      enviar_notificacion: false,
     });
     setDialogOpen(true);
   };
@@ -204,6 +210,7 @@ export const AdminEventos = () => {
       publico: false,
       organizador: "AHORA",
       imagen_url: "",
+      enviar_notificacion: true,
     });
   };
 
@@ -379,6 +386,24 @@ export const AdminEventos = () => {
                     id="solo_junta"
                     checked={formData.solo_junta}
                     onCheckedChange={(checked) => setFormData({ ...formData, solo_junta: checked })}
+                  />
+                </div>
+              )}
+              {!editingEvento && (
+                <div className="flex items-center justify-between p-4 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800">
+                  <div className="flex items-center gap-2">
+                    <Mail className="h-4 w-4 text-blue-600" />
+                    <div>
+                      <Label htmlFor="enviar_notificacion">Enviar notificación por correo</Label>
+                      <p className="text-xs text-muted-foreground">
+                        Notificar a los socios sobre este evento
+                      </p>
+                    </div>
+                  </div>
+                  <Switch
+                    id="enviar_notificacion"
+                    checked={formData.enviar_notificacion}
+                    onCheckedChange={(checked) => setFormData({ ...formData, enviar_notificacion: checked })}
                   />
                 </div>
               )}
