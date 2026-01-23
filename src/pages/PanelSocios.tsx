@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
@@ -39,7 +39,9 @@ import {
   CheckCheck,
   Share2,
   Camera,
-  ImagePlus
+  ImagePlus,
+  Wallet,
+  Smartphone
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -49,6 +51,7 @@ import logoWhite from "@/assets/logo-ahora-white.png";
 import logoIcon from "@/assets/logo-ahora-icon.png";
 import { AdminContactos } from "@/components/admin/AdminContactos";
 import { RedesSociales } from "@/components/junta/RedesSociales";
+import html2canvas from "html2canvas";
 
 
 type CargoJunta = 'presidente' | 'vicepresidente' | 'secretario' | 'tesorero' | 'vocal' | null;
@@ -167,6 +170,10 @@ const PanelSocios = () => {
   
   // Photo upload state
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  
+  // Carnet download state
+  const carnetRef = useRef<HTMLDivElement>(null);
+  const [downloadingCarnet, setDownloadingCarnet] = useState(false);
 
   const { user, isSocio, isJunta, isAdmin, loading: authLoading, socioLoading, signOut } = useAuth();
   const navigate = useNavigate();
@@ -805,6 +812,42 @@ const PanelSocios = () => {
     }
   };
 
+  // Download carnet as image for Wallet
+  const handleDownloadCarnet = async () => {
+    if (!carnetRef.current || !miSocio) return;
+    
+    setDownloadingCarnet(true);
+    
+    try {
+      const canvas = await html2canvas(carnetRef.current, {
+        scale: 3, // High resolution
+        backgroundColor: null,
+        useCORS: true,
+        allowTaint: true,
+        logging: false,
+      });
+      
+      const link = document.createElement("a");
+      link.download = `carnet-ahora-${miSocio.numero_socio || miSocio.id}.png`;
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+      
+      toast({ 
+        title: "Carnet descargado",
+        description: "Guárdalo en tu galería y añádelo a tu Wallet",
+      });
+    } catch (error: any) {
+      console.error("Error downloading carnet:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "No se pudo descargar el carnet",
+      });
+    } finally {
+      setDownloadingCarnet(false);
+    }
+  };
+
   const isVotacionActiva = (votacion: Votacion) => {
     const now = new Date();
     return votacion.activa && 
@@ -936,7 +979,10 @@ const PanelSocios = () => {
               <div className="flex justify-center">
                 <div className="w-full max-w-md">
                   {/* Carnet Digital */}
-                  <div className="relative aspect-[1.6/1] rounded-2xl overflow-hidden shadow-2xl bg-gradient-to-br from-primary via-primary/90 to-primary/80">
+                  <div 
+                    ref={carnetRef}
+                    className="relative aspect-[1.6/1] rounded-2xl overflow-hidden shadow-2xl bg-gradient-to-br from-primary via-primary/90 to-primary/80"
+                  >
                     {/* Decorative elements */}
                     <div className="absolute top-0 right-0 w-32 h-32 bg-secondary/20 rounded-full -translate-y-1/2 translate-x-1/2" />
                     <div className="absolute bottom-0 left-0 w-24 h-24 bg-secondary/10 rounded-full translate-y-1/2 -translate-x-1/2" />
@@ -981,10 +1027,25 @@ const PanelSocios = () => {
                     </div>
                   </div>
                   
-                  {/* Card description */}
-                  <p className="text-center text-muted-foreground text-sm mt-6">
-                    Tu carnet digital de socio de AHORA
-                  </p>
+                  {/* Download button for Wallet */}
+                  <div className="flex flex-col items-center gap-3 mt-6">
+                    <Button
+                      onClick={handleDownloadCarnet}
+                      disabled={downloadingCarnet || !miSocio}
+                      className="w-full sm:w-auto"
+                      variant="outline"
+                    >
+                      {downloadingCarnet ? (
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      ) : (
+                        <Smartphone className="h-4 w-4 mr-2" />
+                      )}
+                      Descargar para Wallet
+                    </Button>
+                    <p className="text-center text-muted-foreground text-xs">
+                      Descarga tu carnet y añádelo a tu Wallet de Apple o Google
+                    </p>
+                  </div>
                   
                   {/* Payment Info Card */}
                   <Card className="mt-6 border-secondary/30">
