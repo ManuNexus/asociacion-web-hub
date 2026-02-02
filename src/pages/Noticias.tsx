@@ -223,7 +223,7 @@ const Noticias = () => {
                             {noticia.titulo}
                           </h2>
                         </Link>
-                        <p className="text-muted-foreground mb-4">
+                        <p className="text-muted-foreground mb-4 text-justify">
                           {noticia.extracto}
                         </p>
                         <Link

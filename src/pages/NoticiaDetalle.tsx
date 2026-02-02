@@ -364,11 +364,11 @@ const NoticiaDetalle = () => {
                     const tweetRegex = /(https?:\/\/(?:twitter\.com|x\.com)\/\w+\/status\/\d+\S*)/g;
                     const parts = htmlContent.split(tweetRegex);
                     
-                    const proseClasses = `prose prose-lg max-w-none
-                      [&_p]:mb-5 [&_p]:text-foreground/90 [&_p]:leading-relaxed [&_p]:text-base md:[&_p]:text-lg
-                      [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:my-4 [&_h1]:text-foreground
-                      [&_h2]:text-xl [&_h2]:font-bold [&_h2]:my-3 [&_h2]:text-foreground
-                      [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:my-3 [&_h3]:text-foreground
+                    const proseClasses = `prose prose-lg max-w-none text-justify
+                      [&_p]:mb-5 [&_p]:text-foreground/90 [&_p]:leading-relaxed [&_p]:text-base md:[&_p]:text-lg [&_p]:text-justify
+                      [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:my-4 [&_h1]:text-foreground [&_h1]:text-left
+                      [&_h2]:text-xl [&_h2]:font-bold [&_h2]:my-3 [&_h2]:text-foreground [&_h2]:text-left
+                      [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:my-3 [&_h3]:text-foreground [&_h3]:text-left
                       [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:my-4
                       [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:my-4
                       [&_li]:mb-2 [&_li]:text-foreground/90
