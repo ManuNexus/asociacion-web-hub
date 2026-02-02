@@ -5,44 +5,70 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Send, MessageCircle, Shield } from "lucide-react";
+import { Loader2, Send, MessageCircle, Shield, ChevronLeft } from "lucide-react";
 import { formatInMadrid } from "@/lib/timezone";
 
 interface Mensaje {
   id: string;
   user_id: string;
+  socio_id: string;
   mensaje: string;
   created_at: string;
   es_junta: boolean;
 }
 
-export function ChatJunta() {
+interface Socio {
+  id: string;
+  nombre: string;
+  apellidos: string;
+}
+
+interface ChatJuntaProps {
+  miSocioId?: string;
+}
+
+export function ChatJunta({ miSocioId }: ChatJuntaProps) {
   const [mensajes, setMensajes] = useState<Mensaje[]>([]);
   const [nuevoMensaje, setNuevoMensaje] = useState("");
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  
+  // For junta/admin: list of conversations
+  const [conversaciones, setConversaciones] = useState<Socio[]>([]);
+  const [selectedSocio, setSelectedSocio] = useState<Socio | null>(null);
+  const [loadingConversaciones, setLoadingConversaciones] = useState(true);
+  
   const scrollRef = useRef<HTMLDivElement>(null);
   
   const { user, isJunta, isAdmin } = useAuth();
   const { toast } = useToast();
 
-  // Check if current user can send as "Junta"
-  const puedeEnviarComoJunta = isJunta || isAdmin;
+  // Check if current user is junta/admin (can see all conversations)
+  const puedeVerTodas = isJunta || isAdmin;
 
   useEffect(() => {
-    fetchMensajes();
-    
-    // Subscribe to realtime updates
+    if (puedeVerTodas) {
+      fetchConversaciones();
+    } else if (miSocioId) {
+      fetchMensajes(miSocioId);
+    }
+  }, [puedeVerTodas, miSocioId]);
+
+  // Subscribe to realtime updates
+  useEffect(() => {
+    const targetSocioId = puedeVerTodas ? selectedSocio?.id : miSocioId;
+    if (!targetSocioId) return;
+
     const channel = supabase
-      .channel('mensajes_chat')
+      .channel(`mensajes_chat_${targetSocioId}`)
       .on(
         'postgres_changes',
         {
           event: 'INSERT',
           schema: 'public',
-          table: 'mensajes_chat'
+          table: 'mensajes_chat',
+          filter: `socio_id=eq.${targetSocioId}`
         },
         (payload) => {
           const nuevoMsg = payload.new as Mensaje;
@@ -54,7 +80,7 @@ export function ChatJunta() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [selectedSocio?.id, miSocioId, puedeVerTodas]);
 
   // Scroll to bottom when new messages arrive
   useEffect(() => {
@@ -63,11 +89,52 @@ export function ChatJunta() {
     }
   }, [mensajes]);
 
-  const fetchMensajes = async () => {
+  const fetchConversaciones = async () => {
+    setLoadingConversaciones(true);
+    
+    // Get all socios that have messages
+    const { data: mensajesData } = await supabase
+      .from("mensajes_chat")
+      .select("socio_id")
+      .not("socio_id", "is", null);
+
+    if (mensajesData) {
+      const socioIds = [...new Set(mensajesData.map(m => m.socio_id))];
+      
+      if (socioIds.length > 0) {
+        // Get socio details - use RPC for junta members
+        if (isAdmin) {
+          const { data: socios } = await supabase
+            .from("socios")
+            .select("id, nombre, apellidos")
+            .in("id", socioIds)
+            .order("apellidos");
+          
+          if (socios) {
+            setConversaciones(socios);
+          }
+        } else {
+          // Junta uses RPC function
+          const { data: socios } = await supabase.rpc("get_socios_for_junta");
+          if (socios) {
+            const filteredSocios = (socios as unknown as Socio[])
+              .filter(s => socioIds.includes(s.id))
+              .sort((a, b) => a.apellidos.localeCompare(b.apellidos));
+            setConversaciones(filteredSocios);
+          }
+        }
+      }
+    }
+    
+    setLoadingConversaciones(false);
+  };
+
+  const fetchMensajes = async (socioId: string) => {
     setLoading(true);
     const { data, error } = await supabase
       .from("mensajes_chat")
       .select("*")
+      .eq("socio_id", socioId)
       .order("created_at", { ascending: true });
 
     if (!error && data) {
@@ -76,8 +143,22 @@ export function ChatJunta() {
     setLoading(false);
   };
 
+  const handleSelectSocio = (socio: Socio) => {
+    setSelectedSocio(socio);
+    fetchMensajes(socio.id);
+  };
+
+  const handleBackToList = () => {
+    setSelectedSocio(null);
+    setMensajes([]);
+    fetchConversaciones();
+  };
+
   const handleEnviar = async () => {
     if (!nuevoMensaje.trim() || !user) return;
+
+    const targetSocioId = puedeVerTodas ? selectedSocio?.id : miSocioId;
+    if (!targetSocioId) return;
 
     setSending(true);
     
@@ -86,8 +167,9 @@ export function ChatJunta() {
         .from("mensajes_chat")
         .insert({
           user_id: user.id,
+          socio_id: targetSocioId,
           mensaje: nuevoMensaje.trim(),
-          es_junta: puedeEnviarComoJunta
+          es_junta: puedeVerTodas
         });
 
       if (error) throw error;
@@ -135,17 +217,100 @@ export function ChatJunta() {
 
   const groupedMensajes = groupMessagesByDate(mensajes);
 
+  // Junta/Admin view: show conversation list or selected conversation
+  if (puedeVerTodas) {
+    // Show conversation list
+    if (!selectedSocio) {
+      return (
+        <Card className="h-[600px] flex flex-col">
+          <CardHeader className="pb-3 shrink-0">
+            <CardTitle className="flex items-center gap-2">
+              <MessageCircle className="h-5 w-5" />
+              Conversaciones con Socios
+            </CardTitle>
+            <CardDescription>
+              Mensajes privados de los socios
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex-1 overflow-hidden">
+            {loadingConversaciones ? (
+              <div className="flex justify-center items-center h-full">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            ) : conversaciones.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
+                <MessageCircle className="h-12 w-12 mb-4 opacity-50" />
+                <p>No hay conversaciones</p>
+                <p className="text-sm">Los socios aún no han enviado mensajes</p>
+              </div>
+            ) : (
+              <div className="space-y-2 overflow-y-auto h-full">
+                {conversaciones.map((socio) => (
+                  <button
+                    key={socio.id}
+                    onClick={() => handleSelectSocio(socio)}
+                    className="w-full flex items-center gap-3 p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors text-left"
+                  >
+                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                      <span className="text-primary font-medium">
+                        {socio.nombre.charAt(0)}{socio.apellidos.charAt(0)}
+                      </span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium truncate">
+                        {socio.nombre} {socio.apellidos}
+                      </p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      );
+    }
+
+    // Show selected conversation with back button
+    return (
+      <Card className="flex flex-col h-[600px]">
+        <CardHeader className="pb-3 shrink-0 border-b">
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" onClick={handleBackToList}>
+              <ChevronLeft className="h-5 w-5" />
+            </Button>
+            <div>
+              <CardTitle className="text-base">
+                {selectedSocio.nombre} {selectedSocio.apellidos}
+              </CardTitle>
+              <CardDescription className="text-xs">
+                Conversación privada
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        {renderChatContent()}
+      </Card>
+    );
+  }
+
+  // Regular socio view
   return (
     <Card className="flex flex-col h-[600px]">
       <CardHeader className="pb-3 shrink-0">
         <CardTitle className="flex items-center gap-2">
           <MessageCircle className="h-5 w-5" />
-          Canal de la Junta
+          Chat con la Junta
         </CardTitle>
         <CardDescription>
-          Comunicación directa con la Junta Directiva
+          Tu conversación privada con la Junta Directiva
         </CardDescription>
       </CardHeader>
+      {renderChatContent()}
+    </Card>
+  );
+
+  function renderChatContent() {
+    return (
       <CardContent className="flex-1 flex flex-col min-h-0 pb-4">
         {/* Messages area */}
         <div 
@@ -160,7 +325,9 @@ export function ChatJunta() {
             <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
               <MessageCircle className="h-12 w-12 mb-4 opacity-50" />
               <p>No hay mensajes todavía</p>
-              <p className="text-sm">Sé el primero en escribir</p>
+              <p className="text-sm">
+                {puedeVerTodas ? "Escribe al socio" : "Escribe tu primer mensaje a la Junta"}
+              </p>
             </div>
           ) : (
             <div className="space-y-6">
@@ -175,7 +342,7 @@ export function ChatJunta() {
                   
                   {/* Messages for this date */}
                   <div className="space-y-3">
-                    {msgs.map((msg, index) => {
+                    {msgs.map((msg) => {
                       const isOwnMessage = msg.user_id === user?.id;
                       const isFromJunta = msg.es_junta;
                       
@@ -233,10 +400,10 @@ export function ChatJunta() {
 
         {/* Input area */}
         <div className="shrink-0 border-t pt-4">
-          {puedeEnviarComoJunta && (
+          {puedeVerTodas && (
             <div className="flex items-center gap-2 mb-2 text-xs text-muted-foreground">
               <Shield className="h-3 w-3" />
-              <span>Enviarás como Junta Directiva</span>
+              <span>Responderás como Junta Directiva</span>
             </div>
           )}
           <div className="flex gap-2">
@@ -264,6 +431,6 @@ export function ChatJunta() {
           </div>
         </div>
       </CardContent>
-    </Card>
-  );
+    );
+  }
 }

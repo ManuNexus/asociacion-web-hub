@@ -404,6 +404,7 @@ export type Database = {
           es_junta: boolean
           id: string
           mensaje: string
+          socio_id: string | null
           user_id: string
         }
         Insert: {
@@ -411,6 +412,7 @@ export type Database = {
           es_junta?: boolean
           id?: string
           mensaje: string
+          socio_id?: string | null
           user_id: string
         }
         Update: {
@@ -418,9 +420,18 @@ export type Database = {
           es_junta?: boolean
           id?: string
           mensaje?: string
+          socio_id?: string | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "mensajes_chat_socio_id_fkey"
+            columns: ["socio_id"]
+            isOneToOne: false
+            referencedRelation: "socios"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       noticias: {
         Row: {
