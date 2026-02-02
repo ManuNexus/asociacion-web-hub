@@ -1947,7 +1947,7 @@ const PanelSocios = () => {
 
             {/* Tab Chat Junta */}
             <TabsContent value="chat">
-              <ChatJunta />
+              <ChatJunta miSocioId={miSocio?.id} />
             </TabsContent>
           </Tabs>
         </div>
