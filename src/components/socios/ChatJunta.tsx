@@ -44,8 +44,8 @@ export function ChatJunta({ miSocioId }: ChatJuntaProps) {
   const { user, isJunta, isAdmin } = useAuth();
   const { toast } = useToast();
 
-  // Check if current user is junta/admin (can see all conversations)
-  const puedeVerTodas = isJunta || isAdmin;
+  // Only admin can see all conversations and respond as "Junta"
+  const puedeVerTodas = isAdmin;
 
   useEffect(() => {
     if (puedeVerTodas) {
