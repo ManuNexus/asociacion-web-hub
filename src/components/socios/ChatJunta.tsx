@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Send, MessageCircle, Shield, ChevronLeft } from "lucide-react";
+import { Loader2, Send, MessageCircle, Shield, ChevronLeft, Users } from "lucide-react";
 import { formatInMadrid } from "@/lib/timezone";
 
 interface Mensaje {
@@ -36,8 +36,12 @@ export function ChatJunta({ miSocioId }: ChatJuntaProps) {
   
   // For junta/admin: list of conversations
   const [conversaciones, setConversaciones] = useState<Socio[]>([]);
+  const [allSocios, setAllSocios] = useState<Socio[]>([]);
   const [selectedSocio, setSelectedSocio] = useState<Socio | null>(null);
   const [loadingConversaciones, setLoadingConversaciones] = useState(true);
+  const [broadcastMessage, setBroadcastMessage] = useState("");
+  const [sendingBroadcast, setSendingBroadcast] = useState(false);
+  const [showBroadcast, setShowBroadcast] = useState(false);
   
   const scrollRef = useRef<HTMLDivElement>(null);
   
@@ -92,6 +96,17 @@ export function ChatJunta({ miSocioId }: ChatJuntaProps) {
   const fetchConversaciones = async () => {
     setLoadingConversaciones(true);
     
+    // Fetch all active socios for broadcast feature
+    const { data: allSociosData } = await supabase
+      .from("socios")
+      .select("id, nombre, apellidos")
+      .eq("activo", true)
+      .order("apellidos");
+    
+    if (allSociosData) {
+      setAllSocios(allSociosData);
+    }
+    
     // Get all socios that have messages
     const { data: mensajesData } = await supabase
       .from("mensajes_chat")
@@ -127,6 +142,45 @@ export function ChatJunta({ miSocioId }: ChatJuntaProps) {
     }
     
     setLoadingConversaciones(false);
+  };
+
+  const handleBroadcastMessage = async () => {
+    if (!broadcastMessage.trim() || !user || allSocios.length === 0) return;
+
+    setSendingBroadcast(true);
+    
+    try {
+      // Insert a message for each socio
+      const messagesToInsert = allSocios.map(socio => ({
+        user_id: user.id,
+        socio_id: socio.id,
+        mensaje: broadcastMessage.trim(),
+        es_junta: true
+      }));
+
+      const { error } = await supabase
+        .from("mensajes_chat")
+        .insert(messagesToInsert);
+
+      if (error) throw error;
+      
+      toast({
+        title: "Mensaje enviado",
+        description: `Se ha enviado el mensaje a ${allSocios.length} socios`,
+      });
+      
+      setBroadcastMessage("");
+      setShowBroadcast(false);
+      fetchConversaciones();
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message || "No se pudo enviar el mensaje",
+      });
+    } finally {
+      setSendingBroadcast(false);
+    }
   };
 
   const fetchMensajes = async (socioId: string) => {
@@ -224,47 +278,103 @@ export function ChatJunta({ miSocioId }: ChatJuntaProps) {
       return (
         <Card className="h-[600px] flex flex-col">
           <CardHeader className="pb-3 shrink-0">
-            <CardTitle className="flex items-center gap-2">
-              <MessageCircle className="h-5 w-5" />
-              Conversaciones con Socios
-            </CardTitle>
-            <CardDescription>
-              Mensajes privados de los socios
-            </CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <MessageCircle className="h-5 w-5" />
+                  Conversaciones con Socios
+                </CardTitle>
+                <CardDescription>
+                  Mensajes privados de los socios
+                </CardDescription>
+              </div>
+              <Button 
+                variant={showBroadcast ? "secondary" : "outline"}
+                size="sm"
+                onClick={() => setShowBroadcast(!showBroadcast)}
+              >
+                <Users className="h-4 w-4 mr-2" />
+                Enviar a todos
+              </Button>
+            </div>
           </CardHeader>
-          <CardContent className="flex-1 overflow-hidden">
-            {loadingConversaciones ? (
-              <div className="flex justify-center items-center h-full">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              </div>
-            ) : conversaciones.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
-                <MessageCircle className="h-12 w-12 mb-4 opacity-50" />
-                <p>No hay conversaciones</p>
-                <p className="text-sm">Los socios aún no han enviado mensajes</p>
-              </div>
-            ) : (
-              <div className="space-y-2 overflow-y-auto h-full">
-                {conversaciones.map((socio) => (
-                  <button
-                    key={socio.id}
-                    onClick={() => handleSelectSocio(socio)}
-                    className="w-full flex items-center gap-3 p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors text-left"
+          <CardContent className="flex-1 overflow-hidden flex flex-col">
+            {/* Broadcast form */}
+            {showBroadcast && (
+              <div className="mb-4 p-4 border rounded-lg bg-muted/30 space-y-3">
+                <p className="text-sm font-medium flex items-center gap-2">
+                  <Users className="h-4 w-4" />
+                  Enviar mensaje a todos los socios ({allSocios.length})
+                </p>
+                <Textarea
+                  value={broadcastMessage}
+                  onChange={(e) => setBroadcastMessage(e.target.value)}
+                  placeholder="Escribe el mensaje que recibirán todos los socios..."
+                  className="min-h-[80px] resize-none"
+                  disabled={sendingBroadcast}
+                />
+                <div className="flex justify-end gap-2">
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => {
+                      setShowBroadcast(false);
+                      setBroadcastMessage("");
+                    }}
                   >
-                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                      <span className="text-primary font-medium">
-                        {socio.nombre.charAt(0)}{socio.apellidos.charAt(0)}
-                      </span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium truncate">
-                        {socio.nombre} {socio.apellidos}
-                      </p>
-                    </div>
-                  </button>
-                ))}
+                    Cancelar
+                  </Button>
+                  <Button 
+                    size="sm"
+                    onClick={handleBroadcastMessage}
+                    disabled={!broadcastMessage.trim() || sendingBroadcast}
+                  >
+                    {sendingBroadcast ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <Send className="h-4 w-4 mr-2" />
+                    )}
+                    Enviar a {allSocios.length} socios
+                  </Button>
+                </div>
               </div>
             )}
+            
+            {/* Conversation list */}
+            <div className="flex-1 overflow-hidden">
+              {loadingConversaciones ? (
+                <div className="flex justify-center items-center h-full">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : conversaciones.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
+                  <MessageCircle className="h-12 w-12 mb-4 opacity-50" />
+                  <p>No hay conversaciones</p>
+                  <p className="text-sm">Los socios aún no han enviado mensajes</p>
+                </div>
+              ) : (
+                <div className="space-y-2 overflow-y-auto h-full">
+                  {conversaciones.map((socio) => (
+                    <button
+                      key={socio.id}
+                      onClick={() => handleSelectSocio(socio)}
+                      className="w-full flex items-center gap-3 p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors text-left"
+                    >
+                      <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                        <span className="text-primary font-medium">
+                          {socio.nombre.charAt(0)}{socio.apellidos.charAt(0)}
+                        </span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium truncate">
+                          {socio.nombre} {socio.apellidos}
+                        </p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
       );
