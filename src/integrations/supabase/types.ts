@@ -398,6 +398,30 @@ export type Database = {
           },
         ]
       }
+      mensajes_chat: {
+        Row: {
+          created_at: string
+          es_junta: boolean
+          id: string
+          mensaje: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          es_junta?: boolean
+          id?: string
+          mensaje: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          es_junta?: boolean
+          id?: string
+          mensaje?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       noticias: {
         Row: {
           autor: string | null

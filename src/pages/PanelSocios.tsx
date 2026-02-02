@@ -25,7 +25,7 @@ import {
   EyeOff,
   IdCard,
   Shield,
-  Bell,
+  MessageCircle,
   Folder,
   ChevronRight,
   ArrowLeft,
@@ -52,6 +52,7 @@ import logoIcon from "@/assets/logo-ahora-icon.png";
 import { AdminContactos } from "@/components/admin/AdminContactos";
 import { RedesSociales } from "@/components/junta/RedesSociales";
 import html2canvas from "html2canvas";
+import { ChatJunta } from "@/components/socios/ChatJunta";
 
 
 type CargoJunta = 'presidente' | 'vicepresidente' | 'secretario' | 'tesorero' | 'vocal' | null;
@@ -119,14 +120,6 @@ interface Documento {
   categoria: string | null;
 }
 
-interface Notificacion {
-  id: string;
-  titulo: string;
-  mensaje: string;
-  solo_junta: boolean;
-  created_at: string;
-}
-
 const PanelSocios = () => {
   const [socios, setSocios] = useState<SocioWithJunta[]>([]);
   const [miSocio, setMiSocio] = useState<Socio | null>(null);
@@ -136,8 +129,6 @@ const PanelSocios = () => {
   const [votosCount, setVotosCount] = useState<VotoCount[]>([]);
   const [eventos, setEventos] = useState<Evento[]>([]);
   const [documentos, setDocumentos] = useState<Documento[]>([]);
-  const [notificaciones, setNotificaciones] = useState<Notificacion[]>([]);
-  const [notificacionesLeidas, setNotificacionesLeidas] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [voting, setVoting] = useState<string | null>(null);
   const [downloadingCert, setDownloadingCert] = useState<string | null>(null);
@@ -209,7 +200,7 @@ const PanelSocios = () => {
       fetchEventos(),
       fetchDocumentos(),
       fetchMisVotos(),
-      fetchNotificaciones(),
+      
     ]);
     setLoading(false);
   };
@@ -537,60 +528,6 @@ const PanelSocios = () => {
       setDocumentos(data);
     }
   };
-
-  const fetchNotificaciones = async () => {
-    if (!user) return;
-    
-    const { data, error } = await supabase
-      .from("notificaciones")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (!error && data) {
-      setNotificaciones(data);
-    }
-
-    // Fetch read status
-    const { data: leidas } = await supabase
-      .from("notificaciones_leidas")
-      .select("notificacion_id")
-      .eq("user_id", user.id);
-
-    if (leidas) {
-      setNotificacionesLeidas(leidas.map(l => l.notificacion_id));
-    }
-  };
-
-  const marcarLeida = async (notificacionId: string) => {
-    if (!user || notificacionesLeidas.includes(notificacionId)) return;
-    
-    await supabase.from("notificaciones_leidas").insert({
-      notificacion_id: notificacionId,
-      user_id: user.id,
-    });
-    
-    setNotificacionesLeidas([...notificacionesLeidas, notificacionId]);
-  };
-
-  const marcarTodasLeidas = async () => {
-    if (!user) return;
-    
-    const noLeidas = notificaciones.filter(n => !notificacionesLeidas.includes(n.id));
-    if (noLeidas.length === 0) return;
-
-    const inserts = noLeidas.map(n => ({
-      notificacion_id: n.id,
-      user_id: user.id,
-    }));
-
-    const { error } = await supabase.from("notificaciones_leidas").insert(inserts);
-    
-    if (!error) {
-      setNotificacionesLeidas([...notificacionesLeidas, ...noLeidas.map(n => n.id)]);
-      toast({ title: "Todas las notificaciones marcadas como leídas" });
-    }
-  };
-
   const handleVotar = async (votacionId: string, opcionId: string) => {
     if (!user) return;
     
@@ -963,14 +900,9 @@ const PanelSocios = () => {
                 <User className="h-4 w-4 shrink-0" />
                 <span>Mi cuenta</span>
               </TabsTrigger>
-              <TabsTrigger value="avisos" className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm relative shrink-0">
-                <Bell className="h-4 w-4 shrink-0" />
-                <span>Avisos</span>
-                {notificaciones.filter(n => !notificacionesLeidas.includes(n.id)).length > 0 && (
-                  <span className="absolute -top-1 -right-1 h-5 min-w-5 px-1 bg-destructive rounded-full text-[10px] text-destructive-foreground flex items-center justify-center font-medium leading-none">
-                    {notificaciones.filter(n => !notificacionesLeidas.includes(n.id)).length}
-                  </span>
-                )}
+              <TabsTrigger value="chat" className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm shrink-0">
+                <MessageCircle className="h-4 w-4 shrink-0" />
+                <span>Chat Junta</span>
               </TabsTrigger>
             </TabsList>
 
@@ -2013,140 +1945,9 @@ const PanelSocios = () => {
               </TabsContent>
             )}
 
-            {/* Tab Avisos */}
-            <TabsContent value="avisos">
-              <Card>
-                <CardHeader>
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div>
-                      <CardTitle className="flex items-center gap-2">
-                        <Bell className="h-5 w-5" />
-                        Comunicados de la Junta
-                      </CardTitle>
-                      <CardDescription>
-                        Avisos y comunicaciones oficiales de la Junta Directiva
-                      </CardDescription>
-                    </div>
-                    {notificaciones.filter(n => !notificacionesLeidas.includes(n.id)).length > 0 && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={marcarTodasLeidas}
-                        className="shrink-0"
-                      >
-                        <CheckCheck className="h-4 w-4 mr-2" />
-                        Marcar todas como leídas
-                      </Button>
-                    )}
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  {loading ? (
-                    <div className="flex justify-center py-8">
-                      <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                    </div>
-                  ) : (
-                    <>
-                      {/* Notificaciones no leídas */}
-                      {notificaciones.filter(n => !notificacionesLeidas.includes(n.id)).length === 0 ? (
-                        <p className="text-center text-muted-foreground py-8">
-                          No hay comunicados pendientes de leer
-                        </p>
-                      ) : (
-                        <div className="space-y-4">
-                          {notificaciones
-                            .filter(n => !notificacionesLeidas.includes(n.id))
-                            .map((notificacion) => (
-                              <Card 
-                                key={notificacion.id} 
-                                className="transition-all border-primary/50 bg-primary/5 hover:bg-primary/10"
-                              >
-                                <CardContent className="p-4">
-                                  <div className="flex items-start justify-between gap-4">
-                                    <div className="flex-1">
-                                      <div className="flex items-center gap-2 mb-1">
-                                        <span className="h-2 w-2 bg-primary rounded-full" />
-                                        <h3 className="font-semibold">{notificacion.titulo}</h3>
-                                        {notificacion.solo_junta && (
-                                          <Badge variant="outline" className="border-primary text-primary text-xs">
-                                            <Shield className="h-3 w-3 mr-1" />
-                                            Junta
-                                          </Badge>
-                                        )}
-                                      </div>
-                                      <p className="text-muted-foreground text-sm whitespace-pre-wrap">
-                                        {notificacion.mensaje}
-                                      </p>
-                                      <p className="text-xs text-muted-foreground mt-2">
-                                        {formatInMadrid(notificacion.created_at, "d 'de' MMMM 'de' yyyy, HH:mm")}
-                                      </p>
-                                    </div>
-                                    <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      onClick={() => marcarLeida(notificacion.id)}
-                                      title="Marcar como leída"
-                                      className="shrink-0 text-muted-foreground hover:text-primary"
-                                    >
-                                      <CheckCircle2 className="h-4 w-4" />
-                                    </Button>
-                                  </div>
-                                </CardContent>
-                              </Card>
-                            ))}
-                        </div>
-                      )}
-
-                      {/* Historial de notificaciones leídas */}
-                      {notificaciones.filter(n => notificacionesLeidas.includes(n.id)).length > 0 && (
-                        <Collapsible>
-                          <CollapsibleTrigger asChild>
-                            <Button variant="ghost" className="w-full justify-between text-muted-foreground hover:text-foreground">
-                              <span className="flex items-center gap-2">
-                                <FileText className="h-4 w-4" />
-                                Historial ({notificaciones.filter(n => notificacionesLeidas.includes(n.id)).length})
-                              </span>
-                              <ChevronDown className="h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-180" />
-                            </Button>
-                          </CollapsibleTrigger>
-                          <CollapsibleContent className="pt-4 space-y-3">
-                            {notificaciones
-                              .filter(n => notificacionesLeidas.includes(n.id))
-                              .map((notificacion) => (
-                                <Card 
-                                  key={notificacion.id} 
-                                  className="border-muted bg-muted/30"
-                                >
-                                  <CardContent className="p-4">
-                                    <div className="flex items-start gap-4">
-                                      <div className="flex-1">
-                                        <div className="flex items-center gap-2 mb-1">
-                                          <h3 className="font-medium text-muted-foreground">{notificacion.titulo}</h3>
-                                          {notificacion.solo_junta && (
-                                            <Badge variant="outline" className="text-xs opacity-60">
-                                              <Shield className="h-3 w-3 mr-1" />
-                                              Junta
-                                            </Badge>
-                                          )}
-                                        </div>
-                                        <p className="text-muted-foreground/80 text-sm whitespace-pre-wrap">
-                                          {notificacion.mensaje}
-                                        </p>
-                                        <p className="text-xs text-muted-foreground/60 mt-2">
-                                          {formatInMadrid(notificacion.created_at, "d 'de' MMMM 'de' yyyy, HH:mm")}
-                                        </p>
-                                      </div>
-                                    </div>
-                                  </CardContent>
-                                </Card>
-                              ))}
-                          </CollapsibleContent>
-                        </Collapsible>
-                      )}
-                    </>
-                  )}
-                </CardContent>
-              </Card>
+            {/* Tab Chat Junta */}
+            <TabsContent value="chat">
+              <ChatJunta />
             </TabsContent>
           </Tabs>
         </div>
