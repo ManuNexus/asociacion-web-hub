@@ -35,7 +35,7 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Pencil, Trash2, Loader2, LogOut, Users, Newspaper, Mail, Phone, Eye, Search, Tag, UserCheck, Send, RefreshCw, Vote, Calendar, FileText, CreditCard, Bell, Link, Clock, BookUser, Share2, Star } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, LogOut, Users, Newspaper, Mail, Phone, Eye, Search, Tag, UserCheck, Send, RefreshCw, Vote, Calendar, FileText, CreditCard, Bell, Link, Clock, BookUser, Share2, Star, MessageCircle } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { formatInMadrid, toDateTimeLocalValue, fromDateTimeLocalValue } from "@/lib/timezone";
@@ -43,7 +43,7 @@ import { AdminVotaciones } from "@/components/admin/AdminVotaciones";
 import { AdminEventos } from "@/components/admin/AdminEventos";
 import { AdminDocumentos } from "@/components/admin/AdminDocumentos";
 import { AdminSocios } from "@/components/admin/AdminSocios";
-import { AdminNotificaciones } from "@/components/admin/AdminNotificaciones";
+import { ChatJunta } from "@/components/socios/ChatJunta";
 import { AdminContactos } from "@/components/admin/AdminContactos";
 import { AdminMailings } from "@/components/admin/AdminMailings";
 import { RedesSociales } from "@/components/junta/RedesSociales";
@@ -622,9 +622,9 @@ const AdminNoticias = () => {
                 <CreditCard className="h-4 w-4 shrink-0" />
                 <span>Socios</span>
               </TabsTrigger>
-              <TabsTrigger value="notificaciones" className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm shrink-0">
-                <Bell className="h-4 w-4 shrink-0" />
-                <span>Avisos</span>
+              <TabsTrigger value="chat" className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm shrink-0">
+                <MessageCircle className="h-4 w-4 shrink-0" />
+                <span>Chat Socios</span>
               </TabsTrigger>
               <TabsTrigger value="votaciones" className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm shrink-0">
                 <Vote className="h-4 w-4 shrink-0" />
@@ -1238,9 +1238,9 @@ const AdminNoticias = () => {
               </Card>
             </TabsContent>
 
-            {/* Tab Notificaciones */}
-            <TabsContent value="notificaciones">
-              <AdminNotificaciones />
+            {/* Tab Chat con Socios */}
+            <TabsContent value="chat">
+              <ChatJunta />
             </TabsContent>
 
             {/* Tab Votaciones */}
