@@ -195,7 +195,7 @@ const Index = () => {
                     <h3 className="text-lg font-bold text-foreground mt-2 mb-3 group-hover:text-ahora-yellow transition-colors">
                       {noticia.titulo}
                     </h3>
-                    <p className="text-muted-foreground text-sm">{noticia.extracto}</p>
+                    <p className="text-muted-foreground text-sm text-justify">{noticia.extracto}</p>
                     <Link
                       to={`/noticias/${noticia.id}`}
                       className="inline-flex items-center text-sm font-medium text-primary mt-4 hover:text-primary/80 transition-colors"
