@@ -56,3 +56,6 @@ verify_jwt = false
 
 [functions.send-birthday-email]
 verify_jwt = false
+
+[functions.solicitar-baja]
+verify_jwt = false
