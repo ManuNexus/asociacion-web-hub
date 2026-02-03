@@ -53,6 +53,7 @@ import { AdminContactos } from "@/components/admin/AdminContactos";
 import { RedesSociales } from "@/components/junta/RedesSociales";
 import html2canvas from "html2canvas";
 import { ChatJunta } from "@/components/socios/ChatJunta";
+import { SolicitudBaja } from "@/components/socios/SolicitudBaja";
 
 
 type CargoJunta = 'presidente' | 'vicepresidente' | 'secretario' | 'tesorero' | 'vocal' | null;
@@ -1985,6 +1986,26 @@ const PanelSocios = () => {
                         Guardar datos bancarios
                       </Button>
                     </form>
+                  </CardContent>
+                </Card>
+
+                {/* Solicitar Baja */}
+                <Card className="border-destructive/20">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-destructive">
+                      <Trash2 className="h-5 w-5" />
+                      Darme de baja
+                    </CardTitle>
+                    <CardDescription>
+                      Si deseas dejar de ser socio/a de AHORA, puedes solicitar tu baja aquí
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Al solicitar la baja, la Junta Directiva será notificada y procesará tu solicitud. 
+                      Recibirás una confirmación cuando la baja sea efectiva.
+                    </p>
+                    <SolicitudBaja />
                   </CardContent>
                 </Card>
               </div>
