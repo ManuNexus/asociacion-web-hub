@@ -59,3 +59,6 @@ verify_jwt = false
 
 [functions.solicitar-baja]
 verify_jwt = false
+
+[functions.iban-reminder]
+verify_jwt = false

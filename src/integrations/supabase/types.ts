@@ -750,6 +750,8 @@ export type Database = {
           estado: string
           fecha_nacimiento: string | null
           iban: string | null
+          iban_reminder_sent: boolean | null
+          iban_submitted_at: string | null
           id: string
           motivacion: string | null
           nombre: string
@@ -771,6 +773,8 @@ export type Database = {
           estado?: string
           fecha_nacimiento?: string | null
           iban?: string | null
+          iban_reminder_sent?: boolean | null
+          iban_submitted_at?: string | null
           id?: string
           motivacion?: string | null
           nombre: string
@@ -792,6 +796,8 @@ export type Database = {
           estado?: string
           fecha_nacimiento?: string | null
           iban?: string | null
+          iban_reminder_sent?: boolean | null
+          iban_submitted_at?: string | null
           id?: string
           motivacion?: string | null
           nombre?: string
