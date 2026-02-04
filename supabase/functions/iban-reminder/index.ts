@@ -20,6 +20,7 @@ const handler = async (req: Request): Promise<Response> => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Find solicitudes created more than 20 minutes ago without IBAN and not yet reminded
+    // IMPORTANT: Only send reminders for pending solicitudes (not approved/rejected ones)
     const twentyMinutesAgo = new Date(Date.now() - 20 * 60 * 1000).toISOString();
 
     const { data: solicitudes, error: fetchError } = await supabase
@@ -27,6 +28,7 @@ const handler = async (req: Request): Promise<Response> => {
       .select("id, nombre, apellidos, email")
       .is("iban", null)
       .eq("iban_reminder_sent", false)
+      .eq("estado", "pendiente")
       .lt("created_at", twentyMinutesAgo);
 
     if (fetchError) {
