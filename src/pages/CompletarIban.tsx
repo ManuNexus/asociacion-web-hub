@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { CheckCircle2, AlertCircle, Lock, Building2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import bancoSabadellLogo from "@/assets/banco-sabadell-logo.png";
+
 
 const ibanSchema = z.object({
   iban: z.string().trim().min(1, "El IBAN es obligatorio").regex(
@@ -204,22 +204,15 @@ const CompletarIban = () => {
 
             <div className="bg-card rounded-2xl border-2 border-border shadow-lg overflow-hidden">
               {/* Payment Gateway Header */}
-              <div className="bg-gradient-to-r from-[#0066B3] to-[#004d86] px-6 py-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="bg-white/10 p-2 rounded-lg">
-                      <Lock className="h-5 w-5 text-white" />
-                    </div>
-                    <div>
-                      <h3 className="text-white font-semibold text-lg">Domiciliación Bancaria</h3>
-                      <p className="text-white/70 text-sm">Pago seguro mediante SEPA</p>
-                    </div>
+              <div className="bg-gradient-to-r from-primary to-primary/80 px-6 py-4">
+                <div className="flex items-center gap-3">
+                  <div className="bg-white/10 p-2 rounded-lg">
+                    <Lock className="h-5 w-5 text-white" />
                   </div>
-                  <img 
-                    src={bancoSabadellLogo} 
-                    alt="Banco Sabadell" 
-                    className="h-8 object-contain"
-                  />
+                  <div>
+                    <h3 className="text-white font-semibold text-lg">Domiciliación Bancaria</h3>
+                    <p className="text-white/70 text-sm">Pago seguro mediante SEPA</p>
+                  </div>
                 </div>
               </div>
 
@@ -271,7 +264,7 @@ const CompletarIban = () => {
                   </div>
                 </div>
 
-                <Button type="submit" size="lg" className="w-full bg-[#0066B3] hover:bg-[#004d86]" disabled={isSubmitting}>
+                <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
                   {isSubmitting ? (
                     "Procesando..."
                   ) : (

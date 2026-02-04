@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { CheckCircle2, Users, Heart, Shield, CreditCard, Lock, Building2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import bancoSabadellLogo from "@/assets/banco-sabadell-logo.png";
+
 
 // Validation schema for membership form - Step 1 (personal data)
 const membershipSchema = z.object({
@@ -516,22 +516,15 @@ const HazteSocio = () => {
 
                 <div className="bg-card rounded-2xl border-2 border-border shadow-lg overflow-hidden">
                   {/* Payment Gateway Header */}
-                  <div className="bg-gradient-to-r from-[#0066B3] to-[#004d86] px-6 py-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="bg-white/10 p-2 rounded-lg">
-                          <Lock className="h-5 w-5 text-white" />
-                        </div>
-                        <div>
-                          <h3 className="text-white font-semibold text-lg">Domiciliación Bancaria</h3>
-                          <p className="text-white/70 text-sm">Pago seguro mediante SEPA</p>
-                        </div>
+                  <div className="bg-gradient-to-r from-primary to-primary/80 px-6 py-4">
+                    <div className="flex items-center gap-3">
+                      <div className="bg-white/10 p-2 rounded-lg">
+                        <Lock className="h-5 w-5 text-white" />
                       </div>
-                      <img 
-                        src={bancoSabadellLogo} 
-                        alt="Banco Sabadell" 
-                        className="h-8 object-contain"
-                      />
+                      <div>
+                        <h3 className="text-white font-semibold text-lg">Domiciliación Bancaria</h3>
+                        <p className="text-white/70 text-sm">Pago seguro mediante SEPA</p>
+                      </div>
                     </div>
                   </div>
 
@@ -583,7 +576,7 @@ const HazteSocio = () => {
                       </div>
                     </div>
 
-                    <Button type="submit" size="xl" className="w-full bg-[#0066B3] hover:bg-[#004d86]" disabled={isSubmittingIban}>
+                    <Button type="submit" size="xl" className="w-full" disabled={isSubmittingIban}>
                       {isSubmittingIban ? (
                         "Procesando..."
                       ) : (
