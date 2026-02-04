@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { CheckCircle2, CreditCard, AlertCircle } from "lucide-react";
+import { CheckCircle2, AlertCircle, Lock, Building2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import bancoSabadellLogo from "@/assets/banco-sabadell-logo.png";
 
 const ibanSchema = z.object({
   iban: z.string().trim().min(1, "El IBAN es obligatorio").regex(
@@ -195,65 +196,100 @@ const CompletarIban = () => {
       <section className="py-16 md:py-24">
         <div className="container">
           <div className="max-w-md mx-auto">
-            <div className="bg-card rounded-xl border border-border p-6 mb-8">
-              <p className="text-muted-foreground text-sm mb-2">Solicitud de:</p>
+            <div className="bg-card rounded-xl border border-border p-4 mb-8">
+              <p className="text-muted-foreground text-sm mb-1">Solicitud de:</p>
               <p className="font-semibold text-foreground">{solicitud?.nombre} {solicitud?.apellidos}</p>
               <p className="text-sm text-muted-foreground">{solicitud?.email}</p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-6">
-                <h3 className="text-lg font-semibold text-foreground border-b border-border pb-2 flex items-center gap-2">
-                  <CreditCard className="h-5 w-5" />
-                  Datos Bancarios
-                </h3>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="iban">IBAN de la cuenta bancaria *</Label>
-                  <Input
-                    id="iban"
-                    name="iban"
-                    value={formData.iban}
-                    onChange={handleInputChange}
-                    placeholder="ES00 0000 0000 0000 0000 0000"
-                    maxLength={34}
-                    className={formErrors.iban ? "border-destructive" : ""}
+            <div className="bg-card rounded-2xl border-2 border-border shadow-lg overflow-hidden">
+              {/* Payment Gateway Header */}
+              <div className="bg-gradient-to-r from-[#0066B3] to-[#004d86] px-6 py-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-white/10 p-2 rounded-lg">
+                      <Lock className="h-5 w-5 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-white font-semibold text-lg">Domiciliación Bancaria</h3>
+                      <p className="text-white/70 text-sm">Pago seguro mediante SEPA</p>
+                    </div>
+                  </div>
+                  <img 
+                    src={bancoSabadellLogo} 
+                    alt="Banco Sabadell" 
+                    className="h-8 object-contain"
                   />
-                  <p className="text-xs text-muted-foreground">
-                    Cuenta donde se domiciliará el cobro de la cuota
-                  </p>
-                  {formErrors.iban && <p className="text-sm text-destructive">{formErrors.iban}</p>}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="titularCuenta">Titular de la cuenta (si es diferente al socio)</Label>
-                  <Input
-                    id="titularCuenta"
-                    name="titularCuenta"
-                    value={formData.titularCuenta}
-                    onChange={handleInputChange}
-                    placeholder="Nombre completo del titular"
-                    maxLength={200}
-                    className={formErrors.titularCuenta ? "border-destructive" : ""}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Déjalo en blanco si eres el titular de la cuenta
-                  </p>
-                  {formErrors.titularCuenta && <p className="text-sm text-destructive">{formErrors.titularCuenta}</p>}
                 </div>
               </div>
 
-              <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? (
-                  "Guardando..."
-                ) : (
-                  <>
-                    <CheckCircle2 className="mr-2 h-5 w-5" />
-                    Guardar datos bancarios
-                  </>
-                )}
-              </Button>
-            </form>
+              <form onSubmit={handleSubmit} className="p-6 space-y-6">
+                {/* Bank Info Notice */}
+                <div className="bg-muted/50 rounded-xl p-4 border border-border">
+                  <div className="flex items-start gap-3">
+                    <Building2 className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="text-sm font-medium text-foreground mb-1">
+                        Gestión de cobros con Banco Sabadell
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Todos los pagos se realizan mediante domiciliación bancaria SEPA, gestionados de forma segura a través de Banco Sabadell. Tus datos están protegidos bajo la normativa europea de protección de datos.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="iban" className="text-sm font-medium">IBAN de la cuenta bancaria *</Label>
+                    <div className="relative">
+                      <Input
+                        id="iban"
+                        name="iban"
+                        value={formData.iban}
+                        onChange={handleInputChange}
+                        placeholder="ES00 0000 0000 0000 0000 0000"
+                        maxLength={34}
+                        className={`h-12 text-base font-mono pl-4 ${formErrors.iban ? "border-destructive" : "border-border"}`}
+                      />
+                    </div>
+                    {formErrors.iban && <p className="text-sm text-destructive">{formErrors.iban}</p>}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="titularCuenta" className="text-sm font-medium">Titular de la cuenta <span className="text-muted-foreground font-normal">(opcional)</span></Label>
+                    <Input
+                      id="titularCuenta"
+                      name="titularCuenta"
+                      value={formData.titularCuenta}
+                      onChange={handleInputChange}
+                      placeholder="Solo si es diferente al socio"
+                      maxLength={200}
+                      className={`h-12 ${formErrors.titularCuenta ? "border-destructive" : ""}`}
+                    />
+                    {formErrors.titularCuenta && <p className="text-sm text-destructive">{formErrors.titularCuenta}</p>}
+                  </div>
+                </div>
+
+                <Button type="submit" size="lg" className="w-full bg-[#0066B3] hover:bg-[#004d86]" disabled={isSubmitting}>
+                  {isSubmitting ? (
+                    "Procesando..."
+                  ) : (
+                    <>
+                      <Lock className="mr-2 h-5 w-5" />
+                      Confirmar domiciliación
+                    </>
+                  )}
+                </Button>
+
+                <div className="flex items-center justify-center gap-2 pt-2">
+                  <Lock className="h-4 w-4 text-muted-foreground" />
+                  <p className="text-xs text-muted-foreground text-center">
+                    Conexión segura · Datos encriptados · Normativa SEPA
+                  </p>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       </section>
