@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Mail, MapPin, Twitter } from "lucide-react";
+import { Mail, MapPin, Twitter, Facebook, Send, Youtube } from "lucide-react";
 import logoAhoraWhite from "@/assets/logo-ahora-white.png";
 export function Footer() {
   return <footer className="bg-primary text-primary-foreground">
@@ -48,10 +48,45 @@ export function Footer() {
                   info@ahoraorg.es
                 </a>
               </div>
-              <div className="flex items-center gap-2">
-                <Twitter className="h-4 w-4 text-secondary" />
-                <a className="text-primary-foreground/80 hover:text-primary-foreground transition-colors" href="https://x.com/AhoraOrg_es" target="_blank" rel="noopener noreferrer">
-                  @AhoraOrg_es
+            </div>
+            <div className="pt-2">
+              <h5 className="text-xs font-medium text-primary-foreground/60 mb-2">Síguenos</h5>
+              <div className="flex items-center gap-3">
+                <a 
+                  href="https://x.com/AhoraOrg_es" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-primary-foreground/80 hover:text-secondary transition-colors"
+                  title="X (Twitter)"
+                >
+                  <Twitter className="h-5 w-5" />
+                </a>
+                <a 
+                  href="https://www.facebook.com/profile.php?id=61585031630116" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-primary-foreground/80 hover:text-secondary transition-colors"
+                  title="Facebook"
+                >
+                  <Facebook className="h-5 w-5" />
+                </a>
+                <a 
+                  href="https://t.me/ActuaAHORA" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-primary-foreground/80 hover:text-secondary transition-colors"
+                  title="Telegram"
+                >
+                  <Send className="h-5 w-5" />
+                </a>
+                <a 
+                  href="https://www.youtube.com/@Asociaci%C3%B3nAHORA" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-primary-foreground/80 hover:text-secondary transition-colors"
+                  title="YouTube"
+                >
+                  <Youtube className="h-5 w-5" />
                 </a>
               </div>
             </div>
