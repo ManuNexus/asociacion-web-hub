@@ -25,7 +25,7 @@ import {
   EyeOff,
   IdCard,
   Shield,
-  MessageCircle,
+  Tv,
   Folder,
   ChevronRight,
   ArrowLeft,
@@ -52,7 +52,7 @@ import logoIcon from "@/assets/logo-ahora-icon.png";
 import { AdminContactos } from "@/components/admin/AdminContactos";
 import { RedesSociales } from "@/components/junta/RedesSociales";
 import html2canvas from "html2canvas";
-import { ChatJunta } from "@/components/socios/ChatJunta";
+import { AhoraTVViewer } from "@/components/socios/AhoraTVViewer";
 import { SolicitudBaja } from "@/components/socios/SolicitudBaja";
 
 
@@ -134,7 +134,7 @@ const PanelSocios = () => {
   const [voting, setVoting] = useState<string | null>(null);
   const [downloadingCert, setDownloadingCert] = useState<string | null>(null);
   const [currentDocPath, setCurrentDocPath] = useState<string[]>([]);
-  const [mensajesNuevos, setMensajesNuevos] = useState(0);
+  
   
   // Profile edit states
   const [editNombre, setEditNombre] = useState("");
@@ -192,61 +192,6 @@ const PanelSocios = () => {
       fetchAllData();
     }
   }, [user, isSocio]);
-
-  // Fetch unread messages count for socio
-  useEffect(() => {
-    if (!miSocio) return;
-    
-    fetchMensajesNuevos();
-    
-    const channel = supabase
-      .channel(`socio_chat_notifications_${miSocio.id}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'mensajes_chat',
-          filter: `socio_id=eq.${miSocio.id}`
-        },
-        () => {
-          fetchMensajesNuevos();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [miSocio?.id]);
-
-  const fetchMensajesNuevos = async () => {
-    if (!miSocio || !user) return;
-    
-    // Get messages in this conversation
-    const { data: mensajes } = await supabase
-      .from("mensajes_chat")
-      .select("es_junta, user_id, created_at")
-      .eq("socio_id", miSocio.id)
-      .order("created_at", { ascending: false });
-
-    if (mensajes && mensajes.length > 0) {
-      // Find the last message sent by the socio (current user)
-      const lastMiMensaje = mensajes.find(m => m.user_id === user.id);
-      const lastMiMensajeTime = lastMiMensaje ? new Date(lastMiMensaje.created_at).getTime() : 0;
-      
-      // Count messages from junta that are newer than my last message
-      const nuevos = mensajes.filter(m => 
-        m.es_junta && 
-        new Date(m.created_at).getTime() > lastMiMensajeTime
-      ).length;
-      
-      setMensajesNuevos(nuevos);
-    } else {
-      setMensajesNuevos(0);
-    }
-  };
-
   const fetchAllData = async () => {
     setLoading(true);
     await Promise.all([
@@ -956,14 +901,9 @@ const PanelSocios = () => {
                 <User className="h-4 w-4 shrink-0" />
                 <span>Mi cuenta</span>
               </TabsTrigger>
-              <TabsTrigger value="chat" className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm relative shrink-0">
-                <MessageCircle className="h-4 w-4 shrink-0" />
-                <span>Chat Junta</span>
-                {mensajesNuevos > 0 && (
-                  <span className="absolute -top-1 -right-1 h-5 min-w-5 px-1 bg-primary rounded-full text-[10px] text-primary-foreground flex items-center justify-center font-medium leading-none">
-                    {mensajesNuevos}
-                  </span>
-                )}
+              <TabsTrigger value="ahora-tv" className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm shrink-0">
+                <Tv className="h-4 w-4 shrink-0" />
+                <span>AHORA TV</span>
               </TabsTrigger>
             </TabsList>
 
@@ -2026,9 +1966,9 @@ const PanelSocios = () => {
               </TabsContent>
             )}
 
-            {/* Tab Chat Junta */}
-            <TabsContent value="chat">
-              <ChatJunta miSocioId={miSocio?.id} />
+            {/* Tab AHORA TV */}
+            <TabsContent value="ahora-tv">
+              <AhoraTVViewer />
             </TabsContent>
           </Tabs>
         </div>
