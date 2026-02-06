@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      ahora_tv: {
+        Row: {
+          activo: boolean
+          created_at: string
+          created_by: string | null
+          descripcion: string | null
+          destacado: boolean
+          en_directo: boolean
+          id: string
+          tipo: string
+          titulo: string
+          updated_at: string
+          youtube_url: string
+        }
+        Insert: {
+          activo?: boolean
+          created_at?: string
+          created_by?: string | null
+          descripcion?: string | null
+          destacado?: boolean
+          en_directo?: boolean
+          id?: string
+          tipo?: string
+          titulo: string
+          updated_at?: string
+          youtube_url: string
+        }
+        Update: {
+          activo?: boolean
+          created_at?: string
+          created_by?: string | null
+          descripcion?: string | null
+          destacado?: boolean
+          en_directo?: boolean
+          id?: string
+          tipo?: string
+          titulo?: string
+          updated_at?: string
+          youtube_url?: string
+        }
+        Relationships: []
+      }
       analytics_snapshots: {
         Row: {
           created_at: string

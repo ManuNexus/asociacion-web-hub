@@ -35,7 +35,7 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Pencil, Trash2, Loader2, LogOut, Users, Newspaper, Mail, Phone, Eye, Search, Tag, UserCheck, Send, RefreshCw, Vote, Calendar, FileText, CreditCard, Bell, Link, Clock, BookUser, Share2, Star, MessageCircle } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, LogOut, Users, Newspaper, Mail, Phone, Eye, Search, Tag, UserCheck, Send, RefreshCw, Vote, Calendar, FileText, CreditCard, Bell, Link, Clock, BookUser, Share2, Star, Tv } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { formatInMadrid, toDateTimeLocalValue, fromDateTimeLocalValue } from "@/lib/timezone";
@@ -43,7 +43,7 @@ import { AdminVotaciones } from "@/components/admin/AdminVotaciones";
 import { AdminEventos } from "@/components/admin/AdminEventos";
 import { AdminDocumentos } from "@/components/admin/AdminDocumentos";
 import { AdminSocios } from "@/components/admin/AdminSocios";
-import { ChatJunta } from "@/components/socios/ChatJunta";
+import { AdminAhoraTV } from "@/components/admin/AdminAhoraTV";
 import { AdminContactos } from "@/components/admin/AdminContactos";
 import { AdminMailings } from "@/components/admin/AdminMailings";
 import { RedesSociales } from "@/components/junta/RedesSociales";
@@ -112,7 +112,7 @@ const AdminNoticias = () => {
   const [resendingId, setResendingId] = useState<string | null>(null);
   const [diaCobro, setDiaCobro] = useState<number>(1);
   const [notifyingId, setNotifyingId] = useState<string | null>(null);
-  const [chatsPendientes, setChatsPendientes] = useState(0);
+  
 
   const solicitudesFiltradas = solicitudes.filter((s) => {
     const matchesSearch = 
@@ -170,56 +170,8 @@ const AdminNoticias = () => {
       fetchCategorias();
       fetchSolicitudes();
       fetchMiembrosJunta();
-      fetchChatsPendientes();
     }
   }, [user, isAdmin]);
-
-  // Realtime subscription for pending chats
-  useEffect(() => {
-    if (!user || !isAdmin) return;
-
-    const channel = supabase
-      .channel('admin_chat_notifications')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'mensajes_chat'
-        },
-        () => {
-          fetchChatsPendientes();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user, isAdmin]);
-
-  const fetchChatsPendientes = async () => {
-    // Get all conversations and check which have unanswered messages from socios
-    const { data: mensajes } = await supabase
-      .from("mensajes_chat")
-      .select("socio_id, es_junta, created_at")
-      .order("created_at", { ascending: false });
-
-    if (mensajes) {
-      // Group by socio_id and check if the last message is from a socio (not junta)
-      const conversaciones: { [key: string]: { es_junta: boolean; created_at: string } } = {};
-      mensajes.forEach(msg => {
-        if (msg.socio_id && !conversaciones[msg.socio_id]) {
-          conversaciones[msg.socio_id] = { es_junta: msg.es_junta, created_at: msg.created_at };
-        }
-      });
-      
-      // Count conversations where the last message is from a socio (pending response)
-      const pendientes = Object.values(conversaciones).filter(c => !c.es_junta).length;
-      setChatsPendientes(pendientes);
-    }
-  };
-
   const fetchNoticias = async () => {
     setLoading(true);
     const { data, error } = await supabase
@@ -670,14 +622,9 @@ const AdminNoticias = () => {
                 <CreditCard className="h-4 w-4 shrink-0" />
                 <span>Socios</span>
               </TabsTrigger>
-              <TabsTrigger value="chat" className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm relative shrink-0">
-                <MessageCircle className="h-4 w-4 shrink-0" />
-                <span>Chat Socios</span>
-                {chatsPendientes > 0 && (
-                  <span className="absolute -top-1 -right-1 h-5 min-w-5 px-1 bg-primary rounded-full text-[10px] text-primary-foreground flex items-center justify-center font-medium leading-none">
-                    {chatsPendientes}
-                  </span>
-                )}
+              <TabsTrigger value="ahora-tv" className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm shrink-0">
+                <Tv className="h-4 w-4 shrink-0" />
+                <span>AHORA TV</span>
               </TabsTrigger>
               <TabsTrigger value="votaciones" className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm shrink-0">
                 <Vote className="h-4 w-4 shrink-0" />
@@ -1291,9 +1238,9 @@ const AdminNoticias = () => {
               </Card>
             </TabsContent>
 
-            {/* Tab Chat con Socios */}
-            <TabsContent value="chat">
-              <ChatJunta />
+            {/* Tab AHORA TV */}
+            <TabsContent value="ahora-tv">
+              <AdminAhoraTV />
             </TabsContent>
 
             {/* Tab Votaciones */}
