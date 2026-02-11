@@ -33,8 +33,20 @@ interface Noticia {
   imagen_url: string | null;
 }
 
+interface VideoDestacado {
+  titulo: string;
+  youtube_url: string;
+  descripcion: string | null;
+}
+
+const getYoutubeId = (url: string) => {
+  const match = url.match(/(?:youtu\.be\/|v=|\/embed\/)([^&?#]+)/);
+  return match ? match[1] : "";
+};
+
 const Index = () => {
   const [noticias, setNoticias] = useState<Noticia[]>([]);
+  const [videoDestacado, setVideoDestacado] = useState<VideoDestacado | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -54,7 +66,20 @@ const Index = () => {
       setLoading(false);
     };
 
+    const fetchVideoDestacado = async () => {
+      const { data } = await supabase
+        .from("ahora_tv")
+        .select("titulo, youtube_url, descripcion")
+        .eq("activo", true)
+        .eq("destacado", true)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .single();
+      if (data) setVideoDestacado(data);
+    };
+
     fetchNoticias();
+    fetchVideoDestacado();
   }, []);
 
   const formatDate = (dateString: string | null) => {
@@ -113,6 +138,48 @@ const Index = () => {
               </div>
             </div>
             
+          </div>
+        </div>
+      </section>
+
+      {/* Video Destacado Section */}
+      <div className="h-1 bg-secondary" />
+      <section className="py-20 md:py-28">
+        <div className="container">
+          <div className="text-center max-w-2xl mx-auto mb-10">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+              Nuestro Último Acto
+            </h2>
+            <p className="text-lg text-muted-foreground">
+              Revive nuestros eventos más recientes.
+            </p>
+          </div>
+          <div className="max-w-4xl mx-auto">
+            {videoDestacado ? (
+              <div className="space-y-4">
+                <div className="relative rounded-xl overflow-hidden shadow-elevated aspect-video">
+                  <iframe
+                    src={`https://www.youtube.com/embed/${getYoutubeId(videoDestacado.youtube_url)}`}
+                    title={videoDestacado.titulo}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    className="absolute inset-0 w-full h-full"
+                  />
+                </div>
+                <div className="text-center">
+                  <h3 className="text-xl font-bold text-foreground">{videoDestacado.titulo}</h3>
+                  {videoDestacado.descripcion && (
+                    <p className="text-muted-foreground mt-2 max-w-2xl mx-auto text-sm line-clamp-3">
+                      {videoDestacado.descripcion}
+                    </p>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="text-center text-muted-foreground py-12">
+                No hay vídeo destacado disponible.
+              </div>
+            )}
           </div>
         </div>
       </section>
