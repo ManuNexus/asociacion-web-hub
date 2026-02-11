@@ -40,7 +40,7 @@ interface VideoDestacado {
 }
 
 const getYoutubeId = (url: string) => {
-  const match = url.match(/(?:youtu\.be\/|v=|\/embed\/)([^&?#]+)/);
+  const match = url.match(/(?:youtu\.be\/|v=|\/embed\/|\/live\/)([^&?#]+)/);
   return match ? match[1] : "";
 };
 
