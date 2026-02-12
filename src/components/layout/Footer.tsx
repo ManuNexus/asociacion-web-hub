@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Mail, MapPin, Twitter, Facebook, Send, Youtube } from "lucide-react";
+import { Mail, MapPin, Twitter, Facebook, Send, Youtube, Instagram } from "lucide-react";
 import logoAhoraWhite from "@/assets/logo-ahora-white.png";
 export function Footer() {
   return <footer className="bg-primary text-primary-foreground">
@@ -87,6 +87,15 @@ export function Footer() {
                   title="YouTube"
                 >
                   <Youtube className="h-5 w-5" />
+                </a>
+                <a 
+                  href="https://www.instagram.com/ahoraorg_es?igsh=MXR3emJoM2pkemgyMQ==" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-primary-foreground/80 hover:text-secondary transition-colors"
+                  title="Instagram"
+                >
+                  <Instagram className="h-5 w-5" />
                 </a>
               </div>
             </div>
