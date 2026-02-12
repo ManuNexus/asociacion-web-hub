@@ -48,7 +48,7 @@ const handler = async (req: Request): Promise<Response> => {
     let sentCount = 0;
 
     for (const solicitud of solicitudes) {
-      const completarIbanUrl = `https://asociacion-web-hub.lovable.app/completar-iban?id=${solicitud.id}`;
+      const completarIbanUrl = `https://ahoraorg.es/completar-iban?id=${solicitud.id}`;
 
       try {
         await resend.emails.send({
