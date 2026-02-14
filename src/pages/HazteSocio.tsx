@@ -131,6 +131,17 @@ const HazteSocio = () => {
     
     try {
       const validData = validationResult.data;
+
+      // Capture IP for consent proof
+      let ipAddress = '';
+      try {
+        const ipRes = await fetch('https://api.ipify.org?format=json');
+        const ipData = await ipRes.json();
+        ipAddress = ipData.ip || '';
+      } catch {
+        console.warn('Could not fetch IP address');
+      }
+
       const { data: insertedData, error } = await supabase.from("solicitudes_socio").insert({
         nombre: validData.nombre,
         apellidos: validData.apellidos,
@@ -138,6 +149,8 @@ const HazteSocio = () => {
         email: validData.email,
         telefono: validData.telefono,
         tipo_pago: validData.tipoPago,
+        ip_address: ipAddress,
+        version_documento: '2025-02-14-v1',
       }).select('id').single();
 
       if (error) throw error;
