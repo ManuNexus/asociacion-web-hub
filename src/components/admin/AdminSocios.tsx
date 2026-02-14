@@ -76,6 +76,10 @@ interface Socio {
   dia_cobro: number | null;
   foto_url: string | null;
   cargo_junta: CargoJunta;
+  bio: string | null;
+  social_x: string | null;
+  social_instagram: string | null;
+  social_linkedin: string | null;
 }
 
 interface SocioWithJunta extends Socio {
@@ -105,6 +109,10 @@ export const AdminSocios = () => {
   const [fechaPrimeraCuota, setFechaPrimeraCuota] = useState<Date | undefined>(undefined);
   const [fechaNacimiento, setFechaNacimiento] = useState<Date | undefined>(undefined);
   const [searchTerm, setSearchTerm] = useState("");
+  const [bio, setBio] = useState("");
+  const [socialX, setSocialX] = useState("");
+  const [socialInstagram, setSocialInstagram] = useState("");
+  const [socialLinkedin, setSocialLinkedin] = useState("");
   
   const [syncingEmails, setSyncingEmails] = useState(false);
   const { toast } = useToast();
@@ -153,6 +161,10 @@ export const AdminSocios = () => {
     setDiaCobro(socio.dia_cobro || 1);
     setFotoUrl(socio.foto_url || "");
     setCargoJunta(socio.cargo_junta);
+    setBio(socio.bio || "");
+    setSocialX(socio.social_x || "");
+    setSocialInstagram(socio.social_instagram || "");
+    setSocialLinkedin(socio.social_linkedin || "");
     setFechaPrimeraCuota(socio.fecha_primera_cuota ? new Date(socio.fecha_primera_cuota) : undefined);
     setFechaNacimiento(socio.fecha_nacimiento ? new Date(socio.fecha_nacimiento) : undefined);
     setDialogOpen(true);
@@ -184,7 +196,11 @@ export const AdminSocios = () => {
         foto_url: fotoUrl || null,
         cargo_junta: finalCargoJunta,
         fecha_primera_cuota: fechaPrimeraCuota ? format(fechaPrimeraCuota, "yyyy-MM-dd") : null,
-        fecha_nacimiento: fechaNacimiento ? format(fechaNacimiento, "yyyy-MM-dd") : null
+        fecha_nacimiento: fechaNacimiento ? format(fechaNacimiento, "yyyy-MM-dd") : null,
+        bio: bio || null,
+        social_x: socialX || null,
+        social_instagram: socialInstagram || null,
+        social_linkedin: socialLinkedin || null,
       })
       .eq("id", editingSocio.id);
 
@@ -816,6 +832,54 @@ export const AdminSocios = () => {
                   </div>
                 )}
               </div>
+
+              {/* Perfil público - Bio y Redes Sociales */}
+              {esJunta && (
+                <div className="p-4 bg-muted rounded-lg space-y-3">
+                  <p className="font-medium text-sm">📝 Perfil Público (visible en "Quiénes Somos")</p>
+                  <div className="space-y-2">
+                    <Label htmlFor="bio">Biografía</Label>
+                    <textarea
+                      id="bio"
+                      value={bio}
+                      onChange={(e) => setBio(e.target.value)}
+                      placeholder="Breve descripción profesional o personal..."
+                      className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      rows={3}
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 gap-3">
+                    <div className="space-y-2">
+                      <Label htmlFor="social_x">X (Twitter)</Label>
+                      <Input
+                        id="social_x"
+                        value={socialX}
+                        onChange={(e) => setSocialX(e.target.value)}
+                        placeholder="https://x.com/usuario"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="social_instagram">Instagram</Label>
+                      <Input
+                        id="social_instagram"
+                        value={socialInstagram}
+                        onChange={(e) => setSocialInstagram(e.target.value)}
+                        placeholder="https://instagram.com/usuario"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="social_linkedin">LinkedIn</Label>
+                      <Input
+                        id="social_linkedin"
+                        value={socialLinkedin}
+                        onChange={(e) => setSocialLinkedin(e.target.value)}
+                        placeholder="https://linkedin.com/in/usuario"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
                 <div>
                   <Label htmlFor="activo">Socio activo</Label>
