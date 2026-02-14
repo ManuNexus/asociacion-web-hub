@@ -795,6 +795,7 @@ export type Database = {
           iban_reminder_sent: boolean | null
           iban_submitted_at: string | null
           id: string
+          ip_address: string | null
           motivacion: string | null
           nombre: string
           provincia: string | null
@@ -802,6 +803,7 @@ export type Database = {
           tipo_pago: string
           titular_cuenta: string | null
           updated_at: string
+          version_documento: string | null
         }
         Insert: {
           apellidos: string
@@ -818,6 +820,7 @@ export type Database = {
           iban_reminder_sent?: boolean | null
           iban_submitted_at?: string | null
           id?: string
+          ip_address?: string | null
           motivacion?: string | null
           nombre: string
           provincia?: string | null
@@ -825,6 +828,7 @@ export type Database = {
           tipo_pago?: string
           titular_cuenta?: string | null
           updated_at?: string
+          version_documento?: string | null
         }
         Update: {
           apellidos?: string
@@ -841,6 +845,7 @@ export type Database = {
           iban_reminder_sent?: boolean | null
           iban_submitted_at?: string | null
           id?: string
+          ip_address?: string | null
           motivacion?: string | null
           nombre?: string
           provincia?: string | null
@@ -848,6 +853,7 @@ export type Database = {
           tipo_pago?: string
           titular_cuenta?: string | null
           updated_at?: string
+          version_documento?: string | null
         }
         Relationships: []
       }
