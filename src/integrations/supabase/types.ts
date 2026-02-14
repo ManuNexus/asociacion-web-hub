@@ -700,6 +700,7 @@ export type Database = {
           activo: boolean
           al_corriente_pago: boolean
           apellidos: string
+          bio: string | null
           cargo_junta: Database["public"]["Enums"]["cargo_junta"] | null
           ciudad: string | null
           codigo_postal: string | null
@@ -716,6 +717,9 @@ export type Database = {
           nombre: string
           numero_socio: string | null
           provincia: string | null
+          social_instagram: string | null
+          social_linkedin: string | null
+          social_x: string | null
           telefono: string | null
           tipo_cuota: string
           tipo_pago: string
@@ -727,6 +731,7 @@ export type Database = {
           activo?: boolean
           al_corriente_pago?: boolean
           apellidos: string
+          bio?: string | null
           cargo_junta?: Database["public"]["Enums"]["cargo_junta"] | null
           ciudad?: string | null
           codigo_postal?: string | null
@@ -743,6 +748,9 @@ export type Database = {
           nombre: string
           numero_socio?: string | null
           provincia?: string | null
+          social_instagram?: string | null
+          social_linkedin?: string | null
+          social_x?: string | null
           telefono?: string | null
           tipo_cuota?: string
           tipo_pago?: string
@@ -754,6 +762,7 @@ export type Database = {
           activo?: boolean
           al_corriente_pago?: boolean
           apellidos?: string
+          bio?: string | null
           cargo_junta?: Database["public"]["Enums"]["cargo_junta"] | null
           ciudad?: string | null
           codigo_postal?: string | null
@@ -770,6 +779,9 @@ export type Database = {
           nombre?: string
           numero_socio?: string | null
           provincia?: string | null
+          social_instagram?: string | null
+          social_linkedin?: string | null
+          social_x?: string | null
           telefono?: string | null
           tipo_cuota?: string
           tipo_pago?: string
