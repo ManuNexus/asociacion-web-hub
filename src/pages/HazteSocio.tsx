@@ -25,6 +25,7 @@ const membershipSchema = z.object({
   tipoPago: z.enum(["mensual", "anual"], { errorMap: () => ({ message: "Selecciona un tipo de pago" }) }),
   aceptaEstatutos: z.literal(true, { errorMap: () => ({ message: "Debes aceptar los estatutos" }) }),
   aceptaPrivacidad: z.literal(true, { errorMap: () => ({ message: "Debes aceptar la política de privacidad" }) }),
+  aceptaCondiciones: z.literal(true, { errorMap: () => ({ message: "Debes aceptar las condiciones de afiliación" }) }),
 });
 
 // Validation schema for IBAN (Step 2)
@@ -73,6 +74,7 @@ const HazteSocio = () => {
     tipoPago: "mensual" as "mensual" | "anual",
     aceptaEstatutos: false,
     aceptaPrivacidad: false,
+    aceptaCondiciones: false,
   });
 
   const [ibanData, setIbanData] = useState({
@@ -219,6 +221,7 @@ const HazteSocio = () => {
         tipoPago: "mensual",
         aceptaEstatutos: false,
         aceptaPrivacidad: false,
+        aceptaCondiciones: false,
       });
       setIbanData({ iban: "", titularCuenta: "" });
       setStep(1);
@@ -481,6 +484,22 @@ const HazteSocio = () => {
                         </Label>
                       </div>
                       {formErrors.aceptaPrivacidad && <p className="text-sm text-destructive ml-6">{formErrors.aceptaPrivacidad}</p>}
+                    </div>
+                    <div className="space-y-1">
+                      <div className="flex items-start gap-3">
+                        <Checkbox
+                          id="aceptaCondiciones"
+                          checked={formData.aceptaCondiciones}
+                          onCheckedChange={(checked) =>
+                            handleCheckboxChange("aceptaCondiciones", checked as boolean)
+                          }
+                          className={formErrors.aceptaCondiciones ? "border-destructive" : ""}
+                        />
+                        <Label htmlFor="aceptaCondiciones" className="text-sm text-muted-foreground leading-relaxed">
+                          Acepto las <Link to="/condiciones-afiliacion" className="text-primary hover:underline">condiciones de afiliación y cuotas de socio</Link>, incluyendo la autorización de domiciliación bancaria SEPA. *
+                        </Label>
+                      </div>
+                      {formErrors.aceptaCondiciones && <p className="text-sm text-destructive ml-6">{formErrors.aceptaCondiciones}</p>}
                     </div>
                   </div>
 
