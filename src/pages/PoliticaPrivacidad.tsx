@@ -20,8 +20,7 @@ const PoliticaPrivacidad = () => {
         <div className="container">
           <div className="max-w-3xl mx-auto prose prose-lg">
             <p className="text-muted-foreground mb-8">
-              Última actualización:{" "}
-              {new Date().toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" })}
+              Última actualización: 10 de enero de 2025
             </p>
 
             <div className="space-y-8">
