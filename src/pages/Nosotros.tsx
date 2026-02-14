@@ -96,9 +96,9 @@ const Nosotros = () => {
       <section className="py-16 md:py-24 bg-muted/50">
         <div className="container">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-foreground mb-4">Junta Directiva</h2>
+            <h2 className="text-3xl font-bold text-foreground mb-4">Nuestro Equipo</h2>
             <p className="text-muted-foreground">
-              Las personas que lideran y gestionan la asociación.
+              Las personas detrás de AHORA que trabajan cada día por hacer realidad nuestra misión.
             </p>
           </div>
           {miembros.length > 0 && (
