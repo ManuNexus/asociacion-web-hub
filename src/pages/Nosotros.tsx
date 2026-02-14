@@ -1,5 +1,15 @@
+import { useEffect, useState } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { Target, Eye, Users, Scale } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+
+const cargoLabels: Record<string, string> = {
+  presidente: "Presidente",
+  vicepresidente: "Vicepresidenta",
+  secretario: "Secretario",
+  tesorero: "Tesorero",
+  vocal: "Vocal",
+};
 
 const objetivos = [
   "Defender los valores constitucionales y los derechos fundamentales reconocidos en la Constitución Española.",
@@ -10,6 +20,24 @@ const objetivos = [
 ];
 
 const Nosotros = () => {
+  const [miembros, setMiembros] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchMiembros = async () => {
+      const { data } = await supabase
+        .from("socios")
+        .select("nombre, apellidos, cargo_junta, foto_url")
+        .not("cargo_junta", "is", null)
+        .eq("activo", true);
+      
+      if (data) {
+        const order = ["presidente", "vicepresidente", "secretario", "tesorero", "vocal"];
+        data.sort((a, b) => order.indexOf(a.cargo_junta!) - order.indexOf(b.cargo_junta!));
+        setMiembros(data);
+      }
+    };
+    fetchMiembros();
+  }, []);
   return (
     <Layout>
       {/* Hero */}
@@ -60,6 +88,46 @@ const Nosotros = () => {
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Junta Directiva */}
+      <div className="h-1 bg-secondary" />
+      <section className="py-16 md:py-24 bg-muted/50">
+        <div className="container">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-foreground mb-4">Junta Directiva</h2>
+            <p className="text-muted-foreground">
+              Las personas que lideran y gestionan la asociación.
+            </p>
+          </div>
+          {miembros.length > 0 && (
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {miembros.map((m, i) => (
+                <div key={i} className="bg-card rounded-xl p-6 shadow-card text-center">
+                  <div className="w-28 h-28 rounded-full mx-auto mb-4 overflow-hidden bg-muted border-4 border-secondary/30">
+                    {m.foto_url ? (
+                      <img
+                        src={m.foto_url}
+                        alt={`${m.nombre} ${m.apellidos}`}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Users className="h-10 w-10 text-muted-foreground" />
+                      </div>
+                    )}
+                  </div>
+                  <h3 className="font-bold text-secondary text-lg uppercase tracking-wide">
+                    {m.nombre} {m.apellidos}
+                  </h3>
+                  <p className="text-muted-foreground text-sm mt-1">
+                    {cargoLabels[m.cargo_junta] || m.cargo_junta}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
