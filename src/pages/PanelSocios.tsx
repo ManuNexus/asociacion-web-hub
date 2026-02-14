@@ -253,15 +253,6 @@ const PanelSocios = () => {
       return;
     }
     
-    // Validate address fields are filled
-    if (!editDireccion.trim() || !editCodigoPostal.trim() || !editCiudad.trim() || !editProvincia.trim()) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Todos los campos de dirección son obligatorios para el mandato SEPA",
-      });
-      return;
-    }
     
     // Validate IBAN if provided
     if (isEditingIban && editIban.trim()) {
@@ -309,33 +300,7 @@ const PanelSocios = () => {
       
       if (error) throw error;
       
-      // If IBAN changed, send new SEPA document
-      if (ibanChanged) {
-        try {
-          const { error: sepaError } = await supabase.functions.invoke("send-sepa-update");
-          
-          if (sepaError) {
-            console.error("Error sending SEPA:", sepaError);
-            toast({ 
-              title: "Datos bancarios actualizados",
-              description: "Se ha actualizado tu cuenta. Te enviaremos el documento SEPA próximamente.",
-            });
-          } else {
-            toast({ 
-              title: "Datos bancarios actualizados",
-              description: "Te hemos enviado un nuevo documento SEPA para firmar a tu email.",
-            });
-          }
-        } catch (sepaErr) {
-          console.error("Error invoking SEPA function:", sepaErr);
-          toast({ 
-            title: "Datos bancarios actualizados",
-            description: "Se ha actualizado tu cuenta. Te enviaremos el documento SEPA próximamente.",
-          });
-        }
-      } else {
-        toast({ title: "Datos bancarios actualizados correctamente" });
-      }
+      toast({ title: "Datos bancarios actualizados correctamente" });
       
       fetchMiSocio();
     } catch (error: any) {
