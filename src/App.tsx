@@ -8,6 +8,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { PageTransition } from "@/components/PageTransition";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { LoadingScreen } from "@/components/LoadingScreen";
+import CookieBanner from "@/components/CookieBanner";
 
 // Eager load the landing page for best LCP
 import Index from "./pages/Index";
@@ -39,6 +40,7 @@ const App = () => (
         <BrowserRouter>
           <ScrollToTop />
           <LoadingScreen />
+          <CookieBanner />
           <Suspense fallback={null}>
             <PageTransition>
               <Routes>
