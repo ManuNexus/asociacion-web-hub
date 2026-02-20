@@ -27,6 +27,7 @@ const AdminNoticias = lazy(() => import("./pages/AdminNoticias"));
 const PanelSocios = lazy(() => import("./pages/PanelSocios"));
 const Contabilidad = lazy(() => import("./pages/Contabilidad"));
 const Eventos = lazy(() => import("./pages/Eventos"));
+const SemaforoInstitucional = lazy(() => import("./pages/SemaforoInstitucional"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -58,6 +59,7 @@ const App = () => (
                 <Route path="/socios" element={<PanelSocios />} />
                 <Route path="/contabilidad" element={<Contabilidad />} />
                 <Route path="/eventos" element={<Eventos />} />
+                <Route path="/semaforo-institucional" element={<SemaforoInstitucional />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </PageTransition>
