@@ -43,19 +43,16 @@ const GRAVEDAD_CONFIG: Record<Gravedad, { label: string; color: string; bg: stri
   },
 };
 
-function getMonthsFromCases(cases: Caso[]) {
-  const months = new Map<string, string>();
+function getYearsFromCases(cases: Caso[]) {
+  const years = new Set<string>();
   cases.forEach((c) => {
-    const date = parseISO(c.fecha);
-    const key = format(date, "yyyy-MM");
-    const label = format(date, "MMM yyyy", { locale: es });
-    months.set(key, label.charAt(0).toUpperCase() + label.slice(1));
+    years.add(format(parseISO(c.fecha), "yyyy"));
   });
-  return Array.from(months.entries()).sort((a, b) => b[0].localeCompare(a[0]));
+  return Array.from(years).sort((a, b) => b.localeCompare(a));
 }
 
 export default function SemaforoInstitucional() {
-  const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
+  const [selectedYear, setSelectedYear] = useState<string | null>(null);
 
   const { data: casos = [] } = useQuery({
     queryKey: ["casos-semaforo"],
@@ -83,12 +80,12 @@ export default function SemaforoInstitucional() {
     },
   });
 
-  const months = useMemo(() => getMonthsFromCases(casos), [casos]);
+  const years = useMemo(() => getYearsFromCases(casos), [casos]);
 
   const filteredCases = useMemo(() => {
-    if (!selectedMonth) return casos;
-    return casos.filter((c) => format(parseISO(c.fecha), "yyyy-MM") === selectedMonth);
-  }, [casos, selectedMonth]);
+    if (!selectedYear) return casos;
+    return casos.filter((c) => format(parseISO(c.fecha), "yyyy") === selectedYear);
+  }, [casos, selectedYear]);
 
   const counts = useMemo(() => {
     const source = filteredCases;
@@ -154,26 +151,26 @@ export default function SemaforoInstitucional() {
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div className="flex flex-wrap gap-2">
                 <button
-                  onClick={() => setSelectedMonth(null)}
+                  onClick={() => setSelectedYear(null)}
                   className={`px-4 py-2 text-sm font-medium rounded-full transition-colors ${
-                    selectedMonth === null
+                    selectedYear === null
                       ? "bg-foreground text-background"
                       : "bg-muted text-muted-foreground hover:bg-muted/80"
                   }`}
                 >
                   Todos
                 </button>
-                {months.map(([key, label]) => (
+                {years.map((year) => (
                   <button
-                    key={key}
-                    onClick={() => setSelectedMonth(key)}
+                    key={year}
+                    onClick={() => setSelectedYear(year)}
                     className={`px-4 py-2 text-sm font-medium rounded-full transition-colors ${
-                      selectedMonth === key
+                      selectedYear === year
                         ? "bg-foreground text-background"
                         : "bg-muted text-muted-foreground hover:bg-muted/80"
                     }`}
                   >
-                    {label}
+                    {year}
                   </button>
                 ))}
               </div>
