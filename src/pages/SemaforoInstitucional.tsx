@@ -103,18 +103,20 @@ export default function SemaforoInstitucional() {
     <Layout>
       <div className="min-h-screen bg-background">
         {/* Hero */}
-        <section className="border-b border-border">
-          <div className="container py-16 md:py-24">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground mb-4">
-              Observatorio de Transparencia
-            </p>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-foreground max-w-3xl leading-[1.1]">
+        <section className="bg-hero relative overflow-hidden">
+          <div className="absolute inset-0 opacity-20">
+            <div className="absolute -top-20 -right-20 w-80 h-80 rounded-full bg-secondary/30 blur-3xl" />
+            <div className="absolute -bottom-20 -left-20 w-60 h-60 rounded-full bg-secondary/20 blur-3xl" />
+          </div>
+          <div className="container relative py-16 md:py-24">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-primary-foreground max-w-3xl leading-[1.1]">
               Semáforo Institucional
             </h1>
-            <p className="mt-6 text-lg text-muted-foreground max-w-2xl leading-relaxed">
+            <p className="mt-4 text-lg text-primary-foreground/70 max-w-2xl leading-relaxed">
               Monitorización en tiempo real de la integridad pública. Condenas, alertas de gestión y buenas prácticas institucionales.
             </p>
           </div>
+          <div className="h-1 bg-secondary" />
         </section>
 
         {/* Counters */}
