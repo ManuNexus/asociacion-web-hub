@@ -21,21 +21,21 @@ interface Caso {
 
 const GRAVEDAD_CONFIG: Record<Gravedad, { label: string; color: string; bg: string; border: string; dot: string }> = {
   rojo: {
-    label: "Condena",
+    label: "Alerta de Integridad",
     color: "text-red-600",
     bg: "bg-red-50",
     border: "border-red-200",
     dot: "bg-red-500",
   },
   ambar: {
-    label: "Alerta",
+    label: "Riesgo Institucional",
     color: "text-amber-600",
     bg: "bg-amber-50",
     border: "border-amber-200",
     dot: "bg-amber-500",
   },
   verde: {
-    label: "Buena práctica",
+    label: "Estándar de Calidad",
     color: "text-emerald-600",
     bg: "bg-emerald-50",
     border: "border-emerald-200",
@@ -125,21 +125,21 @@ export default function SemaforoInstitucional() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <CounterCard
                 count={counts.rojo}
-                label="Condenas"
+                label="Alerta de Integridad"
                 sublabel="Casos de corrupción probada"
                 dotColor="bg-red-500"
                 textColor="text-red-600"
               />
               <CounterCard
                 count={counts.ambar}
-                label="Alertas"
+                label="Riesgo Institucional"
                 sublabel="Irregularidades en gestión"
                 dotColor="bg-amber-500"
                 textColor="text-amber-600"
               />
               <CounterCard
                 count={counts.verde}
-                label="Buenas prácticas"
+                label="Estándar de Calidad"
                 sublabel="Entidades reconocidas"
                 dotColor="bg-emerald-500"
                 textColor="text-emerald-600"

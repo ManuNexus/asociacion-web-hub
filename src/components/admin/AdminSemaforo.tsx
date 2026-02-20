@@ -23,9 +23,9 @@ interface Caso {
 }
 
 const GRAVEDAD_OPTIONS = [
-  { value: "rojo", label: "🔴 Rojo — Condena" },
-  { value: "ambar", label: "🟡 Ámbar — Alerta" },
-  { value: "verde", label: "🟢 Verde — Buena práctica" },
+  { value: "rojo", label: "🔴 Rojo — Alerta de Integridad" },
+  { value: "ambar", label: "🟡 Ámbar — Riesgo Institucional" },
+  { value: "verde", label: "🟢 Verde — Estándar de Calidad" },
 ];
 
 export default function AdminSemaforo() {
