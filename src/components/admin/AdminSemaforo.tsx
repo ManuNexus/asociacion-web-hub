@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { useToast } from "@/hooks/use-toast";
 import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
-import { Plus, Trash2, Pencil, Upload, FileText } from "lucide-react";
+import { Plus, Trash2, Pencil, Upload, FileText, Download, UploadCloud } from "lucide-react";
 
 interface Caso {
   id: string;
@@ -122,6 +122,108 @@ export default function AdminSemaforo() {
     setEditingCase(null);
   };
 
+  const handleDownloadCsv = () => {
+    if (casos.length === 0) return;
+    const headers = ["titulo", "descripcion", "fecha", "gravedad", "ambito", "fuente_url"];
+    const rows = casos.map((c) =>
+      headers.map((h) => {
+        const val = c[h as keyof Caso] ?? "";
+        const escaped = String(val).replace(/"/g, '""');
+        return `"${escaped}"`;
+      }).join(",")
+    );
+    const csv = [headers.join(","), ...rows].join("\n");
+    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `casos-semaforo-${format(new Date(), "yyyy-MM-dd")}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleUploadCsv = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const text = await file.text();
+    const lines = text.split("\n").filter((l) => l.trim());
+    if (lines.length < 2) {
+      toast({ title: "El CSV está vacío o no tiene datos", variant: "destructive" });
+      return;
+    }
+
+    const headerLine = lines[0].toLowerCase();
+    const expectedHeaders = ["titulo", "descripcion", "fecha", "gravedad", "ambito", "fuente_url"];
+    const headers = headerLine.split(",").map((h) => h.replace(/"/g, "").trim());
+
+    const missingHeaders = expectedHeaders.filter((h) => !headers.includes(h));
+    if (missingHeaders.length > 0) {
+      toast({ title: `Faltan columnas: ${missingHeaders.join(", ")}`, variant: "destructive" });
+      return;
+    }
+
+    const parseCsvLine = (line: string): string[] => {
+      const result: string[] = [];
+      let current = "";
+      let inQuotes = false;
+      for (let i = 0; i < line.length; i++) {
+        const ch = line[i];
+        if (ch === '"') {
+          if (inQuotes && line[i + 1] === '"') {
+            current += '"';
+            i++;
+          } else {
+            inQuotes = !inQuotes;
+          }
+        } else if (ch === "," && !inQuotes) {
+          result.push(current.trim());
+          current = "";
+        } else {
+          current += ch;
+        }
+      }
+      result.push(current.trim());
+      return result;
+    };
+
+    const rows = lines.slice(1).map((line) => {
+      const vals = parseCsvLine(line);
+      const obj: Record<string, string> = {};
+      headers.forEach((h, i) => {
+        obj[h] = vals[i] ?? "";
+      });
+      return obj;
+    });
+
+    const validGravedades = ["rojo", "ambar", "verde"];
+    const validAmbitos = ["nacional", "local"];
+    const payloads = rows
+      .filter((r) => r.titulo)
+      .map((r) => ({
+        titulo: r.titulo,
+        descripcion: r.descripcion || null,
+        fecha: r.fecha || format(new Date(), "yyyy-MM-dd"),
+        gravedad: validGravedades.includes(r.gravedad) ? r.gravedad : "rojo",
+        ambito: validAmbitos.includes(r.ambito) ? r.ambito : "nacional",
+        fuente_url: r.fuente_url || null,
+      }));
+
+    if (payloads.length === 0) {
+      toast({ title: "No se encontraron casos válidos en el CSV", variant: "destructive" });
+      return;
+    }
+
+    const { error } = await supabase.from("casos_semaforo").insert(payloads);
+    if (error) {
+      toast({ title: "Error al importar casos", variant: "destructive" });
+    } else {
+      queryClient.invalidateQueries({ queryKey: ["admin-casos-semaforo"] });
+      queryClient.invalidateQueries({ queryKey: ["casos-semaforo"] });
+      toast({ title: `${payloads.length} caso(s) importados correctamente` });
+    }
+    e.target.value = "";
+  };
+
   const openNew = () => {
     resetForm();
     setDialogOpen(true);
@@ -207,11 +309,24 @@ export default function AdminSemaforo() {
       </div>
 
       {/* Casos header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <h3 className="text-lg font-semibold">Casos del Semáforo</h3>
-        <Button onClick={openNew} className="gap-2">
-          <Plus className="h-4 w-4" /> Nuevo caso
-        </Button>
+        <div className="flex gap-2 flex-wrap">
+          <Button variant="outline" onClick={handleDownloadCsv} className="gap-2" disabled={casos.length === 0}>
+            <Download className="h-4 w-4" /> Descargar CSV
+          </Button>
+          <label className="cursor-pointer">
+            <Button variant="outline" className="gap-2" asChild>
+              <span>
+                <UploadCloud className="h-4 w-4" /> Importar CSV
+              </span>
+            </Button>
+            <input type="file" accept=".csv" className="hidden" onChange={handleUploadCsv} />
+          </label>
+          <Button onClick={openNew} className="gap-2">
+            <Plus className="h-4 w-4" /> Nuevo caso
+          </Button>
+        </div>
       </div>
 
       {/* Cases list */}
