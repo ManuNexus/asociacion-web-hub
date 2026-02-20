@@ -13,7 +13,6 @@ const navLinks = [
   { href: "/nosotros", label: "Quiénes Somos" },
   { href: "/noticias", label: "Sala de Prensa" },
   { href: "/eventos", label: "Eventos" },
-  { href: "/semaforo-institucional", label: "Semáforo" },
   { href: "/transparencia", label: "Transparencia" },
   { href: "/hazte-socio", label: "Hazte Socio" },
 ];
