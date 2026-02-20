@@ -48,6 +48,7 @@ import { AdminContactos } from "@/components/admin/AdminContactos";
 import { AdminMailings } from "@/components/admin/AdminMailings";
 import { RedesSociales } from "@/components/junta/RedesSociales";
 import { BirthdayPopup } from "@/components/admin/BirthdayPopup";
+import AdminSemaforo from "@/components/admin/AdminSemaforo";
 
 
 interface Categoria {
@@ -649,6 +650,10 @@ const AdminNoticias = () => {
               <TabsTrigger value="mailings" className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm shrink-0">
                 <Send className="h-4 w-4 shrink-0" />
                 <span>Mailings</span>
+              </TabsTrigger>
+              <TabsTrigger value="semaforo" className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm shrink-0">
+                <Eye className="h-4 w-4 shrink-0" />
+                <span>Semáforo</span>
               </TabsTrigger>
             </TabsList>
 
@@ -1276,6 +1281,11 @@ const AdminNoticias = () => {
             {/* Tab Socios */}
             <TabsContent value="socios">
               <AdminSocios />
+            </TabsContent>
+
+            {/* Tab Semáforo */}
+            <TabsContent value="semaforo">
+              <AdminSemaforo />
             </TabsContent>
           </Tabs>
         </div>

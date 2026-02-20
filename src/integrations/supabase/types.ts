@@ -143,6 +143,42 @@ export type Database = {
         }
         Relationships: []
       }
+      casos_semaforo: {
+        Row: {
+          ambito: string
+          created_at: string
+          descripcion: string | null
+          fecha: string
+          fuente_url: string | null
+          gravedad: string
+          id: string
+          titulo: string
+          updated_at: string
+        }
+        Insert: {
+          ambito?: string
+          created_at?: string
+          descripcion?: string | null
+          fecha?: string
+          fuente_url?: string | null
+          gravedad: string
+          id?: string
+          titulo: string
+          updated_at?: string
+        }
+        Update: {
+          ambito?: string
+          created_at?: string
+          descripcion?: string | null
+          fecha?: string
+          fuente_url?: string | null
+          gravedad?: string
+          id?: string
+          titulo?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       categorias_contabilidad: {
         Row: {
           color: string | null
@@ -439,6 +475,27 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      informe_trimestral: {
+        Row: {
+          archivo_url: string
+          created_at: string
+          id: string
+          titulo: string
+        }
+        Insert: {
+          archivo_url: string
+          created_at?: string
+          id?: string
+          titulo: string
+        }
+        Update: {
+          archivo_url?: string
+          created_at?: string
+          id?: string
+          titulo?: string
+        }
+        Relationships: []
       }
       mensajes_chat: {
         Row: {
