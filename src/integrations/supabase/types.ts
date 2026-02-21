@@ -56,6 +56,33 @@ export type Database = {
         }
         Relationships: []
       }
+      amigos: {
+        Row: {
+          apellidos: string
+          created_at: string
+          email: string
+          id: string
+          nombre: string
+          telefono: string | null
+        }
+        Insert: {
+          apellidos: string
+          created_at?: string
+          email: string
+          id?: string
+          nombre: string
+          telefono?: string | null
+        }
+        Update: {
+          apellidos?: string
+          created_at?: string
+          email?: string
+          id?: string
+          nombre?: string
+          telefono?: string | null
+        }
+        Relationships: []
+      }
       analytics_snapshots: {
         Row: {
           created_at: string
