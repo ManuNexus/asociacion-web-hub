@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { Heart, Mail, Megaphone, Users, CheckCircle2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const friendSchema = z.object({
   nombre: z.string().trim().min(1, "El nombre es obligatorio").max(100),
@@ -70,12 +71,42 @@ const HazteAmigo = () => {
 
     setIsSubmitting(true);
     try {
-      // For now we just show success - could be connected to a mailing list later
-      await new Promise((r) => setTimeout(r, 800));
+      const validData = result.data;
+
+      // Insert into amigos table
+      const { error } = await supabase.from("amigos").insert({
+        nombre: validData.nombre,
+        apellidos: validData.apellidos,
+        email: validData.email,
+        telefono: formData.telefono || null,
+      });
+
+      if (error) {
+        if (error.code === "23505") {
+          toast({
+            title: "Ya estás registrado/a",
+            description: "Este email ya está en nuestra base de datos de amigos.",
+            variant: "destructive",
+          });
+          return;
+        }
+        throw error;
+      }
+
+      // Send confirmation email
+      supabase.functions.invoke("notify-new-amigo", {
+        body: {
+          nombre: validData.nombre,
+          apellidos: validData.apellidos,
+          email: validData.email,
+          telefono: formData.telefono || undefined,
+        },
+      }).catch((err) => console.error("Error sending amigo notification:", err));
+
       setSubmitted(true);
       toast({
         title: "¡Bienvenido/a!",
-        description: "Te has registrado como amigo/a de AHORA. Pronto recibirás noticias nuestras.",
+        description: "Te has registrado como amigo/a de AHORA. Recibirás un correo de confirmación.",
       });
     } catch {
       toast({
