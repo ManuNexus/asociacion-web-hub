@@ -43,6 +43,7 @@ import { AdminVotaciones } from "@/components/admin/AdminVotaciones";
 import { AdminEventos } from "@/components/admin/AdminEventos";
 import { AdminDocumentos } from "@/components/admin/AdminDocumentos";
 import { AdminSocios } from "@/components/admin/AdminSocios";
+import { AdminAmigos } from "@/components/admin/AdminAmigos";
 import { AdminAhoraTV } from "@/components/admin/AdminAhoraTV";
 import { AdminContactos } from "@/components/admin/AdminContactos";
 import { AdminMailings } from "@/components/admin/AdminMailings";
@@ -622,6 +623,10 @@ const AdminNoticias = () => {
               <TabsTrigger value="socios" className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm shrink-0">
                 <CreditCard className="h-4 w-4 shrink-0" />
                 <span>Socios</span>
+              </TabsTrigger>
+              <TabsTrigger value="amigos" className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm shrink-0">
+                <Star className="h-4 w-4 shrink-0" />
+                <span>Amigos</span>
               </TabsTrigger>
               <TabsTrigger value="ahora-tv" className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm shrink-0">
                 <Tv className="h-4 w-4 shrink-0" />
@@ -1281,6 +1286,11 @@ const AdminNoticias = () => {
             {/* Tab Socios */}
             <TabsContent value="socios">
               <AdminSocios />
+            </TabsContent>
+
+            {/* Tab Amigos */}
+            <TabsContent value="amigos">
+              <AdminAmigos />
             </TabsContent>
 
             {/* Tab Semáforo */}
