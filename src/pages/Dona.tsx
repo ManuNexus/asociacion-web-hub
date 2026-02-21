@@ -7,7 +7,9 @@ import { Heart, Copy, CheckCircle2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const AMOUNTS = [5, 15, 30] as const;
-const BANK_ACCOUNT = "ES00 0000 0000 0000 0000 0000"; // Replace with real IBAN
+const BANK_ACCOUNT = "ES82 0081 0057 3500 0307 5110";
+const BENEFICIARY = "Asociación AHORA";
+const BIC_SWIFT = "BSAB ESBB";
 const CONCEPT = "Donación puntual - Asociación AHORA";
 
 const Dona = () => {
@@ -66,6 +68,11 @@ const Dona = () => {
 
               <div className="bg-card rounded-xl border border-border p-6 text-left space-y-5">
                 <div className="space-y-1">
+                  <Label className="text-muted-foreground text-xs uppercase tracking-wide">Beneficiario</Label>
+                  <span className="block font-semibold text-foreground">{BENEFICIARY}</span>
+                </div>
+
+                <div className="space-y-1">
                   <Label className="text-muted-foreground text-xs uppercase tracking-wide">Cuenta bancaria (IBAN)</Label>
                   <div className="flex items-center justify-between gap-2">
                     <span className="font-mono font-semibold text-foreground text-lg">{BANK_ACCOUNT}</span>
@@ -78,6 +85,11 @@ const Dona = () => {
                       <Copy className="h-4 w-4" />
                     </Button>
                   </div>
+                </div>
+
+                <div className="space-y-1">
+                  <Label className="text-muted-foreground text-xs uppercase tracking-wide">BIC/SWIFT</Label>
+                  <span className="block font-mono font-semibold text-foreground">{BIC_SWIFT}</span>
                 </div>
 
                 <div className="space-y-1">
