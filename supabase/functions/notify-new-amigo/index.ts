@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
@@ -22,6 +23,36 @@ const handler = async (req: Request): Promise<Response> => {
 
   try {
     const amigo: AmigoData = await req.json();
+
+    // Validate required fields
+    if (!amigo.email || !amigo.nombre || !amigo.apellidos) {
+      return new Response(
+        JSON.stringify({ error: "Missing required fields" }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    // Verify that an amigo with this email was recently created (within last 60 seconds)
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
+
+    const { data: recentAmigo } = await supabaseAdmin
+      .from("amigos")
+      .select("id")
+      .eq("email", amigo.email)
+      .gte("created_at", new Date(Date.now() - 60000).toISOString())
+      .single();
+
+    if (!recentAmigo) {
+      console.warn("No recent amigo registration found for:", amigo.email);
+      return new Response(
+        JSON.stringify({ error: "No recent registration found" }),
+        { status: 403, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
     console.log("Nuevo amigo registrado:", amigo.email);
 
     // Email 1: Notificación al administrador
