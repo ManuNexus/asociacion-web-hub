@@ -197,9 +197,9 @@ const Dona = () => {
                     value={customAmount}
                     onChange={handleCustomChange}
                     placeholder="0"
-                    className="w-24 text-center text-xl font-bold border-none bg-transparent focus-visible:ring-0 p-0 h-auto"
+                    className="w-28 text-center text-3xl font-extrabold border-none bg-transparent focus-visible:ring-0 p-0 h-auto"
                   />
-                  <span className="text-xl font-bold text-foreground">€</span>
+                  <span className="text-3xl font-extrabold text-foreground">€</span>
                 </div>
               </div>
             </div>
