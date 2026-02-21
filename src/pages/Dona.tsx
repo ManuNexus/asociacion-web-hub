@@ -69,19 +69,19 @@ const Dona = () => {
               <div className="bg-card rounded-xl border border-border p-6 text-left space-y-5">
                 <div className="space-y-1">
                   <Label className="text-muted-foreground text-xs uppercase tracking-wide">Beneficiario</Label>
-                  <span className="block font-semibold text-foreground">{BENEFICIARY}</span>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-semibold text-foreground">{BENEFICIARY}</span>
+                    <Button variant="ghost" size="icon" onClick={() => copyToClipboard(BENEFICIARY, "Beneficiario")} className="shrink-0">
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
 
                 <div className="space-y-1">
                   <Label className="text-muted-foreground text-xs uppercase tracking-wide">Cuenta bancaria (IBAN)</Label>
                   <div className="flex items-center justify-between gap-2">
                     <span className="font-mono font-semibold text-foreground text-lg">{BANK_ACCOUNT}</span>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => copyToClipboard(BANK_ACCOUNT.replace(/\s/g, ""), "IBAN")}
-                      className="shrink-0"
-                    >
+                    <Button variant="ghost" size="icon" onClick={() => copyToClipboard(BANK_ACCOUNT.replace(/\s/g, ""), "IBAN")} className="shrink-0">
                       <Copy className="h-4 w-4" />
                     </Button>
                   </div>
@@ -89,7 +89,12 @@ const Dona = () => {
 
                 <div className="space-y-1">
                   <Label className="text-muted-foreground text-xs uppercase tracking-wide">BIC/SWIFT</Label>
-                  <span className="block font-mono font-semibold text-foreground">{BIC_SWIFT}</span>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-mono font-semibold text-foreground">{BIC_SWIFT}</span>
+                    <Button variant="ghost" size="icon" onClick={() => copyToClipboard(BIC_SWIFT.replace(/\s/g, ""), "BIC/SWIFT")} className="shrink-0">
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
 
                 <div className="space-y-1">
@@ -109,7 +114,12 @@ const Dona = () => {
 
                 <div className="space-y-1">
                   <Label className="text-muted-foreground text-xs uppercase tracking-wide">Cantidad</Label>
-                  <span className="block font-semibold text-foreground text-lg">{finalAmount.toFixed(2)} €</span>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-semibold text-foreground text-lg">{finalAmount.toFixed(2)} €</span>
+                    <Button variant="ghost" size="icon" onClick={() => copyToClipboard(finalAmount.toFixed(2), "Cantidad")} className="shrink-0">
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               </div>
 
