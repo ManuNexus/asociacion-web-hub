@@ -221,6 +221,7 @@ const Dona = () => {
                     className="w-28 text-center text-3xl font-extrabold border-none bg-transparent focus-visible:ring-0 p-0 h-auto"
                   />
                   <span className="text-3xl font-extrabold text-foreground">€</span>
+                </div>
               </div>
             </div>
 
@@ -229,7 +230,6 @@ const Dona = () => {
                 Debido a las comisiones bancarias, no podemos aceptar donaciones inferiores a {MIN_AMOUNT}€.
               </p>
             )}
-            </div>
 
             <Button
               onClick={handleDonate}
