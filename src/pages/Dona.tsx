@@ -6,7 +6,8 @@ import { Label } from "@/components/ui/label";
 import { Heart, Copy, CheckCircle2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-const AMOUNTS = [5, 15, 30] as const;
+const AMOUNTS = [20, 40, 50] as const;
+const MIN_AMOUNT = 20;
 const BANK_ACCOUNT = "ES82 0081 0057 3500 0307 5110";
 const BENEFICIARY = "Asociación AHORA";
 const BIC_SWIFT = "BSAB ESBB";
@@ -33,11 +34,21 @@ const Dona = () => {
     setSelectedAmount(null);
   };
 
+  const isBelowMinimum = finalAmount > 0 && finalAmount < MIN_AMOUNT;
+
   const handleDonate = () => {
     if (finalAmount <= 0) {
       toast({
         title: "Selecciona una cantidad",
         description: "Por favor, elige o introduce una cantidad para donar.",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (finalAmount < MIN_AMOUNT) {
+      toast({
+        title: "Cantidad mínima no alcanzada",
+        description: `Debido a las comisiones bancarias, no podemos aceptar donaciones inferiores a ${MIN_AMOUNT}€.`,
         variant: "destructive",
       });
       return;
@@ -210,8 +221,14 @@ const Dona = () => {
                     className="w-28 text-center text-3xl font-extrabold border-none bg-transparent focus-visible:ring-0 p-0 h-auto"
                   />
                   <span className="text-3xl font-extrabold text-foreground">€</span>
-                </div>
               </div>
+            </div>
+
+            {isBelowMinimum && isCustom && (
+              <p className="text-sm text-destructive font-medium text-center">
+                Debido a las comisiones bancarias, no podemos aceptar donaciones inferiores a {MIN_AMOUNT}€.
+              </p>
+            )}
             </div>
 
             <Button
