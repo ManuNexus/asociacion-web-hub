@@ -34,11 +34,21 @@ const Dona = () => {
     setSelectedAmount(null);
   };
 
+  const isBelowMinimum = finalAmount > 0 && finalAmount < MIN_AMOUNT;
+
   const handleDonate = () => {
     if (finalAmount <= 0) {
       toast({
         title: "Selecciona una cantidad",
         description: "Por favor, elige o introduce una cantidad para donar.",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (finalAmount < MIN_AMOUNT) {
+      toast({
+        title: "Cantidad mínima no alcanzada",
+        description: `Debido a las comisiones bancarias, no podemos aceptar donaciones inferiores a ${MIN_AMOUNT}€.`,
         variant: "destructive",
       });
       return;
