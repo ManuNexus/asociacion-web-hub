@@ -6,7 +6,8 @@ import { Label } from "@/components/ui/label";
 import { Heart, Copy, CheckCircle2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-const AMOUNTS = [5, 15, 30] as const;
+const AMOUNTS = [20, 40, 50] as const;
+const MIN_AMOUNT = 20;
 const BANK_ACCOUNT = "ES82 0081 0057 3500 0307 5110";
 const BENEFICIARY = "Asociación AHORA";
 const BIC_SWIFT = "BSAB ESBB";
