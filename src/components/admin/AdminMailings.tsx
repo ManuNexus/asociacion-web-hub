@@ -206,15 +206,15 @@ export const AdminMailings = () => {
       // Upload to Supabase storage
       const fileName = `mailing-${Date.now()}-${file.name}`;
       const { data, error } = await supabase.storage
-        .from("socios-fotos")
-        .upload(`mailings/${fileName}`, file);
+        .from("mailing-images")
+        .upload(fileName, file);
 
       if (error) throw error;
 
       // Get public URL
       const { data: urlData } = supabase.storage
-        .from("socios-fotos")
-        .getPublicUrl(`mailings/${fileName}`);
+        .from("mailing-images")
+        .getPublicUrl(fileName);
 
       setImagenUrl(urlData.publicUrl);
       toast({ title: "Imagen subida correctamente" });
