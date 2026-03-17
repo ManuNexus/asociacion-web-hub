@@ -113,6 +113,8 @@ const AdminNoticias = () => {
   const [invitingId, setInvitingId] = useState<string | null>(null);
   const [resendingId, setResendingId] = useState<string | null>(null);
   const [diaCobro, setDiaCobro] = useState<number>(1);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const imageFileInputRef = React.useRef<HTMLInputElement>(null);
   const [notifyingId, setNotifyingId] = useState<string | null>(null);
   
 
