@@ -746,15 +746,62 @@ const AdminNoticias = () => {
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="imagen_url">URL de Imagen</Label>
-                          <Input
-                            id="imagen_url"
-                            value={formData.imagen_url}
-                            onChange={(e) =>
-                              setFormData({ ...formData, imagen_url: e.target.value })
-                            }
-                            placeholder="https://..."
-                          />
+                          <Label htmlFor="imagen_url">Imagen</Label>
+                          <div className="flex gap-2">
+                            <Input
+                              id="imagen_url"
+                              value={formData.imagen_url}
+                              onChange={(e) =>
+                                setFormData({ ...formData, imagen_url: e.target.value })
+                              }
+                              placeholder="https://... o sube una imagen"
+                              className="flex-1"
+                            />
+                            <input
+                              type="file"
+                              accept="image/*"
+                              ref={imageFileInputRef}
+                              className="hidden"
+                              onChange={async (e) => {
+                                const file = e.target.files?.[0];
+                                if (!file) return;
+                                if (file.size > 5 * 1024 * 1024) {
+                                  toast({ title: "Error", description: "La imagen no puede superar los 5MB", variant: "destructive" });
+                                  return;
+                                }
+                                setUploadingImage(true);
+                                try {
+                                  const fileName = `noticia-${Date.now()}-${file.name}`;
+                                  const { error } = await supabase.storage
+                                    .from("noticias-images")
+                                    .upload(fileName, file);
+                                  if (error) throw error;
+                                  const { data: urlData } = supabase.storage
+                                    .from("noticias-images")
+                                    .getPublicUrl(fileName);
+                                  setFormData((prev) => ({ ...prev, imagen_url: urlData.publicUrl }));
+                                  toast({ title: "Imagen subida correctamente" });
+                                } catch (err: any) {
+                                  toast({ title: "Error al subir imagen", description: err.message, variant: "destructive" });
+                                } finally {
+                                  setUploadingImage(false);
+                                  if (imageFileInputRef.current) imageFileInputRef.current.value = "";
+                                }
+                              }}
+                            />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              disabled={uploadingImage}
+                              onClick={() => imageFileInputRef.current?.click()}
+                            >
+                              {uploadingImage ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                            </Button>
+                          </div>
+                          {formData.imagen_url && (
+                            <img src={formData.imagen_url} alt="Preview" className="mt-2 max-h-32 rounded-md object-cover" />
+                          )}
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="autor">Autor</Label>
