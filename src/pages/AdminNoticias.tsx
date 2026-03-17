@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
@@ -35,7 +35,7 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Pencil, Trash2, Loader2, LogOut, Users, Newspaper, Mail, Phone, Eye, Search, Tag, UserCheck, Send, RefreshCw, Vote, Calendar, FileText, CreditCard, Bell, Link, Clock, BookUser, Share2, Star, Tv } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, LogOut, Users, Newspaper, Mail, Phone, Eye, Search, Tag, UserCheck, Send, RefreshCw, Vote, Calendar, FileText, CreditCard, Bell, Link, Clock, BookUser, Share2, Star, Tv, Upload, Image } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { formatInMadrid, toDateTimeLocalValue, fromDateTimeLocalValue } from "@/lib/timezone";
@@ -113,6 +113,8 @@ const AdminNoticias = () => {
   const [invitingId, setInvitingId] = useState<string | null>(null);
   const [resendingId, setResendingId] = useState<string | null>(null);
   const [diaCobro, setDiaCobro] = useState<number>(1);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const imageFileInputRef = React.useRef<HTMLInputElement>(null);
   const [notifyingId, setNotifyingId] = useState<string | null>(null);
   
 
@@ -744,15 +746,62 @@ const AdminNoticias = () => {
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="imagen_url">URL de Imagen</Label>
-                          <Input
-                            id="imagen_url"
-                            value={formData.imagen_url}
-                            onChange={(e) =>
-                              setFormData({ ...formData, imagen_url: e.target.value })
-                            }
-                            placeholder="https://..."
-                          />
+                          <Label htmlFor="imagen_url">Imagen</Label>
+                          <div className="flex gap-2">
+                            <Input
+                              id="imagen_url"
+                              value={formData.imagen_url}
+                              onChange={(e) =>
+                                setFormData({ ...formData, imagen_url: e.target.value })
+                              }
+                              placeholder="https://... o sube una imagen"
+                              className="flex-1"
+                            />
+                            <input
+                              type="file"
+                              accept="image/*"
+                              ref={imageFileInputRef}
+                              className="hidden"
+                              onChange={async (e) => {
+                                const file = e.target.files?.[0];
+                                if (!file) return;
+                                if (file.size > 5 * 1024 * 1024) {
+                                  toast({ title: "Error", description: "La imagen no puede superar los 5MB", variant: "destructive" });
+                                  return;
+                                }
+                                setUploadingImage(true);
+                                try {
+                                  const fileName = `noticia-${Date.now()}-${file.name}`;
+                                  const { error } = await supabase.storage
+                                    .from("noticias-images")
+                                    .upload(fileName, file);
+                                  if (error) throw error;
+                                  const { data: urlData } = supabase.storage
+                                    .from("noticias-images")
+                                    .getPublicUrl(fileName);
+                                  setFormData((prev) => ({ ...prev, imagen_url: urlData.publicUrl }));
+                                  toast({ title: "Imagen subida correctamente" });
+                                } catch (err: any) {
+                                  toast({ title: "Error al subir imagen", description: err.message, variant: "destructive" });
+                                } finally {
+                                  setUploadingImage(false);
+                                  if (imageFileInputRef.current) imageFileInputRef.current.value = "";
+                                }
+                              }}
+                            />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              disabled={uploadingImage}
+                              onClick={() => imageFileInputRef.current?.click()}
+                            >
+                              {uploadingImage ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                            </Button>
+                          </div>
+                          {formData.imagen_url && (
+                            <img src={formData.imagen_url} alt="Preview" className="mt-2 max-h-32 rounded-md object-cover" />
+                          )}
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="autor">Autor</Label>
