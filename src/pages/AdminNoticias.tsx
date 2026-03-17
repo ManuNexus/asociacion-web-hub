@@ -35,7 +35,7 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Pencil, Trash2, Loader2, LogOut, Users, Newspaper, Mail, Phone, Eye, Search, Tag, UserCheck, Send, RefreshCw, Vote, Calendar, FileText, CreditCard, Bell, Link, Clock, BookUser, Share2, Star, Tv } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, LogOut, Users, Newspaper, Mail, Phone, Eye, Search, Tag, UserCheck, Send, RefreshCw, Vote, Calendar, FileText, CreditCard, Bell, Link, Clock, BookUser, Share2, Star, Tv, Upload, Image } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { formatInMadrid, toDateTimeLocalValue, fromDateTimeLocalValue } from "@/lib/timezone";
