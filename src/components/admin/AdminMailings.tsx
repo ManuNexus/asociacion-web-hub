@@ -427,31 +427,35 @@ export const AdminMailings = () => {
           ) : (
             <ScrollArea className="h-[400px] border rounded-md p-2">
               <div className="space-y-1">
-                {filteredDestinatarios.map((socio) => (
+                {filteredDestinatarios.map((dest) => (
                   <div
-                    key={socio.id}
+                    key={`${dest.tipo}-${dest.id}`}
                     className={`flex items-center gap-3 p-2 rounded-md cursor-pointer hover:bg-muted transition-colors ${
-                      selectedDestinatarios.has(socio.id) ? "bg-primary/10" : ""
+                      selectedDestinatarios.has(dest.id) ? "bg-primary/10" : ""
                     }`}
-                    onClick={() => toggleDestinatario(socio.id)}
+                    onClick={() => toggleDestinatario(dest.id)}
                   >
                     <Checkbox
-                      checked={selectedDestinatarios.has(socio.id)}
-                      onCheckedChange={() => toggleDestinatario(socio.id)}
+                      checked={selectedDestinatarios.has(dest.id)}
+                      onCheckedChange={() => toggleDestinatario(dest.id)}
                     />
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-sm truncate">
-                        {socio.nombre} {socio.apellidos}
+                        {dest.nombre} {dest.apellidos}
                       </p>
                       <p className="text-xs text-muted-foreground truncate">
-                        {socio.email}
+                        {dest.email}
                       </p>
                     </div>
-                    {socio.cargo_junta && (
+                    {dest.cargo_junta ? (
                       <Badge variant="secondary" className="text-xs shrink-0">
-                        {getCargoLabel(socio.cargo_junta)}
+                        {getCargoLabel(dest.cargo_junta)}
                       </Badge>
-                    )}
+                    ) : dest.tipo === "amigo" ? (
+                      <Badge variant="outline" className="text-xs shrink-0">
+                        Amigo
+                      </Badge>
+                    ) : null}
                   </div>
                 ))}
               </div>
