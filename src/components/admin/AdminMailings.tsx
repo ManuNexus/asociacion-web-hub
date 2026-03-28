@@ -95,7 +95,7 @@ const getCargoLabel = (cargo: string | null) => {
 };
 
 export const AdminMailings = () => {
-  const [socios, setSocios] = useState<Socio[]>([]);
+  const [destinatarios, setDestinatarios] = useState<Destinatario[]>([]);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -104,29 +104,45 @@ export const AdminMailings = () => {
   const [asunto, setAsunto] = useState("");
   const [contenido, setContenido] = useState("");
   const [imagenUrl, setImagenUrl] = useState("");
-  const [selectedSocios, setSelectedSocios] = useState<Set<string>>(new Set());
+  const [selectedDestinatarios, setSelectedDestinatarios] = useState<Set<string>>(new Set());
   const [selectedTemplate, setSelectedTemplate] = useState<string>("");
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterType, setFilterType] = useState<"todos" | "junta" | "socios">("todos");
+  const [filterType, setFilterType] = useState<"todos" | "junta" | "socios" | "amigos">("todos");
   
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    fetchSocios();
+    fetchDestinatarios();
   }, []);
 
-  const fetchSocios = async () => {
+  const fetchDestinatarios = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("socios")
-      .select("id, nombre, apellidos, email, user_id, cargo_junta")
-      .eq("activo", true)
-      .order("apellidos");
+    
+    const [sociosRes, amigosRes] = await Promise.all([
+      supabase
+        .from("socios")
+        .select("id, nombre, apellidos, email, cargo_junta")
+        .eq("activo", true)
+        .order("apellidos"),
+      supabase
+        .from("amigos")
+        .select("id, nombre, apellidos, email")
+        .order("apellidos"),
+    ]);
 
-    if (!error && data) {
-      setSocios(data);
-    }
+    const sociosList: Destinatario[] = (sociosRes.data || []).map(s => ({
+      ...s,
+      tipo: "socio" as const,
+    }));
+    
+    const amigosList: Destinatario[] = (amigosRes.data || []).map(a => ({
+      ...a,
+      tipo: "amigo" as const,
+      cargo_junta: null,
+    }));
+
+    setDestinatarios([...sociosList, ...amigosList]);
     setLoading(false);
   };
 
