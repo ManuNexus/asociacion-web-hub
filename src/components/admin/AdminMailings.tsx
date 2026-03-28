@@ -319,7 +319,7 @@ export const AdminMailings = () => {
       return;
     }
 
-    if (selectedSocios.size === 0) {
+    if (selectedDestinatarios.size === 0) {
       toast({
         variant: "destructive",
         title: "Error",
@@ -338,7 +338,7 @@ export const AdminMailings = () => {
 
       // Get emails of selected socios
       const selectedEmails = socios
-        .filter(s => selectedSocios.has(s.id))
+        .filter(s => selectedDestinatarios.has(s.id))
         .map(s => s.email);
 
       const { data, error } = await supabase.functions.invoke("send-mailing", {
@@ -361,7 +361,7 @@ export const AdminMailings = () => {
       setAsunto("");
       setContenido("");
       setImagenUrl("");
-      setSelectedSocios(new Set());
+      setSelectedDestinatarios(new Set());
       setSelectedTemplate("");
     } catch (error: any) {
       toast({
@@ -374,7 +374,7 @@ export const AdminMailings = () => {
     }
   };
 
-  const filteredSocios = getFilteredSocios();
+  const filteredDestinatarios = getFilteredDestinatarios();
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -383,7 +383,7 @@ export const AdminMailings = () => {
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-lg">
             <Users className="h-5 w-5" />
-            Destinatarios ({selectedSocios.size})
+            Destinatarios ({selectedDestinatarios.size})
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -423,17 +423,17 @@ export const AdminMailings = () => {
           ) : (
             <ScrollArea className="h-[400px] border rounded-md p-2">
               <div className="space-y-1">
-                {filteredSocios.map((socio) => (
+                {filteredDestinatarios.map((socio) => (
                   <div
                     key={socio.id}
                     className={`flex items-center gap-3 p-2 rounded-md cursor-pointer hover:bg-muted transition-colors ${
-                      selectedSocios.has(socio.id) ? "bg-primary/10" : ""
+                      selectedDestinatarios.has(socio.id) ? "bg-primary/10" : ""
                     }`}
-                    onClick={() => toggleSocio(socio.id)}
+                    onClick={() => toggleDestinatario(socio.id)}
                   >
                     <Checkbox
-                      checked={selectedSocios.has(socio.id)}
-                      onCheckedChange={() => toggleSocio(socio.id)}
+                      checked={selectedDestinatarios.has(socio.id)}
+                      onCheckedChange={() => toggleDestinatario(socio.id)}
                     />
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-sm truncate">
@@ -554,7 +554,7 @@ export const AdminMailings = () => {
             
             <Button
               onClick={handleSend}
-              disabled={sending || selectedSocios.size === 0 || !asunto || !contenido}
+              disabled={sending || selectedDestinatarios.size === 0 || !asunto || !contenido}
             >
               {sending ? (
                 <>
@@ -564,7 +564,7 @@ export const AdminMailings = () => {
               ) : (
                 <>
                   <Send className="h-4 w-4 mr-2" />
-                  Enviar a {selectedSocios.size} destinatario{selectedSocios.size !== 1 ? "s" : ""}
+                  Enviar a {selectedDestinatarios.size} destinatario{selectedDestinatarios.size !== 1 ? "s" : ""}
                 </>
               )}
             </Button>
