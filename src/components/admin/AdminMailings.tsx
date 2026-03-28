@@ -387,12 +387,15 @@ export const AdminMailings = () => {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button variant="outline" size="sm" onClick={selectAll}>
               Todos
             </Button>
             <Button variant="outline" size="sm" onClick={selectJunta}>
               Junta
+            </Button>
+            <Button variant="outline" size="sm" onClick={selectAmigos}>
+              Amigos
             </Button>
             <Button variant="outline" size="sm" onClick={selectNone}>
               Ninguno
