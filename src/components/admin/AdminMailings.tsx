@@ -34,13 +34,13 @@ import {
   FileText
 } from "lucide-react";
 
-interface Socio {
+interface Destinatario {
   id: string;
   nombre: string;
   apellidos: string;
   email: string;
-  user_id: string;
-  cargo_junta: string | null;
+  tipo: "socio" | "amigo";
+  cargo_junta?: string | null;
 }
 
 interface MailTemplate {
@@ -95,7 +95,7 @@ const getCargoLabel = (cargo: string | null) => {
 };
 
 export const AdminMailings = () => {
-  const [socios, setSocios] = useState<Socio[]>([]);
+  const [destinatarios, setDestinatarios] = useState<Destinatario[]>([]);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -104,29 +104,45 @@ export const AdminMailings = () => {
   const [asunto, setAsunto] = useState("");
   const [contenido, setContenido] = useState("");
   const [imagenUrl, setImagenUrl] = useState("");
-  const [selectedSocios, setSelectedSocios] = useState<Set<string>>(new Set());
+  const [selectedDestinatarios, setSelectedDestinatarios] = useState<Set<string>>(new Set());
   const [selectedTemplate, setSelectedTemplate] = useState<string>("");
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterType, setFilterType] = useState<"todos" | "junta" | "socios">("todos");
+  const [filterType, setFilterType] = useState<"todos" | "junta" | "socios" | "amigos">("todos");
   
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    fetchSocios();
+    fetchDestinatarios();
   }, []);
 
-  const fetchSocios = async () => {
+  const fetchDestinatarios = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("socios")
-      .select("id, nombre, apellidos, email, user_id, cargo_junta")
-      .eq("activo", true)
-      .order("apellidos");
+    
+    const [sociosRes, amigosRes] = await Promise.all([
+      supabase
+        .from("socios")
+        .select("id, nombre, apellidos, email, cargo_junta")
+        .eq("activo", true)
+        .order("apellidos"),
+      supabase
+        .from("amigos")
+        .select("id, nombre, apellidos, email")
+        .order("apellidos"),
+    ]);
 
-    if (!error && data) {
-      setSocios(data);
-    }
+    const sociosList: Destinatario[] = (sociosRes.data || []).map(s => ({
+      ...s,
+      tipo: "socio" as const,
+    }));
+    
+    const amigosList: Destinatario[] = (amigosRes.data || []).map(a => ({
+      ...a,
+      tipo: "amigo" as const,
+      cargo_junta: null,
+    }));
+
+    setDestinatarios([...sociosList, ...amigosList]);
     setLoading(false);
   };
 
@@ -139,32 +155,37 @@ export const AdminMailings = () => {
     }
   };
 
-  const toggleSocio = (id: string) => {
-    const newSelected = new Set(selectedSocios);
+  const toggleDestinatario = (id: string) => {
+    const newSelected = new Set(selectedDestinatarios);
     if (newSelected.has(id)) {
       newSelected.delete(id);
     } else {
       newSelected.add(id);
     }
-    setSelectedSocios(newSelected);
+    setSelectedDestinatarios(newSelected);
   };
 
   const selectAll = () => {
-    const filtered = getFilteredSocios();
-    setSelectedSocios(new Set(filtered.map(s => s.id)));
+    const filtered = getFilteredDestinatarios();
+    setSelectedDestinatarios(new Set(filtered.map(s => s.id)));
   };
 
   const selectNone = () => {
-    setSelectedSocios(new Set());
+    setSelectedDestinatarios(new Set());
   };
 
   const selectJunta = () => {
-    const juntaIds = socios.filter(s => s.cargo_junta).map(s => s.id);
-    setSelectedSocios(new Set(juntaIds));
+    const juntaIds = destinatarios.filter(s => s.cargo_junta).map(s => s.id);
+    setSelectedDestinatarios(new Set(juntaIds));
   };
 
-  const getFilteredSocios = () => {
-    return socios.filter(s => {
+  const selectAmigos = () => {
+    const amigoIds = destinatarios.filter(s => s.tipo === "amigo").map(s => s.id);
+    setSelectedDestinatarios(new Set(amigoIds));
+  };
+
+  const getFilteredDestinatarios = () => {
+    return destinatarios.filter(s => {
       const matchesSearch = 
         `${s.nombre} ${s.apellidos}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
         s.email.toLowerCase().includes(searchTerm.toLowerCase());
@@ -172,7 +193,8 @@ export const AdminMailings = () => {
       const matchesFilter = 
         filterType === "todos" ||
         (filterType === "junta" && s.cargo_junta) ||
-        (filterType === "socios" && !s.cargo_junta);
+        (filterType === "socios" && s.tipo === "socio" && !s.cargo_junta) ||
+        (filterType === "amigos" && s.tipo === "amigo");
       
       return matchesSearch && matchesFilter;
     });
@@ -297,7 +319,7 @@ export const AdminMailings = () => {
       return;
     }
 
-    if (selectedSocios.size === 0) {
+    if (selectedDestinatarios.size === 0) {
       toast({
         variant: "destructive",
         title: "Error",
@@ -314,9 +336,9 @@ export const AdminMailings = () => {
         throw new Error("No hay sesión activa");
       }
 
-      // Get emails of selected socios
-      const selectedEmails = socios
-        .filter(s => selectedSocios.has(s.id))
+      // Get emails of selected destinatarios
+      const selectedEmails = destinatarios
+        .filter(s => selectedDestinatarios.has(s.id))
         .map(s => s.email);
 
       const { data, error } = await supabase.functions.invoke("send-mailing", {
@@ -339,7 +361,7 @@ export const AdminMailings = () => {
       setAsunto("");
       setContenido("");
       setImagenUrl("");
-      setSelectedSocios(new Set());
+      setSelectedDestinatarios(new Set());
       setSelectedTemplate("");
     } catch (error: any) {
       toast({
@@ -352,7 +374,7 @@ export const AdminMailings = () => {
     }
   };
 
-  const filteredSocios = getFilteredSocios();
+  const filteredDestinatarios = getFilteredDestinatarios();
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -361,16 +383,19 @@ export const AdminMailings = () => {
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-lg">
             <Users className="h-5 w-5" />
-            Destinatarios ({selectedSocios.size})
+            Destinatarios ({selectedDestinatarios.size})
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button variant="outline" size="sm" onClick={selectAll}>
               Todos
             </Button>
             <Button variant="outline" size="sm" onClick={selectJunta}>
               Junta
+            </Button>
+            <Button variant="outline" size="sm" onClick={selectAmigos}>
+              Amigos
             </Button>
             <Button variant="outline" size="sm" onClick={selectNone}>
               Ninguno
@@ -378,19 +403,20 @@ export const AdminMailings = () => {
           </div>
           
           <Input
-            placeholder="Buscar socio..."
+            placeholder="Buscar por nombre o email..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
           
-          <Select value={filterType} onValueChange={(v: "todos" | "junta" | "socios") => setFilterType(v)}>
+          <Select value={filterType} onValueChange={(v: "todos" | "junta" | "socios" | "amigos") => setFilterType(v)}>
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="todos">Todos los socios</SelectItem>
+              <SelectItem value="todos">Todos</SelectItem>
               <SelectItem value="junta">Solo Junta Directiva</SelectItem>
               <SelectItem value="socios">Solo socios (sin junta)</SelectItem>
+              <SelectItem value="amigos">Solo amigos</SelectItem>
             </SelectContent>
           </Select>
 
@@ -401,31 +427,35 @@ export const AdminMailings = () => {
           ) : (
             <ScrollArea className="h-[400px] border rounded-md p-2">
               <div className="space-y-1">
-                {filteredSocios.map((socio) => (
+                {filteredDestinatarios.map((dest) => (
                   <div
-                    key={socio.id}
+                    key={`${dest.tipo}-${dest.id}`}
                     className={`flex items-center gap-3 p-2 rounded-md cursor-pointer hover:bg-muted transition-colors ${
-                      selectedSocios.has(socio.id) ? "bg-primary/10" : ""
+                      selectedDestinatarios.has(dest.id) ? "bg-primary/10" : ""
                     }`}
-                    onClick={() => toggleSocio(socio.id)}
+                    onClick={() => toggleDestinatario(dest.id)}
                   >
                     <Checkbox
-                      checked={selectedSocios.has(socio.id)}
-                      onCheckedChange={() => toggleSocio(socio.id)}
+                      checked={selectedDestinatarios.has(dest.id)}
+                      onCheckedChange={() => toggleDestinatario(dest.id)}
                     />
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-sm truncate">
-                        {socio.nombre} {socio.apellidos}
+                        {dest.nombre} {dest.apellidos}
                       </p>
                       <p className="text-xs text-muted-foreground truncate">
-                        {socio.email}
+                        {dest.email}
                       </p>
                     </div>
-                    {socio.cargo_junta && (
+                    {dest.cargo_junta ? (
                       <Badge variant="secondary" className="text-xs shrink-0">
-                        {getCargoLabel(socio.cargo_junta)}
+                        {getCargoLabel(dest.cargo_junta)}
                       </Badge>
-                    )}
+                    ) : dest.tipo === "amigo" ? (
+                      <Badge variant="outline" className="text-xs shrink-0">
+                        Amigo
+                      </Badge>
+                    ) : null}
                   </div>
                 ))}
               </div>
@@ -532,7 +562,7 @@ export const AdminMailings = () => {
             
             <Button
               onClick={handleSend}
-              disabled={sending || selectedSocios.size === 0 || !asunto || !contenido}
+              disabled={sending || selectedDestinatarios.size === 0 || !asunto || !contenido}
             >
               {sending ? (
                 <>
@@ -542,7 +572,7 @@ export const AdminMailings = () => {
               ) : (
                 <>
                   <Send className="h-4 w-4 mr-2" />
-                  Enviar a {selectedSocios.size} destinatario{selectedSocios.size !== 1 ? "s" : ""}
+                  Enviar a {selectedDestinatarios.size} destinatario{selectedDestinatarios.size !== 1 ? "s" : ""}
                 </>
               )}
             </Button>
