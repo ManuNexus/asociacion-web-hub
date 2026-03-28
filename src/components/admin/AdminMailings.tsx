@@ -336,8 +336,8 @@ export const AdminMailings = () => {
         throw new Error("No hay sesión activa");
       }
 
-      // Get emails of selected socios
-      const selectedEmails = socios
+      // Get emails of selected destinatarios
+      const selectedEmails = destinatarios
         .filter(s => selectedDestinatarios.has(s.id))
         .map(s => s.email);
 
