@@ -403,19 +403,20 @@ export const AdminMailings = () => {
           </div>
           
           <Input
-            placeholder="Buscar socio..."
+            placeholder="Buscar por nombre o email..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
           
-          <Select value={filterType} onValueChange={(v: "todos" | "junta" | "socios") => setFilterType(v)}>
+          <Select value={filterType} onValueChange={(v: "todos" | "junta" | "socios" | "amigos") => setFilterType(v)}>
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="todos">Todos los socios</SelectItem>
+              <SelectItem value="todos">Todos</SelectItem>
               <SelectItem value="junta">Solo Junta Directiva</SelectItem>
               <SelectItem value="socios">Solo socios (sin junta)</SelectItem>
+              <SelectItem value="amigos">Solo amigos</SelectItem>
             </SelectContent>
           </Select>
 
