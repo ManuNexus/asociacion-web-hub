@@ -34,13 +34,13 @@ import {
   FileText
 } from "lucide-react";
 
-interface Socio {
+interface Destinatario {
   id: string;
   nombre: string;
   apellidos: string;
   email: string;
-  user_id: string;
-  cargo_junta: string | null;
+  tipo: "socio" | "amigo";
+  cargo_junta?: string | null;
 }
 
 interface MailTemplate {
