@@ -155,32 +155,37 @@ export const AdminMailings = () => {
     }
   };
 
-  const toggleSocio = (id: string) => {
-    const newSelected = new Set(selectedSocios);
+  const toggleDestinatario = (id: string) => {
+    const newSelected = new Set(selectedDestinatarios);
     if (newSelected.has(id)) {
       newSelected.delete(id);
     } else {
       newSelected.add(id);
     }
-    setSelectedSocios(newSelected);
+    setSelectedDestinatarios(newSelected);
   };
 
   const selectAll = () => {
-    const filtered = getFilteredSocios();
-    setSelectedSocios(new Set(filtered.map(s => s.id)));
+    const filtered = getFilteredDestinatarios();
+    setSelectedDestinatarios(new Set(filtered.map(s => s.id)));
   };
 
   const selectNone = () => {
-    setSelectedSocios(new Set());
+    setSelectedDestinatarios(new Set());
   };
 
   const selectJunta = () => {
-    const juntaIds = socios.filter(s => s.cargo_junta).map(s => s.id);
-    setSelectedSocios(new Set(juntaIds));
+    const juntaIds = destinatarios.filter(s => s.cargo_junta).map(s => s.id);
+    setSelectedDestinatarios(new Set(juntaIds));
   };
 
-  const getFilteredSocios = () => {
-    return socios.filter(s => {
+  const selectAmigos = () => {
+    const amigoIds = destinatarios.filter(s => s.tipo === "amigo").map(s => s.id);
+    setSelectedDestinatarios(new Set(amigoIds));
+  };
+
+  const getFilteredDestinatarios = () => {
+    return destinatarios.filter(s => {
       const matchesSearch = 
         `${s.nombre} ${s.apellidos}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
         s.email.toLowerCase().includes(searchTerm.toLowerCase());
@@ -188,7 +193,8 @@ export const AdminMailings = () => {
       const matchesFilter = 
         filterType === "todos" ||
         (filterType === "junta" && s.cargo_junta) ||
-        (filterType === "socios" && !s.cargo_junta);
+        (filterType === "socios" && s.tipo === "socio" && !s.cargo_junta) ||
+        (filterType === "amigos" && s.tipo === "amigo");
       
       return matchesSearch && matchesFilter;
     });
