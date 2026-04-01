@@ -285,6 +285,7 @@ export const AdminSocios = () => {
 
   const openBajaDialog = (socio: SocioWithJunta) => {
     setSocioToBaja(socio);
+    setMotivoBaja("baja");
     setBajaDialogOpen(true);
   };
 
@@ -292,12 +293,7 @@ export const AdminSocios = () => {
     if (!socioToBaja) return;
     
     setSaving(true);
-    await supabase
-      .from("socios")
-      .update({ activo: false })
-      .eq("id", socioToBaja.id);
-    
-    await sendBajaEmail(socioToBaja, false);
+    await sendBajaEmail(socioToBaja, false, motivoBaja);
     setBajaDialogOpen(false);
     setSocioToBaja(null);
     fetchSocios();
