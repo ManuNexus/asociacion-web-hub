@@ -913,20 +913,48 @@ export const AdminSocios = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Baja Dialog */}
+      {/* Baja Dialog - Pasar a Amigo */}
       <AlertDialog open={bajaDialogOpen} onOpenChange={setBajaDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>¿Dar de baja a este socio?</AlertDialogTitle>
-            <AlertDialogDescription>
-              {socioToBaja && (
-                <>
-                  <strong>{socioToBaja.nombre} {socioToBaja.apellidos}</strong> perderá acceso al área de socios.
-                  Se le enviará un correo informándole de la baja.
-                  <br /><br />
-                  Los datos del socio se conservarán en el sistema. Para eliminar los datos completamente, usa el botón de eliminar.
-                </>
-              )}
+            <AlertDialogTitle className="flex items-center gap-2">
+              <HeartHandshake className="h-5 w-5 text-orange-500" />
+              Pasar socio a amigo
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div>
+                {socioToBaja && (
+                  <>
+                    <p className="mb-3">
+                      <strong>{socioToBaja.nombre} {socioToBaja.apellidos}</strong> dejará de ser socio/a y pasará a ser amigo/a de AHORA. Perderá acceso al panel de socios.
+                    </p>
+                    
+                    <div className="my-4">
+                      <p className="font-medium text-foreground mb-3">Motivo del cambio:</p>
+                      <RadioGroup value={motivoBaja} onValueChange={(v) => setMotivoBaja(v as "impago" | "baja")} className="space-y-3">
+                        <div className="flex items-start space-x-3 p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors">
+                          <RadioGroupItem value="baja" id="baja" className="mt-0.5" />
+                          <div>
+                            <Label htmlFor="baja" className="font-medium cursor-pointer">Baja voluntaria</Label>
+                            <p className="text-sm text-muted-foreground">El socio/a ha solicitado darse de baja</p>
+                          </div>
+                        </div>
+                        <div className="flex items-start space-x-3 p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors">
+                          <RadioGroupItem value="impago" id="impago" className="mt-0.5" />
+                          <div>
+                            <Label htmlFor="impago" className="font-medium cursor-pointer">Impago de cuotas</Label>
+                            <p className="text-sm text-muted-foreground">El socio/a no ha abonado las cuotas correspondientes</p>
+                          </div>
+                        </div>
+                      </RadioGroup>
+                    </div>
+
+                    <p className="text-sm text-muted-foreground">
+                      Se le enviará un correo adaptado al motivo. Sus datos se conservarán como amigo/a.
+                    </p>
+                  </>
+                )}
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -937,7 +965,7 @@ export const AdminSocios = () => {
               className="bg-orange-500 hover:bg-orange-600"
             >
               {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Dar de baja
+              Pasar a amigo
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
