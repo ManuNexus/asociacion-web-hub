@@ -548,7 +548,7 @@ export const AdminSocios = () => {
                               variant="ghost"
                               size="icon"
                               onClick={() => openBajaDialog(socio)}
-                              title="Dar de baja"
+                              title="Pasar a amigo"
                               className="text-orange-500 hover:text-orange-600"
                             >
                               <UserX className="h-4 w-4" />
