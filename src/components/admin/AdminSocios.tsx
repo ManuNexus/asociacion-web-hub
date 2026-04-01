@@ -97,6 +97,7 @@ export const AdminSocios = () => {
   const [editingSocio, setEditingSocio] = useState<SocioWithJunta | null>(null);
   const [socioToDelete, setSocioToDelete] = useState<SocioWithJunta | null>(null);
   const [socioToBaja, setSocioToBaja] = useState<SocioWithJunta | null>(null);
+  const [motivoBaja, setMotivoBaja] = useState<"impago" | "baja">("baja");
   const [numeroSocio, setNumeroSocio] = useState("");
   const [tipoPago, setTipoPago] = useState("mensual");
   const [activo, setActivo] = useState(true);
