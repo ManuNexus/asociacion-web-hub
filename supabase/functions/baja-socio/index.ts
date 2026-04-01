@@ -15,6 +15,8 @@ interface BajaSocioRequest {
   nombre: string;
   apellidos: string;
   eliminar_datos?: boolean;
+  motivo?: "impago" | "baja";
+  pasar_a_amigo?: boolean;
 }
 
 serve(async (req: Request): Promise<Response> => {
@@ -28,13 +30,11 @@ serve(async (req: Request): Promise<Response> => {
       throw new Error("No authorization header");
     }
 
-    // Extract token from Bearer header
     const token = authHeader.replace("Bearer ", "");
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-    // Create admin client with service role
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
       auth: {
         autoRefreshToken: false,
@@ -42,7 +42,6 @@ serve(async (req: Request): Promise<Response> => {
       },
     });
 
-    // Verify JWT token using service role key for cryptographic verification
     const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(token);
     
     if (userError || !user) {
@@ -53,7 +52,6 @@ serve(async (req: Request): Promise<Response> => {
     const adminUserId = user.id;
     console.log("Verified admin user ID:", adminUserId);
 
-    // Check if user is admin
     const { data: roleData, error: roleError } = await supabaseAdmin
       .from("user_roles")
       .select("role")
@@ -65,46 +63,102 @@ serve(async (req: Request): Promise<Response> => {
       throw new Error("Only admins can manage socios");
     }
 
-    const { socio_id, email, nombre, apellidos, eliminar_datos }: BajaSocioRequest = await req.json();
+    const { socio_id, email, nombre, apellidos, eliminar_datos, motivo = "baja", pasar_a_amigo }: BajaSocioRequest = await req.json();
 
-    console.log(`Processing baja for socio: ${email} (${nombre} ${apellidos}), eliminar_datos: ${eliminar_datos}`);
+    console.log(`Processing baja for socio: ${email} (${nombre} ${apellidos}), motivo: ${motivo}, eliminar_datos: ${eliminar_datos}, pasar_a_amigo: ${pasar_a_amigo}`);
 
-    // Get socio user_id for potential deletion
+    // Get socio data
     const { data: socioData } = await supabaseAdmin
       .from("socios")
-      .select("user_id")
+      .select("user_id, telefono")
       .eq("id", socio_id)
       .single();
 
     if (eliminar_datos && socioData?.user_id) {
-      // Delete user completely
       console.log("Deleting socio data and auth user...");
-      
-      // Delete from socios table
       await supabaseAdmin.from("socios").delete().eq("id", socio_id);
-      
-      // Delete user roles
       await supabaseAdmin.from("user_roles").delete().eq("user_id", socioData.user_id);
-      
-      // Delete auth user
       await supabaseAdmin.auth.admin.deleteUser(socioData.user_id);
-      
       console.log("Socio data deleted successfully");
     } else {
-      // Just deactivate
+      // Deactivate socio
       await supabaseAdmin
         .from("socios")
         .update({ activo: false })
         .eq("id", socio_id);
+
+      // Remove socio and junta roles (keep user role for auth access but no panel access)
+      if (socioData?.user_id) {
+        await supabaseAdmin.from("user_roles").delete().eq("user_id", socioData.user_id).eq("role", "socio");
+        await supabaseAdmin.from("user_roles").delete().eq("user_id", socioData.user_id).eq("role", "junta");
+      }
+
+      // Insert into amigos table if pasar_a_amigo
+      if (pasar_a_amigo) {
+        // Check if already exists as amigo
+        const { data: existingAmigo } = await supabaseAdmin
+          .from("amigos")
+          .select("id")
+          .eq("email", email)
+          .maybeSingle();
+
+        if (!existingAmigo) {
+          await supabaseAdmin.from("amigos").insert({
+            nombre,
+            apellidos,
+            email,
+            telefono: socioData?.telefono || null,
+          });
+          console.log("Socio added to amigos table");
+        } else {
+          console.log("Already exists as amigo, skipping insert");
+        }
+      }
     }
 
-    // Send goodbye email
+    // Build email based on motivo
+    const isImpago = motivo === "impago";
+    
+    const subject = eliminar_datos 
+      ? "Tus datos han sido eliminados - AHORA" 
+      : isImpago
+        ? "Cambio en tu membresía por impago - AHORA"
+        : "Baja de socio - AHORA";
+
+    const contentHtml = eliminar_datos ? `
+      <p>Te confirmamos que tus datos han sido <strong>eliminados completamente</strong> de nuestros sistemas, conforme a tu solicitud y a la normativa de protección de datos (RGPD).</p>
+      <p>Gracias por haber formado parte de AHORA durante este tiempo. Ha sido un placer tenerte con nosotros.</p>
+    ` : isImpago ? `
+      <p>Te escribimos para informarte de que, debido al <strong>impago de las cuotas correspondientes</strong>, tu condición de socio/a en AHORA ha sido modificada.</p>
+      <p>A partir de ahora, <strong>no tendrás acceso</strong> al área de socios ni a los servicios exclusivos para miembros.</p>
+      <p>No obstante, hemos mantenido tus datos como <strong>amigo/a de AHORA</strong>, por lo que seguirás recibiendo nuestras comunicaciones generales y podrás seguir participando en nuestras actividades públicas.</p>
+      
+      <div class="info-box">
+        <p><strong>¿Quieres regularizar tu situación?</strong></p>
+        <p>Si deseas volver a ser socio/a, puedes ponerte al corriente de pago escribiéndonos a <a href="mailto:info@ahoraorg.es">info@ahoraorg.es</a> y tramitaremos tu reincorporación de forma inmediata.</p>
+      </div>
+    ` : `
+      <p>Te confirmamos que tu membresía como socio/a en AHORA ha sido dada de <strong>baja</strong> según tu solicitud.</p>
+      <p>A partir de ahora, <strong>no tendrás acceso</strong> al área de socios ni a los servicios exclusivos para miembros.</p>
+      <p>Hemos mantenido tus datos como <strong>amigo/a de AHORA</strong>, por lo que seguirás recibiendo nuestras comunicaciones generales y podrás seguir participando en nuestras actividades públicas.</p>
+      <p>Queremos agradecerte sinceramente el tiempo que has formado parte de nuestra comunidad. Ha sido un placer tenerte con nosotros.</p>
+      
+      <div class="info-box">
+        <p><strong>¿Quieres volver?</strong></p>
+        <p>Si en el futuro deseas volver a ser socio/a, solo tienes que escribirnos a <a href="mailto:info@ahoraorg.es">info@ahoraorg.es</a> y estaremos encantados de tramitar tu alta de nuevo.</p>
+      </div>
+    `;
+
+    const headerTitle = eliminar_datos 
+      ? "Eliminación de datos" 
+      : isImpago 
+        ? "Cambio en tu membresía"
+        : "Baja de socio";
+
     const emailResponse = await resend.emails.send({
       from: "AHORA <socios@ahoraorg.es>",
       to: [email],
-      subject: eliminar_datos 
-        ? "Tus datos han sido eliminados - AHORA" 
-        : "Baja de socio - AHORA",
+      subject,
       html: `
         <!DOCTYPE html>
         <html>
@@ -122,30 +176,17 @@ serve(async (req: Request): Promise<Response> => {
         <body>
           <div class="container">
             <div class="header">
-              <h1 style="margin: 0;">${eliminar_datos ? "Eliminación de datos" : "Baja de socio"}</h1>
+              <h1 style="margin: 0;">${headerTitle}</h1>
             </div>
             <div class="content">
               <p>Hola <strong>${nombre}</strong>,</p>
-              
-              ${eliminar_datos ? `
-                <p>Te confirmamos que tus datos han sido <strong>eliminados completamente</strong> de nuestros sistemas, conforme a tu solicitud y a la normativa de protección de datos (RGPD).</p>
-                <p>Gracias por haber formado parte de AHORA durante este tiempo. Ha sido un placer tenerte con nosotros.</p>
-              ` : `
-                <p>Te confirmamos que tu membresía en AHORA ha sido dada de <strong>baja</strong>.</p>
-                <p>A partir de ahora, <strong>no tendrás acceso</strong> al área de socios ni a los servicios exclusivos para miembros.</p>
-                <p>Queremos agradecerte sinceramente el tiempo que has formado parte de nuestra comunidad. Ha sido un placer tenerte con nosotros.</p>
-              `}
-              
-              <div class="info-box">
-                <p><strong>¿Quieres volver?</strong></p>
-                <p>Si en el futuro deseas volver a ser socio/a, solo tienes que escribirnos a <a href="mailto:info@ahoraorg.es">info@ahoraorg.es</a> y estaremos encantados de tramitar tu alta de nuevo.</p>
-                
-                ${!eliminar_datos ? `
-                  <p style="margin-top: 15px;"><strong>¿Deseas eliminar tus datos?</strong></p>
+              ${contentHtml}
+              ${!eliminar_datos ? `
+                <div class="info-box">
+                  <p><strong>¿Deseas eliminar tus datos?</strong></p>
                   <p>Si prefieres que eliminemos completamente tus datos de nuestros sistemas, envíanos un correo a <a href="mailto:info@ahoraorg.es">info@ahoraorg.es</a> solicitándolo y procederemos conforme a la normativa RGPD.</p>
-                ` : ''}
-              </div>
-              
+                </div>
+              ` : ''}
               <p>Te deseamos lo mejor en tus proyectos futuros.</p>
               <p>Un cordial saludo,<br><em>El equipo de AHORA</em></p>
             </div>
@@ -159,12 +200,14 @@ serve(async (req: Request): Promise<Response> => {
       `,
     });
 
-    console.log("Goodbye email sent successfully:", emailResponse);
+    console.log("Email sent successfully:", emailResponse);
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: eliminar_datos ? "Datos eliminados correctamente" : "Socio dado de baja correctamente"
+        message: eliminar_datos 
+          ? "Datos eliminados correctamente" 
+          : `Socio pasado a amigo (${motivo})`
       }),
       {
         status: 200,

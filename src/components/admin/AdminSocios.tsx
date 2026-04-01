@@ -15,7 +15,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
 import {
   AlertDialog,
@@ -41,7 +40,8 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Pencil, Search, Trash2, UserX, Shield, Hash, CreditCard, RefreshCw, CalendarIcon } from "lucide-react";
+import { Loader2, Pencil, Search, Trash2, UserX, Shield, Hash, CreditCard, RefreshCw, CalendarIcon, HeartHandshake } from "lucide-react";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -96,6 +96,7 @@ export const AdminSocios = () => {
   const [editingSocio, setEditingSocio] = useState<SocioWithJunta | null>(null);
   const [socioToDelete, setSocioToDelete] = useState<SocioWithJunta | null>(null);
   const [socioToBaja, setSocioToBaja] = useState<SocioWithJunta | null>(null);
+  const [motivoBaja, setMotivoBaja] = useState<"impago" | "baja">("baja");
   const [numeroSocio, setNumeroSocio] = useState("");
   const [tipoPago, setTipoPago] = useState("mensual");
   const [activo, setActivo] = useState(true);
@@ -230,9 +231,9 @@ export const AdminSocios = () => {
         .eq("role", "junta");
     }
 
-    // If being deactivated, send baja email
+    // If being deactivated from edit dialog, also process as baja
     if (isBeingDeactivated) {
-      await sendBajaEmail(editingSocio, false);
+      await sendBajaEmail(editingSocio, false, "baja");
     }
 
     toast({ title: "Socio actualizado correctamente" });
@@ -241,7 +242,7 @@ export const AdminSocios = () => {
     setSaving(false);
   };
 
-  const sendBajaEmail = async (socio: Socio, eliminarDatos: boolean) => {
+  const sendBajaEmail = async (socio: Socio, eliminarDatos: boolean, motivo?: "impago" | "baja") => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
@@ -255,6 +256,8 @@ export const AdminSocios = () => {
           nombre: socio.nombre,
           apellidos: socio.apellidos,
           eliminar_datos: eliminarDatos,
+          motivo: motivo || "baja",
+          pasar_a_amigo: !eliminarDatos,
         },
       });
 
@@ -269,7 +272,9 @@ export const AdminSocios = () => {
         toast({ 
           title: eliminarDatos 
             ? "Datos eliminados y correo enviado" 
-            : "Baja procesada y correo enviado" 
+            : motivo === "impago"
+              ? "Socio pasado a amigo por impago"
+              : "Socio pasado a amigo por baja"
         });
       }
     } catch (error) {
@@ -279,6 +284,7 @@ export const AdminSocios = () => {
 
   const openBajaDialog = (socio: SocioWithJunta) => {
     setSocioToBaja(socio);
+    setMotivoBaja("baja");
     setBajaDialogOpen(true);
   };
 
@@ -286,12 +292,7 @@ export const AdminSocios = () => {
     if (!socioToBaja) return;
     
     setSaving(true);
-    await supabase
-      .from("socios")
-      .update({ activo: false })
-      .eq("id", socioToBaja.id);
-    
-    await sendBajaEmail(socioToBaja, false);
+    await sendBajaEmail(socioToBaja, false, motivoBaja);
     setBajaDialogOpen(false);
     setSocioToBaja(null);
     fetchSocios();
@@ -547,7 +548,7 @@ export const AdminSocios = () => {
                               variant="ghost"
                               size="icon"
                               onClick={() => openBajaDialog(socio)}
-                              title="Dar de baja"
+                              title="Pasar a amigo"
                               className="text-orange-500 hover:text-orange-600"
                             >
                               <UserX className="h-4 w-4" />
@@ -911,20 +912,48 @@ export const AdminSocios = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Baja Dialog */}
+      {/* Baja Dialog - Pasar a Amigo */}
       <AlertDialog open={bajaDialogOpen} onOpenChange={setBajaDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>¿Dar de baja a este socio?</AlertDialogTitle>
-            <AlertDialogDescription>
-              {socioToBaja && (
-                <>
-                  <strong>{socioToBaja.nombre} {socioToBaja.apellidos}</strong> perderá acceso al área de socios.
-                  Se le enviará un correo informándole de la baja.
-                  <br /><br />
-                  Los datos del socio se conservarán en el sistema. Para eliminar los datos completamente, usa el botón de eliminar.
-                </>
-              )}
+            <AlertDialogTitle className="flex items-center gap-2">
+              <HeartHandshake className="h-5 w-5 text-orange-500" />
+              Pasar socio a amigo
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div>
+                {socioToBaja && (
+                  <>
+                    <p className="mb-3">
+                      <strong>{socioToBaja.nombre} {socioToBaja.apellidos}</strong> dejará de ser socio/a y pasará a ser amigo/a de AHORA. Perderá acceso al panel de socios.
+                    </p>
+                    
+                    <div className="my-4">
+                      <p className="font-medium text-foreground mb-3">Motivo del cambio:</p>
+                      <RadioGroup value={motivoBaja} onValueChange={(v) => setMotivoBaja(v as "impago" | "baja")} className="space-y-3">
+                        <div className="flex items-start space-x-3 p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors">
+                          <RadioGroupItem value="baja" id="baja" className="mt-0.5" />
+                          <div>
+                            <Label htmlFor="baja" className="font-medium cursor-pointer">Baja voluntaria</Label>
+                            <p className="text-sm text-muted-foreground">El socio/a ha solicitado darse de baja</p>
+                          </div>
+                        </div>
+                        <div className="flex items-start space-x-3 p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors">
+                          <RadioGroupItem value="impago" id="impago" className="mt-0.5" />
+                          <div>
+                            <Label htmlFor="impago" className="font-medium cursor-pointer">Impago de cuotas</Label>
+                            <p className="text-sm text-muted-foreground">El socio/a no ha abonado las cuotas correspondientes</p>
+                          </div>
+                        </div>
+                      </RadioGroup>
+                    </div>
+
+                    <p className="text-sm text-muted-foreground">
+                      Se le enviará un correo adaptado al motivo. Sus datos se conservarán como amigo/a.
+                    </p>
+                  </>
+                )}
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -935,7 +964,7 @@ export const AdminSocios = () => {
               className="bg-orange-500 hover:bg-orange-600"
             >
               {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Dar de baja
+              Pasar a amigo
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
