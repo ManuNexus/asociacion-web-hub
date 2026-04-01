@@ -68,11 +68,54 @@ serve(async (req: Request): Promise<Response> => {
     console.log(`Processing baja for socio: ${email} (${nombre} ${apellidos}), motivo: ${motivo}, eliminar_datos: ${eliminar_datos}, pasar_a_amigo: ${pasar_a_amigo}`);
 
     // Get socio data
-    const { data: socioData } = await supabaseAdmin
+    const { data: socioData, error: socioError } = await supabaseAdmin
       .from("socios")
-      .select("user_id, telefono")
+      .select("user_id, telefono, activo")
       .eq("id", socio_id)
       .single();
+
+    if (socioError || !socioData) {
+      throw new Error("Socio no encontrado");
+    }
+
+    let existingAmigo: { id: string } | null = null;
+
+    if (!eliminar_datos && pasar_a_amigo) {
+      const { data: existingAmigoData } = await supabaseAdmin
+        .from("amigos")
+        .select("id")
+        .eq("email", email)
+        .maybeSingle();
+
+      existingAmigo = existingAmigoData;
+    }
+
+    if (!eliminar_datos && socioData.activo === false) {
+      let membershipRoles: Array<{ role: string }> = [];
+
+      if (socioData.user_id) {
+        const { data: membershipRoleData } = await supabaseAdmin
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", socioData.user_id)
+          .in("role", ["socio", "junta"]);
+
+        membershipRoles = membershipRoleData || [];
+      }
+
+      const alreadyProcessed = membershipRoles.length === 0 && (!pasar_a_amigo || !!existingAmigo);
+
+      if (alreadyProcessed) {
+        console.log("Baja already processed, skipping duplicate email");
+        return new Response(
+          JSON.stringify({ success: true, message: "La baja ya estaba tramitada" }),
+          {
+            status: 200,
+            headers: { "Content-Type": "application/json", ...corsHeaders },
+          }
+        );
+      }
+    }
 
     if (eliminar_datos && socioData?.user_id) {
       console.log("Deleting socio data and auth user...");
@@ -95,13 +138,6 @@ serve(async (req: Request): Promise<Response> => {
 
       // Insert into amigos table if pasar_a_amigo
       if (pasar_a_amigo) {
-        // Check if already exists as amigo
-        const { data: existingAmigo } = await supabaseAdmin
-          .from("amigos")
-          .select("id")
-          .eq("email", email)
-          .maybeSingle();
-
         if (!existingAmigo) {
           await supabaseAdmin.from("amigos").insert({
             nombre,
