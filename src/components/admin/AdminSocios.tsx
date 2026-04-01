@@ -231,9 +231,9 @@ export const AdminSocios = () => {
         .eq("role", "junta");
     }
 
-    // If being deactivated, send baja email
+    // If being deactivated from edit dialog, also process as baja
     if (isBeingDeactivated) {
-      await sendBajaEmail(editingSocio, false);
+      await sendBajaEmail(editingSocio, false, "baja");
     }
 
     toast({ title: "Socio actualizado correctamente" });
