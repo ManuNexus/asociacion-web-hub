@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -116,6 +116,7 @@ export const AdminSocios = () => {
   const [socialLinkedin, setSocialLinkedin] = useState("");
   
   const [syncingEmails, setSyncingEmails] = useState(false);
+  const bajaRequestInFlight = useRef(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -175,9 +176,15 @@ export const AdminSocios = () => {
     e.preventDefault();
     if (!editingSocio) return;
 
-    // Check if we're deactivating
-    const wasActive = editingSocio.activo;
-    const isBeingDeactivated = wasActive && !activo;
+    if (editingSocio.activo !== activo) {
+      toast({
+        variant: "destructive",
+        title: "Usa ‘Pasar a amigo’",
+        description: "La baja debe tramitarse desde esa acción para revocar el acceso y evitar correos duplicados.",
+      });
+      setActivo(editingSocio.activo);
+      return;
+    }
 
     setSaving(true);
     
@@ -231,11 +238,6 @@ export const AdminSocios = () => {
         .eq("role", "junta");
     }
 
-    // If being deactivated from edit dialog, also process as baja
-    if (isBeingDeactivated) {
-      await sendBajaEmail(editingSocio, false, "baja");
-    }
-
     toast({ title: "Socio actualizado correctamente" });
     setDialogOpen(false);
     fetchSocios();
@@ -268,6 +270,8 @@ export const AdminSocios = () => {
           title: "Aviso",
           description: "Socio procesado pero no se pudo enviar el correo",
         });
+      } else if (response.data?.message === "La baja ya estaba tramitada") {
+        toast({ title: "Esta baja ya estaba tramitada" });
       } else {
         toast({ 
           title: eliminarDatos 
@@ -289,14 +293,20 @@ export const AdminSocios = () => {
   };
 
   const handleBaja = async () => {
-    if (!socioToBaja) return;
-    
+    if (!socioToBaja || bajaRequestInFlight.current) return;
+
+    bajaRequestInFlight.current = true;
     setSaving(true);
-    await sendBajaEmail(socioToBaja, false, motivoBaja);
-    setBajaDialogOpen(false);
-    setSocioToBaja(null);
-    fetchSocios();
-    setSaving(false);
+
+    try {
+      await sendBajaEmail(socioToBaja, false, motivoBaja);
+      setBajaDialogOpen(false);
+      setSocioToBaja(null);
+      await fetchSocios();
+    } finally {
+      setSaving(false);
+      bajaRequestInFlight.current = false;
+    }
   };
 
   const openDeleteDialog = (socio: SocioWithJunta) => {
@@ -885,13 +895,13 @@ export const AdminSocios = () => {
                 <div>
                   <Label htmlFor="activo">Socio activo</Label>
                   <p className="text-xs text-muted-foreground">
-                    Desactiva para dar de baja al socio
+                    La baja se tramita desde &quot;Pasar a amigo&quot; para enviar un único correo y quitar el acceso correctamente
                   </p>
                 </div>
                 <Switch
                   id="activo"
                   checked={activo}
-                  onCheckedChange={setActivo}
+                  disabled
                 />
               </div>
               <div className="flex justify-end gap-2">
