@@ -243,7 +243,7 @@ export const AdminSocios = () => {
     setSaving(false);
   };
 
-  const sendBajaEmail = async (socio: Socio, eliminarDatos: boolean) => {
+  const sendBajaEmail = async (socio: Socio, eliminarDatos: boolean, motivo?: "impago" | "baja") => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
@@ -257,6 +257,8 @@ export const AdminSocios = () => {
           nombre: socio.nombre,
           apellidos: socio.apellidos,
           eliminar_datos: eliminarDatos,
+          motivo: motivo || "baja",
+          pasar_a_amigo: !eliminarDatos,
         },
       });
 
@@ -271,7 +273,9 @@ export const AdminSocios = () => {
         toast({ 
           title: eliminarDatos 
             ? "Datos eliminados y correo enviado" 
-            : "Baja procesada y correo enviado" 
+            : motivo === "impago"
+              ? "Socio pasado a amigo por impago"
+              : "Socio pasado a amigo por baja"
         });
       }
     } catch (error) {
