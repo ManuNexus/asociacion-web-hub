@@ -121,7 +121,9 @@ export function AudioPlayer({ title, content }: AudioPlayerProps) {
       currentChunkRef.current = index;
       const utterance = new SpeechSynthesisUtterance(chunks[index]);
       utterance.rate = speed;
+      utterance.pitch = 1.0;
       utterance.volume = isMuted ? 0 : 1;
+      utterance.lang = "es-ES";
 
       if (voices.length > 0 && voiceIndex >= 0) {
         utterance.voice = voices[voiceIndex];
