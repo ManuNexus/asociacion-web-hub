@@ -33,13 +33,26 @@ export function AudioPlayer({ title, content }: AudioPlayerProps) {
       const spanishVoices = allVoices.filter(
         (v) => v.lang.startsWith("es")
       );
-      setVoices(spanishVoices.length > 0 ? spanishVoices : allVoices.slice(0, 5));
-      if (spanishVoices.length > 0 && voiceIndex === -1) {
-        // Prefer a female Spanish voice
-        const preferred = spanishVoices.findIndex(
-          (v) => v.lang === "es-ES" && v.name.toLowerCase().includes("female")
-        );
-        setVoiceIndex(preferred >= 0 ? preferred : 0);
+      const available = spanishVoices.length > 0 ? spanishVoices : allVoices.slice(0, 5);
+      setVoices(available);
+
+      if (available.length > 0 && voiceIndex === -1) {
+        // Priority: Google es-ES > Microsoft es-ES > any es-ES with "natural"/"neural" > first es-ES
+        const priorities = [
+          (v: SpeechSynthesisVoice) => v.lang === "es-ES" && v.name.toLowerCase().includes("google"),
+          (v: SpeechSynthesisVoice) => v.lang === "es-ES" && v.name.toLowerCase().includes("microsoft"),
+          (v: SpeechSynthesisVoice) => v.lang === "es-ES" && /natural|neural|premium/i.test(v.name),
+          (v: SpeechSynthesisVoice) => v.lang === "es-ES" && !v.localService,
+          (v: SpeechSynthesisVoice) => v.lang === "es-ES",
+          (v: SpeechSynthesisVoice) => v.lang.startsWith("es"),
+        ];
+
+        let bestIndex = 0;
+        for (const predicate of priorities) {
+          const idx = available.findIndex(predicate);
+          if (idx >= 0) { bestIndex = idx; break; }
+        }
+        setVoiceIndex(bestIndex);
       }
     };
 
