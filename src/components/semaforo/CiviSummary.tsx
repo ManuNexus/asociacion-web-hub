@@ -11,7 +11,7 @@ interface CiviSummaryProps {
 export function CiviSummary({ year }: CiviSummaryProps) {
   const contexto = `semaforo_${year}`;
 
-  const { data, isLoading, error, refetch } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ["civi-summary", contexto],
     queryFn: async () => {
       const res = await supabase.functions.invoke("civi-summary", {
