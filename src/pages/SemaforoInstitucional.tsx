@@ -123,21 +123,18 @@ export default function SemaforoInstitucional() {
               <CounterCard
                 count={counts.rojo}
                 label="Alerta de Integridad"
-                sublabel="Casos de corrupción"
                 dotColor="bg-red-500"
                 textColor="text-red-600"
               />
               <CounterCard
                 count={counts.ambar}
                 label="Riesgo Institucional"
-                sublabel="Irregularidades en gestión"
                 dotColor="bg-amber-500"
                 textColor="text-amber-600"
               />
               <CounterCard
                 count={counts.verde}
                 label="Estándar de Calidad"
-                sublabel="Entidades reconocidas"
                 dotColor="bg-emerald-500"
                 textColor="text-emerald-600"
               />
