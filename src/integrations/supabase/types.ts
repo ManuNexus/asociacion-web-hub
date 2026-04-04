@@ -251,6 +251,33 @@ export type Database = {
         }
         Relationships: []
       }
+      civi_cache: {
+        Row: {
+          contenido: string
+          contexto: string
+          created_at: string
+          datos_extra: Json | null
+          expires_at: string
+          id: string
+        }
+        Insert: {
+          contenido: string
+          contexto: string
+          created_at?: string
+          datos_extra?: Json | null
+          expires_at?: string
+          id?: string
+        }
+        Update: {
+          contenido?: string
+          contexto?: string
+          created_at?: string
+          datos_extra?: Json | null
+          expires_at?: string
+          id?: string
+        }
+        Relationships: []
+      }
       cobros_cuotas: {
         Row: {
           created_at: string
