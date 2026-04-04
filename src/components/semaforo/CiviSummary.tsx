@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Bot, Loader2, RefreshCw } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Loader2, Bot } from "lucide-react";
+
 import ReactMarkdown from "react-markdown";
 
 interface CiviSummaryProps {
@@ -11,7 +11,7 @@ interface CiviSummaryProps {
 export function CiviSummary({ year }: CiviSummaryProps) {
   const contexto = `semaforo_${year}`;
 
-  const { data, isLoading, error, refetch } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ["civi-summary", contexto],
     queryFn: async () => {
       const res = await supabase.functions.invoke("civi-summary", {
@@ -43,12 +43,6 @@ export function CiviSummary({ year }: CiviSummaryProps) {
             <span className="text-xs text-muted-foreground ml-2">Inteligencia Cívica · Análisis {year}</span>
           </div>
         </div>
-        {data && !isLoading && (
-          <Button variant="ghost" size="sm" onClick={() => refetch()} className="text-xs gap-1.5 text-muted-foreground">
-            <RefreshCw className="h-3 w-3" />
-            Actualizar
-          </Button>
-        )}
       </div>
 
       {/* Content */}
