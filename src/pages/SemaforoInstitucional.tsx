@@ -187,38 +187,44 @@ export default function SemaforoInstitucional() {
 
         {/* Filters */}
         <section className="border-b border-border bg-muted/30">
-          <div className="container py-6 space-y-4">
-            <div className="relative max-w-md">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Buscar por título o descripción..."
-                value={searchQuery}
-                onChange={(e) => handleFilterChange(setSearchQuery, e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div className="flex flex-col gap-3">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider mr-1">Año</span>
-                  <FilterPill active={selectedYear === null} onClick={() => handleFilterChange(setSelectedYear, null)} label="Todos" />
-                  {years.map((year) => (
-                    <FilterPill key={year} active={selectedYear === year} onClick={() => handleFilterChange(setSelectedYear, year)} label={year} />
-                  ))}
-                </div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider mr-1">Ámbito</span>
-                  <FilterPill active={selectedAmbito === null} onClick={() => handleFilterChange(setSelectedAmbito, null)} label="Todos" />
-                  {(Object.keys(AMBITO_LABELS) as Ambito[]).map((key) => (
-                    <FilterPill key={key} active={selectedAmbito === key} onClick={() => handleFilterChange(setSelectedAmbito, key)} label={AMBITO_LABELS[key]} />
-                  ))}
-                </div>
+          <div className="container py-5">
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="relative flex-1 min-w-[200px] max-w-xs">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar..."
+                  value={searchQuery}
+                  onChange={(e) => handleFilterChange(setSearchQuery, e.target.value)}
+                  className="pl-10 h-9"
+                />
               </div>
+              <Select value={selectedYear || "all"} onValueChange={(v) => handleFilterChange(setSelectedYear, v === "all" ? null : v)}>
+                <SelectTrigger className="w-[120px] h-9">
+                  <SelectValue placeholder="Año" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos los años</SelectItem>
+                  {years.map((year) => (
+                    <SelectItem key={year} value={year}>{year}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={selectedAmbito || "all"} onValueChange={(v) => handleFilterChange(setSelectedAmbito, v === "all" ? null : v as Ambito)}>
+                <SelectTrigger className="w-[140px] h-9">
+                  <SelectValue placeholder="Ámbito" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos los ámbitos</SelectItem>
+                  {(Object.keys(AMBITO_LABELS) as Ambito[]).map((key) => (
+                    <SelectItem key={key} value={key}>{AMBITO_LABELS[key]}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               {informe && (
-                <a href={informe.archivo_url} target="_blank" rel="noopener noreferrer" className="shrink-0">
-                  <Button variant="outline" className="gap-2">
-                    <Download className="h-4 w-4" />
-                    Informe Trimestral
+                <a href={informe.archivo_url} target="_blank" rel="noopener noreferrer" className="ml-auto shrink-0">
+                  <Button variant="outline" size="sm" className="gap-2 h-9">
+                    <Download className="h-3.5 w-3.5" />
+                    Informe
                   </Button>
                 </a>
               )}
