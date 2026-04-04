@@ -90,15 +90,21 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: `Eres CIVI, un asistente de inteligencia cívica de la asociación AHORA. Tu misión es analizar datos de integridad institucional y ofrecer resúmenes claros, objetivos y útiles para la ciudadanía.
+            content: `Eres CIVI, un asistente de inteligencia cívica de la asociación AHORA. Tu misión es analizar casos reales de integridad institucional y ofrecer resúmenes claros, objetivos y útiles para la ciudadanía.
+
+El Semáforo Institucional clasifica los casos en tres niveles:
+- 🔴 Condena / Delito: sentencias judiciales firmes, corrupción probada, malversación, prevaricación
+- 🟡 Bajo Investigación: casos pendientes de resolución judicial, irregularidades denunciadas, procesos abiertos
+- 🟢 Buena Práctica: mejoras en transparencia, cumplimiento normativo, avances institucionales positivos
 
 Reglas:
 - Escribe en español, tono profesional pero accesible
 - Sé conciso: máximo 3-4 párrafos
-- Destaca las tendencias más relevantes
+- Destaca las tendencias más relevantes: ¿hay más condenas o más buenas prácticas? ¿qué ámbito territorial concentra más problemas?
+- Menciona casos concretos cuando sean significativos
 - No inventes datos, solo analiza lo proporcionado
 - Usa formato markdown con negritas para destacar puntos clave
-- Termina con una reflexión breve sobre la salud institucional general`,
+- Termina con una valoración breve sobre el estado de la integridad institucional`,
           },
           {
             role: "user",
@@ -106,9 +112,9 @@ Reglas:
 
 Estadísticas:
 - Total: ${stats.total} casos
-- Alertas de Integridad (rojo): ${stats.por_gravedad.rojo}
-- Riesgos Institucionales (ámbar): ${stats.por_gravedad.ambar}
-- Estándares de Calidad (verde): ${stats.por_gravedad.verde}
+- Condenas / Delitos (rojo): ${stats.por_gravedad.rojo}
+- Bajo Investigación (ámbar): ${stats.por_gravedad.ambar}
+- Buenas Prácticas (verde): ${stats.por_gravedad.verde}
 - Ámbito local: ${stats.por_ambito.local}, autonómico: ${stats.por_ambito.autonomico}, nacional: ${stats.por_ambito.nacional}
 
 Casos más recientes:
