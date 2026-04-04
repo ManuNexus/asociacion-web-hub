@@ -251,6 +251,15 @@ export default function SemaforoInstitucional() {
             </div>
           )}
         </section>
+
+        {/* Disclaimer */}
+        <section className="border-t border-border">
+          <div className="container py-10">
+            <p className="text-xs text-muted-foreground text-center max-w-2xl mx-auto leading-relaxed">
+              ⚠️ Este sistema de monitorización es completamente autónomo y puede contener errores o imprecisiones. La asociación revisa semanalmente la información publicada para garantizar su veracidad y corregir cualquier dato incorrecto.
+            </p>
+          </div>
+        </section>
       </div>
     </Layout>
   );
