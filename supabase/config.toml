@@ -62,3 +62,6 @@ verify_jwt = false
 
 [functions.iban-reminder]
 verify_jwt = false
+
+[functions.api-semaforo]
+verify_jwt = false
