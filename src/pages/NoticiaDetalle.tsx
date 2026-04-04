@@ -300,6 +300,13 @@ const NoticiaDetalle = () => {
             </div>
           </header>
 
+          {/* Audio Player */}
+          {noticia.contenido && (
+            <div className="px-6 md:px-10 -mt-2 mb-2">
+              <AudioPlayer title={noticia.titulo} content={noticia.contenido} />
+            </div>
+          )}
+
           {/* Extracto with visual separator */}
           {noticia.extracto && (
             <div className="px-6 md:px-10">
