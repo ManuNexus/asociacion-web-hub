@@ -46,6 +46,7 @@ Deno.serve(async (req) => {
       // Optional filters
       const gravedad = url.searchParams.get("gravedad");
       const ambito = url.searchParams.get("ambito");
+      const q = url.searchParams.get("q");
       const limit = parseInt(url.searchParams.get("limit") || "100");
 
       let query = supabase
@@ -54,6 +55,10 @@ Deno.serve(async (req) => {
         .order("fecha", { ascending: false })
         .limit(limit);
 
+      if (q) {
+        const pattern = `%${q}%`;
+        query = query.or(`titulo.ilike.${pattern},descripcion.ilike.${pattern}`);
+      }
       if (gravedad) query = query.eq("gravedad", gravedad);
       if (ambito) query = query.eq("ambito", ambito);
 
