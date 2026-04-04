@@ -265,13 +265,11 @@ export default function SemaforoInstitucional() {
 function CounterCard({
   count,
   label,
-  sublabel,
   dotColor,
   textColor,
 }: {
   count: number;
   label: string;
-  sublabel: string;
   dotColor: string;
   textColor: string;
 }) {
@@ -286,7 +284,6 @@ function CounterCard({
       <p className={`text-5xl font-extrabold tracking-tight ${textColor}`}>
         {count}
       </p>
-      <p className="mt-2 text-sm text-muted-foreground">{sublabel}</p>
     </div>
   );
 }
