@@ -8,6 +8,7 @@ import { formatInMadrid } from "@/lib/timezone";
 import logoIcon from "@/assets/logo-ahora-icon.png";
 import { TweetEmbed, isTweetUrl } from "@/components/TweetEmbed";
 import ArticleCTA from "@/components/ArticleCTA";
+import { AudioPlayer } from "@/components/AudioPlayer";
 import { useAuth } from "@/hooks/useAuth";
 
 interface Categoria {
@@ -298,6 +299,13 @@ const NoticiaDetalle = () => {
               </div>
             </div>
           </header>
+
+          {/* Audio Player */}
+          {noticia.contenido && (
+            <div className="px-6 md:px-10 -mt-2 mb-2">
+              <AudioPlayer title={noticia.titulo} content={noticia.contenido} />
+            </div>
+          )}
 
           {/* Extracto with visual separator */}
           {noticia.extracto && (
