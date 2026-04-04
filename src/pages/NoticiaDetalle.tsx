@@ -302,7 +302,7 @@ const NoticiaDetalle = () => {
 
           {/* Audio Player */}
           {noticia.contenido && (
-            <div className="px-6 md:px-10 -mt-2 mb-2">
+            <div className="px-6 md:px-10 mt-4 mb-6">
               <AudioPlayer title={noticia.titulo} content={noticia.contenido} />
             </div>
           )}

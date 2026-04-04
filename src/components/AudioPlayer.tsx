@@ -260,9 +260,6 @@ export function AudioPlayer({ title, content }: AudioPlayerProps) {
       {/* Progress bar */}
       <div className="flex-1 flex flex-col gap-1 min-w-0">
         <div className="flex items-center gap-2">
-          <span className="text-xs font-medium text-foreground truncate">
-            {isPlaying || isPaused ? "Reproduciendo..." : "🎧 Escuchar noticia"}
-          </span>
           <span className="text-[11px] text-muted-foreground ml-auto whitespace-nowrap">
             ~{estimatedMinutes} min
           </span>
