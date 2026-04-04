@@ -26,9 +26,9 @@ const AMBITO_LABELS: Record<string, string> = {
 };
 
 const GRAVEDAD_LABELS: Record<string, string> = {
-  rojo: "Alerta",
-  ambar: "Riesgo",
-  verde: "Estándar",
+  rojo: "Condena",
+  ambar: "Investigación",
+  verde: "Buena Práctica",
 };
 
 export function SemaforoCharts({ casos }: { casos: Caso[] }) {
