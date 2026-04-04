@@ -43,12 +43,6 @@ export function CiviSummary({ year }: CiviSummaryProps) {
             <span className="text-xs text-muted-foreground ml-2">Inteligencia Cívica · Análisis {year}</span>
           </div>
         </div>
-        {data && !isLoading && (
-          <Button variant="ghost" size="sm" onClick={() => refetch()} className="text-xs gap-1.5 text-muted-foreground">
-            <RefreshCw className="h-3 w-3" />
-            Actualizar
-          </Button>
-        )}
       </div>
 
       {/* Content */}
