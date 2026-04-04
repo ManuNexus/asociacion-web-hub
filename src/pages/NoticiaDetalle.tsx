@@ -8,6 +8,7 @@ import { formatInMadrid } from "@/lib/timezone";
 import logoIcon from "@/assets/logo-ahora-icon.png";
 import { TweetEmbed, isTweetUrl } from "@/components/TweetEmbed";
 import ArticleCTA from "@/components/ArticleCTA";
+import { AudioPlayer } from "@/components/AudioPlayer";
 import { useAuth } from "@/hooks/useAuth";
 
 interface Categoria {
