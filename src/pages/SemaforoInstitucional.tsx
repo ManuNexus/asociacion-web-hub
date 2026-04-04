@@ -316,16 +316,3 @@ export default function SemaforoInstitucional() {
     </Layout>
   );
 }
-
-function FilterPill({ active, onClick, label }: { active: boolean; onClick: () => void; label: string }) {
-  return (
-    <button
-      onClick={onClick}
-      className={`px-4 py-2 text-sm font-medium rounded-full transition-colors ${
-        active ? "bg-foreground text-background" : "bg-muted text-muted-foreground hover:bg-muted/80"
-      }`}
-    >
-      {label}
-    </button>
-  );
-}
