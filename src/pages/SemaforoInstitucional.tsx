@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
-import { Download, ExternalLink, Calendar, MapPin, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { Download, ExternalLink, Calendar, MapPin, Search, ChevronLeft, ChevronRight, Shield, AlertTriangle, CheckCircle, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -21,10 +21,10 @@ interface Caso {
   fuente_url: string | null;
 }
 
-const GRAVEDAD_CONFIG: Record<Gravedad, { label: string; color: string; bg: string; border: string; dot: string }> = {
-  rojo: { label: "Alerta de Integridad", color: "text-red-600", bg: "bg-red-50", border: "border-red-200", dot: "bg-red-500" },
-  ambar: { label: "Riesgo Institucional", color: "text-amber-600", bg: "bg-amber-50", border: "border-amber-200", dot: "bg-amber-500" },
-  verde: { label: "Estándar de Calidad", color: "text-emerald-600", bg: "bg-emerald-50", border: "border-emerald-200", dot: "bg-emerald-500" },
+const GRAVEDAD_CONFIG: Record<Gravedad, { label: string; icon: typeof Shield; color: string; bg: string; bgSolid: string; border: string; dot: string; ring: string }> = {
+  rojo: { label: "Alerta de Integridad", icon: Shield, color: "text-red-700", bg: "bg-red-50", bgSolid: "bg-red-500", border: "border-red-200", dot: "bg-red-500", ring: "ring-red-200" },
+  ambar: { label: "Riesgo Institucional", icon: AlertTriangle, color: "text-amber-700", bg: "bg-amber-50", bgSolid: "bg-amber-500", border: "border-amber-200", dot: "bg-amber-500", ring: "ring-amber-200" },
+  verde: { label: "Estándar de Calidad", icon: CheckCircle, color: "text-emerald-700", bg: "bg-emerald-50", bgSolid: "bg-emerald-500", border: "border-emerald-200", dot: "bg-emerald-500", ring: "ring-emerald-200" },
 };
 
 const AMBITO_LABELS: Record<Ambito, string> = {
@@ -44,6 +44,7 @@ function getYearsFromCases(cases: Caso[]) {
 export default function SemaforoInstitucional() {
   const [selectedYear, setSelectedYear] = useState<string | null>(null);
   const [selectedAmbito, setSelectedAmbito] = useState<Ambito | null>(null);
+  const [selectedGravedad, setSelectedGravedad] = useState<Gravedad | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -75,6 +76,13 @@ export default function SemaforoInstitucional() {
 
   const years = useMemo(() => getYearsFromCases(casos), [casos]);
 
+  // Counts use ALL cases (unfiltered) for the summary
+  const totalCounts = useMemo(() => ({
+    rojo: casos.filter((c) => c.gravedad === "rojo").length,
+    ambar: casos.filter((c) => c.gravedad === "ambar").length,
+    verde: casos.filter((c) => c.gravedad === "verde").length,
+  }), [casos]);
+
   const filteredCases = useMemo(() => {
     let result = casos;
     if (selectedYear) {
@@ -82,6 +90,9 @@ export default function SemaforoInstitucional() {
     }
     if (selectedAmbito) {
       result = result.filter((c) => c.ambito === selectedAmbito);
+    }
+    if (selectedGravedad) {
+      result = result.filter((c) => c.gravedad === selectedGravedad);
     }
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
@@ -92,9 +103,8 @@ export default function SemaforoInstitucional() {
       );
     }
     return result;
-  }, [casos, selectedYear, selectedAmbito, searchQuery]);
+  }, [casos, selectedYear, selectedAmbito, selectedGravedad, searchQuery]);
 
-  // Reset page when filters change
   const filteredCount = filteredCases.length;
   const totalPages = Math.max(1, Math.ceil(filteredCount / ITEMS_PER_PAGE));
   const safePage = Math.min(currentPage, totalPages);
@@ -103,12 +113,6 @@ export default function SemaforoInstitucional() {
     const start = (safePage - 1) * ITEMS_PER_PAGE;
     return filteredCases.slice(start, start + ITEMS_PER_PAGE);
   }, [filteredCases, safePage]);
-
-  const counts = useMemo(() => ({
-    rojo: filteredCases.filter((c) => c.gravedad === "rojo").length,
-    ambar: filteredCases.filter((c) => c.gravedad === "ambar").length,
-    verde: filteredCases.filter((c) => c.gravedad === "verde").length,
-  }), [filteredCases]);
 
   const handleFilterChange = (setter: (v: any) => void, value: any) => {
     setter(value);
@@ -135,20 +139,53 @@ export default function SemaforoInstitucional() {
           <div className="h-1 bg-secondary" />
         </section>
 
-        {/* Counters */}
+        {/* Explicación del sistema */}
         <section className="border-b border-border">
           <div className="container py-12">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <CounterCard count={counts.rojo} label="Alerta de Integridad" dotColor="bg-red-500" textColor="text-red-600" />
-              <CounterCard count={counts.ambar} label="Riesgo Institucional" dotColor="bg-amber-500" textColor="text-amber-600" />
-              <CounterCard count={counts.verde} label="Estándar de Calidad" dotColor="bg-emerald-500" textColor="text-emerald-600" />
+            <div className="flex items-start gap-3 mb-6">
+              <Info className="h-5 w-5 text-muted-foreground mt-0.5 shrink-0" />
+              <div>
+                <h2 className="text-lg font-bold text-foreground">¿Qué es el Semáforo Institucional?</h2>
+                <p className="mt-1 text-sm text-muted-foreground leading-relaxed max-w-3xl">
+                  Es un sistema de vigilancia ciudadana que clasifica la actuación de las instituciones públicas en tres niveles según su gravedad. Permite a cualquier persona consultar de forma transparente los casos detectados y fomentar la rendición de cuentas.
+                </p>
+              </div>
+            </div>
+
+            {/* Counter cards — clickable as gravity filters */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {(["rojo", "ambar", "verde"] as Gravedad[]).map((g) => {
+                const config = GRAVEDAD_CONFIG[g];
+                const Icon = config.icon;
+                const isActive = selectedGravedad === g;
+                return (
+                  <button
+                    key={g}
+                    onClick={() => handleFilterChange(setSelectedGravedad, isActive ? null : g)}
+                    className={`relative border rounded-xl p-6 text-left transition-all hover:shadow-card group ${
+                      isActive ? `${config.border} ${config.bg} ring-2 ${config.ring}` : "border-border hover:border-muted-foreground/20"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className={`p-2 rounded-lg ${config.bg}`}>
+                        <Icon className={`h-5 w-5 ${config.color}`} />
+                      </div>
+                      <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{config.label}</span>
+                    </div>
+                    <p className={`text-4xl font-extrabold tracking-tight ${config.color}`}>{totalCounts[g]}</p>
+                    <span className="text-xs text-muted-foreground mt-1 block">
+                      {isActive ? "Clic para quitar filtro" : "Clic para filtrar"}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </div>
         </section>
 
         {/* Filters */}
-        <section className="border-b border-border">
-          <div className="container py-8 space-y-4">
+        <section className="border-b border-border bg-muted/30">
+          <div className="container py-6 space-y-4">
             {/* Search */}
             <div className="relative max-w-md">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -163,16 +200,16 @@ export default function SemaforoInstitucional() {
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div className="flex flex-col gap-3">
                 {/* Year filter */}
-                <div className="flex flex-wrap gap-2">
-                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider self-center mr-1">Año</span>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider mr-1">Año</span>
                   <FilterPill active={selectedYear === null} onClick={() => handleFilterChange(setSelectedYear, null)} label="Todos" />
                   {years.map((year) => (
                     <FilterPill key={year} active={selectedYear === year} onClick={() => handleFilterChange(setSelectedYear, year)} label={year} />
                   ))}
                 </div>
                 {/* Ambito filter */}
-                <div className="flex flex-wrap gap-2">
-                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider self-center mr-1">Ámbito</span>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider mr-1">Ámbito</span>
                   <FilterPill active={selectedAmbito === null} onClick={() => handleFilterChange(setSelectedAmbito, null)} label="Todos" />
                   {(Object.keys(AMBITO_LABELS) as Ambito[]).map((key) => (
                     <FilterPill key={key} active={selectedAmbito === key} onClick={() => handleFilterChange(setSelectedAmbito, key)} label={AMBITO_LABELS[key]} />
@@ -192,24 +229,39 @@ export default function SemaforoInstitucional() {
           </div>
         </section>
 
+        {/* Results count */}
+        <div className="container pt-8 pb-2">
+          <p className="text-sm text-muted-foreground">
+            {filteredCount === casos.length
+              ? `${filteredCount} casos registrados`
+              : `${filteredCount} de ${casos.length} casos`}
+          </p>
+        </div>
+
         {/* Cases Feed */}
-        <section className="container py-12">
+        <section className="container pb-12">
           {paginatedCases.length === 0 ? (
-            <p className="text-center text-muted-foreground py-16">
-              No hay casos registrados para estos filtros.
-            </p>
+            <div className="text-center py-16 space-y-2">
+              <Search className="h-10 w-10 text-muted-foreground/40 mx-auto" />
+              <p className="text-muted-foreground font-medium">No hay casos para estos filtros</p>
+              <p className="text-sm text-muted-foreground/70">Prueba a cambiar los criterios de búsqueda</p>
+            </div>
           ) : (
-            <div className="grid gap-4">
+            <div className="grid gap-4 mt-4">
               {paginatedCases.map((caso) => {
                 const config = GRAVEDAD_CONFIG[caso.gravedad];
+                const Icon = config.icon;
                 return (
                   <article
                     key={caso.id}
-                    className={`group relative border rounded-xl p-6 transition-all hover:shadow-card ${config.border} ${config.bg}/30`}
+                    className={`group relative border rounded-xl p-5 md:p-6 transition-all hover:shadow-card ${config.border} ${config.bg}/40`}
                   >
-                    <div className="flex flex-col sm:flex-row sm:items-start gap-4">
-                      <div className="flex items-center gap-3 shrink-0">
-                        <span className={`h-3 w-3 rounded-full ${config.dot}`} />
+                    {/* Colored left accent bar */}
+                    <div className={`absolute left-0 top-4 bottom-4 w-1 rounded-full ${config.bgSolid}`} />
+
+                    <div className="flex flex-col sm:flex-row sm:items-start gap-4 pl-4">
+                      <div className="flex items-center gap-2.5 shrink-0">
+                        <Icon className={`h-4 w-4 ${config.color}`} />
                         <span className={`text-xs font-semibold uppercase tracking-wider ${config.color}`}>
                           {config.label}
                         </span>
@@ -217,15 +269,15 @@ export default function SemaforoInstitucional() {
                       <div className="flex-1 min-w-0">
                         <h3 className="text-base font-semibold text-foreground leading-snug">{caso.titulo}</h3>
                         {caso.descripcion && (
-                          <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">{caso.descripcion}</p>
+                          <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed line-clamp-2">{caso.descripcion}</p>
                         )}
                         <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
                           <span className="flex items-center gap-1.5">
                             <Calendar className="h-3.5 w-3.5" />
                             {format(parseISO(caso.fecha), "d MMM yyyy", { locale: es })}
                           </span>
-                          <span className="flex items-center gap-1.5">
-                            <MapPin className="h-3.5 w-3.5" />
+                          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-muted text-muted-foreground text-xs font-medium">
+                            <MapPin className="h-3 w-3" />
                             {AMBITO_LABELS[caso.ambito as Ambito] || caso.ambito}
                           </span>
                           {caso.fuente_url && (
@@ -305,17 +357,5 @@ function FilterPill({ active, onClick, label }: { active: boolean; onClick: () =
     >
       {label}
     </button>
-  );
-}
-
-function CounterCard({ count, label, dotColor, textColor }: { count: number; label: string; dotColor: string; textColor: string }) {
-  return (
-    <div className="border border-border rounded-xl p-8 text-center">
-      <div className="flex items-center justify-center gap-2 mb-3">
-        <span className={`h-2.5 w-2.5 rounded-full ${dotColor}`} />
-        <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{label}</span>
-      </div>
-      <p className={`text-5xl font-extrabold tracking-tight ${textColor}`}>{count}</p>
-    </div>
   );
 }
