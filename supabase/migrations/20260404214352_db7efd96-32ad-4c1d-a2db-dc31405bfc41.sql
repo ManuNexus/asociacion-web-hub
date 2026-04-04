@@ -1,0 +1,2 @@
+ALTER TABLE public.casos_semaforo DROP CONSTRAINT casos_semaforo_ambito_check;
+ALTER TABLE public.casos_semaforo ADD CONSTRAINT casos_semaforo_ambito_check CHECK (ambito = ANY (ARRAY['local'::text, 'autonomico'::text, 'nacional'::text]));
