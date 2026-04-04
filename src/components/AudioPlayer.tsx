@@ -258,19 +258,17 @@ export function AudioPlayer({ title, content }: AudioPlayerProps) {
       </div>
 
       {/* Progress bar */}
-      <div className="flex-1 flex flex-col gap-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <span className="text-[11px] text-muted-foreground ml-auto whitespace-nowrap">
-            ~{estimatedMinutes} min
-          </span>
-        </div>
+      <div className="flex-1 flex items-center gap-3 min-w-0">
         <Slider
           value={[progress]}
           max={100}
           step={1}
-          className="h-1.5 cursor-default"
+          className="h-1.5 cursor-default flex-1"
           disabled
         />
+        <span className="text-[11px] text-muted-foreground whitespace-nowrap">
+          ~{estimatedMinutes} min
+        </span>
       </div>
 
       {/* Speed */}
