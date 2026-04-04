@@ -37,7 +37,7 @@ serve(async (req) => {
       });
     }
 
-    // Fetch all cases for the context (e.g., "semaforo_2025" → year 2025)
+    // Fetch all cases for the context
     const year = contexto.replace("semaforo_", "");
     let query = supabase.from("casos_semaforo").select("*").order("fecha", { ascending: false });
 
@@ -54,7 +54,7 @@ serve(async (req) => {
       });
     }
 
-    // Build stats for charts
+    // Build stats
     const stats = {
       total: casos.length,
       por_gravedad: { rojo: 0, ambar: 0, verde: 0 },
@@ -68,7 +68,7 @@ serve(async (req) => {
       stats.por_gravedad[g] = (stats.por_gravedad[g] || 0) + 1;
       stats.por_ambito[a] = (stats.por_ambito[a] || 0) + 1;
 
-      const mes = c.fecha.substring(0, 7); // YYYY-MM
+      const mes = c.fecha.substring(0, 7);
       if (!stats.por_mes[mes]) stats.por_mes[mes] = { rojo: 0, ambar: 0, verde: 0 };
       stats.por_mes[mes][g]++;
     }
@@ -77,7 +77,9 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
-    const casosResumen = casos.slice(0, 30).map((c: any) => `- [${c.gravedad}] ${c.titulo} (${c.ambito}, ${c.fecha})`).join("\n");
+    const casosResumen = casos.slice(0, 40).map((c: any) => 
+      `- [${c.gravedad.toUpperCase()}] ${c.titulo} | ${c.ambito} | ${c.fecha}${c.descripcion ? ` — ${c.descripcion.substring(0, 120)}` : ""}`
+    ).join("\n");
 
     const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -90,37 +92,47 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: `Eres CIVI, un asistente de inteligencia cívica de la asociación AHORA. Tu misión es analizar casos reales de integridad institucional y ofrecer resúmenes claros, objetivos y útiles para la ciudadanía.
+            content: `Eres **CIVI**, el motor de inteligencia cívica de la Asociación AHORA. Tu misión es transformar datos brutos del Semáforo Institucional en análisis claros, rigurosos y accionables para la ciudadanía.
 
-El Semáforo Institucional clasifica los casos en tres niveles:
-- 🔴 Condena / Delito: sentencias judiciales firmes, corrupción probada, malversación, prevaricación
-- 🟡 Bajo Investigación: casos pendientes de resolución judicial, irregularidades denunciadas, procesos abiertos
-- 🟢 Buena Práctica: mejoras en transparencia, cumplimiento normativo, avances institucionales positivos
+## Clasificación del Semáforo
+- 🔴 **Condena / Delito**: sentencias firmes, corrupción probada, malversación, prevaricación.
+- 🟡 **Bajo Investigación**: casos pendientes de resolución, irregularidades denunciadas, procesos abiertos.
+- 🟢 **Buena Práctica**: avances en transparencia, cumplimiento normativo, mejoras institucionales.
 
-Reglas:
-- Escribe en español, tono profesional pero accesible
-- Sé conciso: máximo 3-4 párrafos
-- Destaca las tendencias más relevantes: ¿hay más condenas o más buenas prácticas? ¿qué ámbito territorial concentra más problemas?
-- Menciona casos concretos cuando sean significativos
-- No inventes datos, solo analiza lo proporcionado
-- Usa formato markdown con negritas para destacar puntos clave
-- Termina con una valoración breve sobre el estado de la integridad institucional`,
+## Formato de respuesta obligatorio
+
+Estructura tu análisis así:
+
+### 📊 Panorama general
+Párrafo de contexto con las cifras clave (total de casos, distribución por gravedad). Usa porcentajes para dar perspectiva.
+
+### 🔍 Tendencias clave
+- Identifica 2-3 patrones: ¿predominan las condenas o las investigaciones? ¿Hay un ámbito territorial más afectado? ¿La tendencia mensual mejora o empeora?
+- Menciona **casos concretos** cuando sean especialmente relevantes.
+
+### ⚖️ Valoración
+Cierra con 1-2 frases que valoren el estado actual de la integridad institucional de forma objetiva pero directa.
+
+## Reglas de estilo
+- Español, tono profesional pero cercano — como un analista explicando a un ciudadano informado.
+- Usa **negritas** para datos y nombres clave.
+- Sé conciso: el análisis completo no debe superar 250 palabras.
+- No inventes datos ni extrapoles más allá de lo proporcionado.
+- No uses emojis en el cuerpo del texto (solo en los encabezados de sección).`,
           },
           {
             role: "user",
-            content: `Analiza los siguientes ${casos.length} casos del Semáforo Institucional${year !== "all" ? ` del año ${year}` : ""}:
+            content: `Genera el análisis del Semáforo Institucional${year !== "all" ? ` del año ${year}` : ""}.
 
-Estadísticas:
+**Datos agregados:**
 - Total: ${stats.total} casos
-- Condenas / Delitos (rojo): ${stats.por_gravedad.rojo}
-- Bajo Investigación (ámbar): ${stats.por_gravedad.ambar}
-- Buenas Prácticas (verde): ${stats.por_gravedad.verde}
-- Ámbito local: ${stats.por_ambito.local}, autonómico: ${stats.por_ambito.autonomico}, nacional: ${stats.por_ambito.nacional}
+- 🔴 Condenas / Delitos: ${stats.por_gravedad.rojo} (${Math.round((stats.por_gravedad.rojo / stats.total) * 100)}%)
+- 🟡 Bajo Investigación: ${stats.por_gravedad.ambar} (${Math.round((stats.por_gravedad.ambar / stats.total) * 100)}%)
+- 🟢 Buenas Prácticas: ${stats.por_gravedad.verde} (${Math.round((stats.por_gravedad.verde / stats.total) * 100)}%)
+- Ámbito local: ${stats.por_ambito.local} | Autonómico: ${stats.por_ambito.autonomico} | Nacional: ${stats.por_ambito.nacional}
 
-Casos más recientes:
-${casosResumen}
-
-Genera un resumen analítico de la situación institucional.`,
+**Casos registrados (más recientes primero):**
+${casosResumen}`,
           },
         ],
       }),
