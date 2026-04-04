@@ -4,9 +4,11 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
-import { Download, ExternalLink, Calendar, MapPin, Search, ChevronLeft, ChevronRight, Shield, AlertTriangle, CheckCircle, Info } from "lucide-react";
+import { Download, ExternalLink, Calendar, MapPin, Search, ChevronLeft, ChevronRight, Shield, AlertTriangle, CheckCircle, Info, Bot, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { SemaforoCharts } from "@/components/semaforo/SemaforoCharts";
+import { CiviSummary } from "@/components/semaforo/CiviSummary";
 
 type Gravedad = "rojo" | "ambar" | "verde";
 type Ambito = "local" | "autonomico" | "nacional";
@@ -75,8 +77,8 @@ export default function SemaforoInstitucional() {
   });
 
   const years = useMemo(() => getYearsFromCases(casos), [casos]);
+  const currentYear = years[0] || new Date().getFullYear().toString();
 
-  // Counts use ALL cases (unfiltered) for the summary
   const totalCounts = useMemo(() => ({
     rojo: casos.filter((c) => c.gravedad === "rojo").length,
     ambar: casos.filter((c) => c.gravedad === "ambar").length,
@@ -85,22 +87,12 @@ export default function SemaforoInstitucional() {
 
   const filteredCases = useMemo(() => {
     let result = casos;
-    if (selectedYear) {
-      result = result.filter((c) => format(parseISO(c.fecha), "yyyy") === selectedYear);
-    }
-    if (selectedAmbito) {
-      result = result.filter((c) => c.ambito === selectedAmbito);
-    }
-    if (selectedGravedad) {
-      result = result.filter((c) => c.gravedad === selectedGravedad);
-    }
+    if (selectedYear) result = result.filter((c) => format(parseISO(c.fecha), "yyyy") === selectedYear);
+    if (selectedAmbito) result = result.filter((c) => c.ambito === selectedAmbito);
+    if (selectedGravedad) result = result.filter((c) => c.gravedad === selectedGravedad);
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
-      result = result.filter(
-        (c) =>
-          c.titulo.toLowerCase().includes(q) ||
-          (c.descripcion && c.descripcion.toLowerCase().includes(q))
-      );
+      result = result.filter((c) => c.titulo.toLowerCase().includes(q) || (c.descripcion && c.descripcion.toLowerCase().includes(q)));
     }
     return result;
   }, [casos, selectedYear, selectedAmbito, selectedGravedad, searchQuery]);
@@ -139,7 +131,7 @@ export default function SemaforoInstitucional() {
           <div className="h-1 bg-secondary" />
         </section>
 
-        {/* Explicación del sistema */}
+        {/* Explicación */}
         <section className="border-b border-border">
           <div className="container py-12">
             <div className="flex items-start gap-3 mb-6">
@@ -152,7 +144,6 @@ export default function SemaforoInstitucional() {
               </div>
             </div>
 
-            {/* Counter cards — clickable as gravity filters */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {(["rojo", "ambar", "verde"] as Gravedad[]).map((g) => {
                 const config = GRAVEDAD_CONFIG[g];
@@ -183,10 +174,19 @@ export default function SemaforoInstitucional() {
           </div>
         </section>
 
+        {/* CIVI AI Analysis + Charts */}
+        {casos.length > 0 && (
+          <section className="border-b border-border">
+            <div className="container py-12 space-y-8">
+              <CiviSummary year={currentYear} />
+              <SemaforoCharts casos={casos} />
+            </div>
+          </section>
+        )}
+
         {/* Filters */}
         <section className="border-b border-border bg-muted/30">
           <div className="container py-6 space-y-4">
-            {/* Search */}
             <div className="relative max-w-md">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
@@ -196,10 +196,8 @@ export default function SemaforoInstitucional() {
                 className="pl-10"
               />
             </div>
-
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div className="flex flex-col gap-3">
-                {/* Year filter */}
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider mr-1">Año</span>
                   <FilterPill active={selectedYear === null} onClick={() => handleFilterChange(setSelectedYear, null)} label="Todos" />
@@ -207,7 +205,6 @@ export default function SemaforoInstitucional() {
                     <FilterPill key={year} active={selectedYear === year} onClick={() => handleFilterChange(setSelectedYear, year)} label={year} />
                   ))}
                 </div>
-                {/* Ambito filter */}
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider mr-1">Ámbito</span>
                   <FilterPill active={selectedAmbito === null} onClick={() => handleFilterChange(setSelectedAmbito, null)} label="Todos" />
@@ -216,7 +213,6 @@ export default function SemaforoInstitucional() {
                   ))}
                 </div>
               </div>
-
               {informe && (
                 <a href={informe.archivo_url} target="_blank" rel="noopener noreferrer" className="shrink-0">
                   <Button variant="outline" className="gap-2">
@@ -232,9 +228,7 @@ export default function SemaforoInstitucional() {
         {/* Results count */}
         <div className="container pt-8 pb-2">
           <p className="text-sm text-muted-foreground">
-            {filteredCount === casos.length
-              ? `${filteredCount} casos registrados`
-              : `${filteredCount} de ${casos.length} casos`}
+            {filteredCount === casos.length ? `${filteredCount} casos registrados` : `${filteredCount} de ${casos.length} casos`}
           </p>
         </div>
 
@@ -252,25 +246,16 @@ export default function SemaforoInstitucional() {
                 const config = GRAVEDAD_CONFIG[caso.gravedad];
                 const Icon = config.icon;
                 return (
-                  <article
-                    key={caso.id}
-                    className={`group relative border rounded-xl p-5 md:p-6 transition-all hover:shadow-card ${config.border} ${config.bg}/40`}
-                  >
-                    {/* Colored left accent bar */}
+                  <article key={caso.id} className={`group relative border rounded-xl p-5 md:p-6 transition-all hover:shadow-card ${config.border} ${config.bg}/40`}>
                     <div className={`absolute left-0 top-4 bottom-4 w-1 rounded-full ${config.bgSolid}`} />
-
                     <div className="flex flex-col sm:flex-row sm:items-start gap-4 pl-4">
                       <div className="flex items-center gap-2.5 shrink-0">
                         <Icon className={`h-4 w-4 ${config.color}`} />
-                        <span className={`text-xs font-semibold uppercase tracking-wider ${config.color}`}>
-                          {config.label}
-                        </span>
+                        <span className={`text-xs font-semibold uppercase tracking-wider ${config.color}`}>{config.label}</span>
                       </div>
                       <div className="flex-1 min-w-0">
                         <h3 className="text-base font-semibold text-foreground leading-snug">{caso.titulo}</h3>
-                        {caso.descripcion && (
-                          <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed line-clamp-2">{caso.descripcion}</p>
-                        )}
+                        {caso.descripcion && <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed line-clamp-2">{caso.descripcion}</p>}
                         <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
                           <span className="flex items-center gap-1.5">
                             <Calendar className="h-3.5 w-3.5" />
@@ -281,12 +266,7 @@ export default function SemaforoInstitucional() {
                             {AMBITO_LABELS[caso.ambito as Ambito] || caso.ambito}
                           </span>
                           {caso.fuente_url && (
-                            <a
-                              href={caso.fuente_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex items-center gap-1.5 text-foreground/70 hover:text-foreground transition-colors"
-                            >
+                            <a href={caso.fuente_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-foreground/70 hover:text-foreground transition-colors">
                               <ExternalLink className="h-3.5 w-3.5" />
                               Ver fuente
                             </a>
@@ -300,34 +280,17 @@ export default function SemaforoInstitucional() {
             </div>
           )}
 
-          {/* Pagination */}
           {totalPages > 1 && (
             <div className="flex items-center justify-center gap-2 mt-10">
-              <Button
-                variant="outline"
-                size="icon"
-                disabled={safePage <= 1}
-                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              >
+              <Button variant="outline" size="icon" disabled={safePage <= 1} onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}>
                 <ChevronLeft className="h-4 w-4" />
               </Button>
               {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                <Button
-                  key={page}
-                  variant={page === safePage ? "default" : "outline"}
-                  size="icon"
-                  onClick={() => setCurrentPage(page)}
-                  className="w-9 h-9"
-                >
+                <Button key={page} variant={page === safePage ? "default" : "outline"} size="icon" onClick={() => setCurrentPage(page)} className="w-9 h-9">
                   {page}
                 </Button>
               ))}
-              <Button
-                variant="outline"
-                size="icon"
-                disabled={safePage >= totalPages}
-                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-              >
+              <Button variant="outline" size="icon" disabled={safePage >= totalPages} onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}>
                 <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
