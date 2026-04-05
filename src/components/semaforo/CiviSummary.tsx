@@ -4,12 +4,8 @@ import { Loader2, Sparkles } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { formatInMadrid } from "@/lib/timezone";
 
-interface CiviSummaryProps {
-  year: string;
-}
-
-export function CiviSummary({ year }: CiviSummaryProps) {
-  const contexto = `semaforo_${year}`;
+export function CiviSummary() {
+  const contexto = "semaforo_all";
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["civi-summary", contexto],
