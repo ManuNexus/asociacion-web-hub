@@ -179,7 +179,7 @@ export default function SemaforoInstitucional() {
         {casos.length > 0 && (
           <section className="border-b border-border">
             <div className="container py-12 space-y-8">
-              <CiviSummary year={currentYear} />
+              <CiviSummary />
               <SemaforoCharts casos={casos} />
             </div>
           </section>

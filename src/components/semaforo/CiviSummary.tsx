@@ -69,7 +69,7 @@ export function CiviSummary() {
 
         {!isLoading && !error && data === null && (
           <p className="text-sm text-muted-foreground text-center py-6">
-            No hay suficientes datos para generar un análisis de {year}.
+            No hay suficientes datos para generar un análisis.
           </p>
         )}
 
