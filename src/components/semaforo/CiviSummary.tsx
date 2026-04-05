@@ -44,7 +44,7 @@ export function CiviSummary() {
             </span>
           </div>
           <span className="text-xs text-muted-foreground">
-            Inteligencia Cívica · Análisis {year}
+            Inteligencia Cívica · Análisis global
           </span>
         </div>
       </div>
