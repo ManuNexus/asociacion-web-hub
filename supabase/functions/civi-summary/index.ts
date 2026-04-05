@@ -96,7 +96,7 @@ serve(async (req) => {
 
 ## Clasificación del Semáforo
 - 🔴 **Condena / Delito**: sentencias firmes, corrupción probada, malversación, prevaricación.
-- 🟡 **Bajo Investigación**: casos pendientes de resolución, irregularidades denunciadas, procesos abiertos.
+- 🟡 **Bajo Investigación**: alertas pendientes de resolución, irregularidades denunciadas, procesos abiertos.
 - 🟢 **Buena Práctica**: avances en transparencia, cumplimiento normativo, mejoras institucionales.
 
 ## Formato de respuesta obligatorio
@@ -104,11 +104,11 @@ serve(async (req) => {
 Estructura tu análisis así:
 
 ### 📊 Panorama general
-Párrafo de contexto con las cifras clave (total de casos, distribución por gravedad). Usa porcentajes para dar perspectiva.
+Párrafo de contexto con las cifras clave (total de alertas, distribución por gravedad). Usa porcentajes para dar perspectiva.
 
 ### 🔍 Tendencias clave
 - Identifica 2-3 patrones: ¿predominan las condenas o las investigaciones? ¿Hay un ámbito territorial más afectado? ¿La tendencia mensual mejora o empeora?
-- Menciona **casos concretos** cuando sean especialmente relevantes.
+- Menciona **alertas concretas** cuando sean especialmente relevantes.
 
 ### ⚖️ Valoración
 Cierra con 1-2 frases que valoren el estado actual de la integridad institucional de forma objetiva pero directa.
@@ -125,13 +125,13 @@ Cierra con 1-2 frases que valoren el estado actual de la integridad instituciona
             content: `Genera el análisis del Semáforo Institucional${year !== "all" ? ` del año ${year}` : ""}.
 
 **Datos agregados:**
-- Total: ${stats.total} casos
+- Total: ${stats.total} alertas
 - 🔴 Condenas / Delitos: ${stats.por_gravedad.rojo} (${Math.round((stats.por_gravedad.rojo / stats.total) * 100)}%)
 - 🟡 Bajo Investigación: ${stats.por_gravedad.ambar} (${Math.round((stats.por_gravedad.ambar / stats.total) * 100)}%)
 - 🟢 Buenas Prácticas: ${stats.por_gravedad.verde} (${Math.round((stats.por_gravedad.verde / stats.total) * 100)}%)
 - Ámbito local: ${stats.por_ambito.local} | Autonómico: ${stats.por_ambito.autonomico} | Nacional: ${stats.por_ambito.nacional}
 
-**Casos registrados (más recientes primero):**
+**Alertas registradas (más recientes primero):**
 ${casosResumen}`,
           },
         ],

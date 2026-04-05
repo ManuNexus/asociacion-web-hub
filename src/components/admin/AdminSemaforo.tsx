@@ -95,9 +95,9 @@ export default function AdminSemaforo() {
       queryClient.invalidateQueries({ queryKey: ["casos-semaforo"] });
       setDialogOpen(false);
       resetForm();
-      toast({ title: editingCase ? "Caso actualizado" : "Caso creado" });
+      toast({ title: editingCase ? "Alerta actualizada" : "Alerta creada" });
     },
-    onError: () => toast({ title: "Error al guardar el caso", variant: "destructive" }),
+    onError: () => toast({ title: "Error al guardar la alerta", variant: "destructive" }),
   });
 
   const deleteMutation = useMutation({
@@ -108,7 +108,7 @@ export default function AdminSemaforo() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-casos-semaforo"] });
       queryClient.invalidateQueries({ queryKey: ["casos-semaforo"] });
-      toast({ title: "Caso eliminado" });
+      toast({ title: "Alerta eliminada" });
     },
   });
 
@@ -137,7 +137,7 @@ export default function AdminSemaforo() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `casos-semaforo-${format(new Date(), "yyyy-MM-dd")}.csv`;
+    a.download = `alertas-semaforo-${format(new Date(), "yyyy-MM-dd")}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -209,17 +209,17 @@ export default function AdminSemaforo() {
       }));
 
     if (payloads.length === 0) {
-      toast({ title: "No se encontraron casos válidos en el CSV", variant: "destructive" });
+      toast({ title: "No se encontraron alertas válidas en el CSV", variant: "destructive" });
       return;
     }
 
     const { error } = await supabase.from("casos_semaforo").insert(payloads);
     if (error) {
-      toast({ title: "Error al importar casos", variant: "destructive" });
+      toast({ title: "Error al importar alertas", variant: "destructive" });
     } else {
       queryClient.invalidateQueries({ queryKey: ["admin-casos-semaforo"] });
       queryClient.invalidateQueries({ queryKey: ["casos-semaforo"] });
-      toast({ title: `${payloads.length} caso(s) importados correctamente` });
+      toast({ title: `${payloads.length} alerta(s) importadas correctamente` });
     }
     e.target.value = "";
   };
@@ -310,7 +310,7 @@ export default function AdminSemaforo() {
 
       {/* Casos header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <h3 className="text-lg font-semibold">Casos del Semáforo</h3>
+        <h3 className="text-lg font-semibold">Alertas del Semáforo</h3>
         <div className="flex gap-2 flex-wrap">
           <Button variant="outline" onClick={handleDownloadCsv} className="gap-2" disabled={casos.length === 0}>
             <Download className="h-4 w-4" /> Descargar CSV
@@ -324,7 +324,7 @@ export default function AdminSemaforo() {
             <input type="file" accept=".csv" className="hidden" onChange={handleUploadCsv} />
           </label>
           <Button onClick={openNew} className="gap-2">
-            <Plus className="h-4 w-4" /> Nuevo caso
+            <Plus className="h-4 w-4" /> Nueva alerta
           </Button>
         </div>
       </div>
@@ -351,7 +351,7 @@ export default function AdminSemaforo() {
                 variant="ghost"
                 size="icon"
                 onClick={() => {
-                  if (confirm("¿Eliminar este caso?")) deleteMutation.mutate(c.id);
+                  if (confirm("¿Eliminar esta alerta?")) deleteMutation.mutate(c.id);
                 }}
               >
                 <Trash2 className="h-4 w-4 text-destructive" />
@@ -360,7 +360,7 @@ export default function AdminSemaforo() {
           </div>
         ))}
         {casos.length === 0 && (
-          <p className="text-center text-muted-foreground py-8">No hay casos aún.</p>
+          <p className="text-center text-muted-foreground py-8">No hay alertas aún.</p>
         )}
       </div>
 
@@ -368,7 +368,7 @@ export default function AdminSemaforo() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>{editingCase ? "Editar caso" : "Nuevo caso"}</DialogTitle>
+            <DialogTitle>{editingCase ? "Editar alerta" : "Nueva alerta"}</DialogTitle>
           </DialogHeader>
           <form
             onSubmit={(e) => {

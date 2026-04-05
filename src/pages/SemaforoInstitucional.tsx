@@ -140,7 +140,7 @@ export default function SemaforoInstitucional() {
               <div>
                 <h2 className="text-lg font-bold text-foreground">¿Qué es el Semáforo Institucional?</h2>
                 <p className="mt-1 text-sm text-muted-foreground leading-relaxed max-w-3xl">
-                  Es un sistema de vigilancia ciudadana que clasifica la actuación de las instituciones públicas en tres niveles según su gravedad. Permite a cualquier persona consultar de forma transparente los casos detectados y fomentar la rendición de cuentas.
+                  Es un sistema de vigilancia ciudadana que clasifica la actuación de las instituciones públicas en tres niveles según su gravedad. Permite a cualquier persona consultar de forma transparente las alertas detectadas y fomentar la rendición de cuentas.
                 </p>
               </div>
             </div>
@@ -235,7 +235,7 @@ export default function SemaforoInstitucional() {
         {/* Results count */}
         <div className="container pt-8 pb-2">
           <p className="text-sm text-muted-foreground">
-            {filteredCount === casos.length ? `${filteredCount} casos registrados` : `${filteredCount} de ${casos.length} casos`}
+            {filteredCount === casos.length ? `${filteredCount} alertas registradas` : `${filteredCount} de ${casos.length} alertas`}
           </p>
         </div>
 
@@ -244,7 +244,7 @@ export default function SemaforoInstitucional() {
           {paginatedCases.length === 0 ? (
             <div className="text-center py-16 space-y-2">
               <Search className="h-10 w-10 text-muted-foreground/40 mx-auto" />
-              <p className="text-muted-foreground font-medium">No hay casos para estos filtros</p>
+              <p className="text-muted-foreground font-medium">No hay alertas para estos filtros</p>
               <p className="text-sm text-muted-foreground/70">Prueba a cambiar los criterios de búsqueda</p>
             </div>
           ) : (
