@@ -219,7 +219,7 @@ export default function AdminSemaforo() {
     } else {
       queryClient.invalidateQueries({ queryKey: ["admin-casos-semaforo"] });
       queryClient.invalidateQueries({ queryKey: ["casos-semaforo"] });
-      toast({ title: `${payloads.length} caso(s) importados correctamente` });
+      toast({ title: `${payloads.length} alerta(s) importadas correctamente` });
     }
     e.target.value = "";
   };
