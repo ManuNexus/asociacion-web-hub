@@ -96,7 +96,7 @@ serve(async (req) => {
 
 ## Clasificación del Semáforo
 - 🔴 **Condena / Delito**: sentencias firmes, corrupción probada, malversación, prevaricación.
-- 🟡 **Bajo Investigación**: casos pendientes de resolución, irregularidades denunciadas, procesos abiertos.
+- 🟡 **Bajo Investigación**: alertas pendientes de resolución, irregularidades denunciadas, procesos abiertos.
 - 🟢 **Buena Práctica**: avances en transparencia, cumplimiento normativo, mejoras institucionales.
 
 ## Formato de respuesta obligatorio
