@@ -4,12 +4,8 @@ import { Loader2, Sparkles } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { formatInMadrid } from "@/lib/timezone";
 
-interface CiviSummaryProps {
-  year: string;
-}
-
-export function CiviSummary({ year }: CiviSummaryProps) {
-  const contexto = `semaforo_${year}`;
+export function CiviSummary() {
+  const contexto = "semaforo_all";
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["civi-summary", contexto],
@@ -48,7 +44,7 @@ export function CiviSummary({ year }: CiviSummaryProps) {
             </span>
           </div>
           <span className="text-xs text-muted-foreground">
-            Inteligencia Cívica · Análisis {year}
+            Inteligencia Cívica · Análisis global
           </span>
         </div>
       </div>
@@ -73,7 +69,7 @@ export function CiviSummary({ year }: CiviSummaryProps) {
 
         {!isLoading && !error && data === null && (
           <p className="text-sm text-muted-foreground text-center py-6">
-            No hay suficientes datos para generar un análisis de {year}.
+            No hay suficientes datos para generar un análisis.
           </p>
         )}
 
