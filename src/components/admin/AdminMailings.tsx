@@ -226,7 +226,8 @@ export const AdminMailings = () => {
 
     try {
       // Upload to Supabase storage
-      const fileName = `mailing-${Date.now()}-${file.name}`;
+      const sanitizedName = file.name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9._-]/g, "_");
+      const fileName = `mailing-${Date.now()}-${sanitizedName}`;
       const { data, error } = await supabase.storage
         .from("mailing-images")
         .upload(fileName, file);
