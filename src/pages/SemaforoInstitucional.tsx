@@ -140,7 +140,7 @@ export default function SemaforoInstitucional() {
               <div>
                 <h2 className="text-lg font-bold text-foreground">¿Qué es el Semáforo Institucional?</h2>
                 <p className="mt-1 text-sm text-muted-foreground leading-relaxed max-w-3xl">
-                  Es un sistema de vigilancia ciudadana que clasifica la actuación de las instituciones públicas en tres niveles según su gravedad. Permite a cualquier persona consultar de forma transparente los casos detectados y fomentar la rendición de cuentas.
+                  Es un sistema de vigilancia ciudadana que clasifica la actuación de las instituciones públicas en tres niveles según su gravedad. Permite a cualquier persona consultar de forma transparente las alertas detectadas y fomentar la rendición de cuentas.
                 </p>
               </div>
             </div>

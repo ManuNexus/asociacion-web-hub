@@ -103,7 +103,7 @@ export function SemaforoCharts({ casos }: { casos: Caso[] }) {
               <XAxis dataKey="name" tick={{ fontSize: 11 }} />
               <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
               <Tooltip />
-              <Bar dataKey="value" fill="hsl(217 54% 29%)" radius={[4, 4, 0, 0]} name="Casos" />
+              <Bar dataKey="value" fill="hsl(217 54% 29%)" radius={[4, 4, 0, 0]} name="Alertas" />
             </BarChart>
           </ResponsiveContainer>
         </div>

@@ -368,7 +368,7 @@ export default function AdminSemaforo() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>{editingCase ? "Editar caso" : "Nuevo caso"}</DialogTitle>
+            <DialogTitle>{editingCase ? "Editar alerta" : "Nueva alerta"}</DialogTitle>
           </DialogHeader>
           <form
             onSubmit={(e) => {
