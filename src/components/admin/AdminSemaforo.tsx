@@ -196,7 +196,7 @@ export default function AdminSemaforo() {
     });
 
     const validGravedades = ["rojo", "ambar", "verde"];
-    const validAmbitos = ["nacional", "local"];
+    const validAmbitos = ["nacional", "autonomico", "local"];
     const payloads = rows
       .filter((r) => r.titulo)
       .map((r) => ({
@@ -340,7 +340,7 @@ export default function AdminSemaforo() {
             <div className="flex-1 min-w-0">
               <p className="font-medium text-sm truncate">{c.titulo}</p>
               <p className="text-xs text-muted-foreground">
-                {format(parseISO(c.fecha), "d MMM yyyy", { locale: es })} · {c.ambito === "nacional" ? "Nacional" : "Local"}
+                {format(parseISO(c.fecha), "d MMM yyyy", { locale: es })} · {c.ambito === "nacional" ? "Nacional" : c.ambito === "autonomico" ? "Autonómico" : "Local"}
               </p>
             </div>
             <div className="flex gap-1 shrink-0">
@@ -409,6 +409,7 @@ export default function AdminSemaforo() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="nacional">Nacional</SelectItem>
+                    <SelectItem value="autonomico">Autonómico</SelectItem>
                     <SelectItem value="local">Local</SelectItem>
                   </SelectContent>
                 </Select>
