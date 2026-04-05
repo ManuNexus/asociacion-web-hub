@@ -125,7 +125,7 @@ Cierra con 1-2 frases que valoren el estado actual de la integridad instituciona
             content: `Genera el análisis del Semáforo Institucional${year !== "all" ? ` del año ${year}` : ""}.
 
 **Datos agregados:**
-- Total: ${stats.total} casos
+- Total: ${stats.total} alertas
 - 🔴 Condenas / Delitos: ${stats.por_gravedad.rojo} (${Math.round((stats.por_gravedad.rojo / stats.total) * 100)}%)
 - 🟡 Bajo Investigación: ${stats.por_gravedad.ambar} (${Math.round((stats.por_gravedad.ambar / stats.total) * 100)}%)
 - 🟢 Buenas Prácticas: ${stats.por_gravedad.verde} (${Math.round((stats.por_gravedad.verde / stats.total) * 100)}%)
