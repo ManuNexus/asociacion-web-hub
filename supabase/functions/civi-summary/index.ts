@@ -32,7 +32,7 @@ serve(async (req) => {
       .maybeSingle();
 
     if (cached) {
-      return new Response(JSON.stringify({ contenido: cached.contenido, datos_extra: cached.datos_extra, cached: true }), {
+      return new Response(JSON.stringify({ contenido: cached.contenido, datos_extra: cached.datos_extra, cached: true, cached_at: cached.created_at }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -163,7 +163,7 @@ ${casosResumen}`,
       expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
     }, { onConflict: "contexto" });
 
-    return new Response(JSON.stringify({ contenido, datos_extra: stats, cached: false }), {
+    return new Response(JSON.stringify({ contenido, datos_extra: stats, cached: false, cached_at: new Date().toISOString() }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {

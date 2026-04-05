@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Sparkles } from "lucide-react";
 import ReactMarkdown from "react-markdown";
+import { formatInMadrid } from "@/lib/timezone";
 
 interface CiviSummaryProps {
   year: string;
@@ -23,7 +24,7 @@ export function CiviSummary({ year }: CiviSummaryProps) {
       if (result?.error) throw new Error(result.error);
       if (result?.empty) return null;
 
-      return result as { contenido: string; cached: boolean };
+      return result as { contenido: string; cached: boolean; cached_at?: string };
     },
     staleTime: 1000 * 60 * 30,
     retry: 1,
@@ -86,7 +87,8 @@ export function CiviSummary({ year }: CiviSummaryProps) {
           <div className="flex items-center justify-end gap-1.5 mt-4 pt-3 border-t border-border/50">
             <div className="w-1.5 h-1.5 rounded-full bg-green-500/60" />
             <p className="text-[11px] text-muted-foreground/60">
-              Análisis en caché · Se actualiza cada 24h
+              Análisis en caché
+              {data.cached_at && ` · Actualizado el ${formatInMadrid(data.cached_at, "d 'de' MMMM 'a las' HH:mm")}`}
             </p>
           </div>
         )}
