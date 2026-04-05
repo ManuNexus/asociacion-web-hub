@@ -409,6 +409,7 @@ export default function AdminSemaforo() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="nacional">Nacional</SelectItem>
+                    <SelectItem value="autonomico">Autonómico</SelectItem>
                     <SelectItem value="local">Local</SelectItem>
                   </SelectContent>
                 </Select>
