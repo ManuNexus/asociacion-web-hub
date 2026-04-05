@@ -108,7 +108,7 @@ Párrafo de contexto con las cifras clave (total de alertas, distribución por g
 
 ### 🔍 Tendencias clave
 - Identifica 2-3 patrones: ¿predominan las condenas o las investigaciones? ¿Hay un ámbito territorial más afectado? ¿La tendencia mensual mejora o empeora?
-- Menciona **casos concretos** cuando sean especialmente relevantes.
+- Menciona **alertas concretas** cuando sean especialmente relevantes.
 
 ### ⚖️ Valoración
 Cierra con 1-2 frases que valoren el estado actual de la integridad institucional de forma objetiva pero directa.
