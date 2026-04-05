@@ -360,7 +360,7 @@ export default function AdminSemaforo() {
           </div>
         ))}
         {casos.length === 0 && (
-          <p className="text-center text-muted-foreground py-8">No hay casos aún.</p>
+          <p className="text-center text-muted-foreground py-8">No hay alertas aún.</p>
         )}
       </div>
 
