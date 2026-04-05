@@ -196,7 +196,7 @@ export default function AdminSemaforo() {
     });
 
     const validGravedades = ["rojo", "ambar", "verde"];
-    const validAmbitos = ["nacional", "local"];
+    const validAmbitos = ["nacional", "autonomico", "local"];
     const payloads = rows
       .filter((r) => r.titulo)
       .map((r) => ({
