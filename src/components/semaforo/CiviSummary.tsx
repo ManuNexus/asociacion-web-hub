@@ -24,7 +24,7 @@ export function CiviSummary({ year }: CiviSummaryProps) {
       if (result?.error) throw new Error(result.error);
       if (result?.empty) return null;
 
-      return result as { contenido: string; cached: boolean };
+      return result as { contenido: string; cached: boolean; cached_at?: string };
     },
     staleTime: 1000 * 60 * 30,
     retry: 1,
