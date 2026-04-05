@@ -12,26 +12,6 @@ function json(data: unknown, status = 200) {
   });
 }
 
-async function refreshCivi(supabaseUrl: string, anonKey: string) {
-  try {
-    // Clear global cache
-    const supabase = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
-    await supabase.from("civi_cache").delete().eq("contexto", "semaforo_all");
-
-    // Trigger regeneration (fire-and-forget)
-    fetch(`${supabaseUrl}/functions/v1/civi-summary`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${anonKey}`,
-      },
-      body: JSON.stringify({ contexto: "semaforo_all" }),
-    }).catch((e) => console.error("CIVI refresh trigger failed:", e));
-  } catch (e) {
-    console.error("CIVI cache clear failed:", e);
-  }
-}
-
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
@@ -43,13 +23,38 @@ Deno.serve(async (req) => {
   }
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-  const supabase = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
-  const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const supabase = createClient(supabaseUrl, serviceKey);
 
   const url = new URL(req.url);
   const id = url.searchParams.get("id");
+  const action = url.searchParams.get("action");
 
   try {
+    // Special action: refresh CIVI
+    if (req.method === "POST" && action === "refresh-civi") {
+      // Clear cache
+      await supabase.from("civi_cache").delete().eq("contexto", "semaforo_all");
+
+      // Trigger regeneration
+      const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+      const civiRes = await fetch(`${supabaseUrl}/functions/v1/civi-summary`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${anonKey}`,
+        },
+        body: JSON.stringify({ contexto: "semaforo_all" }),
+      });
+
+      if (!civiRes.ok) {
+        const errBody = await civiRes.text();
+        return json({ error: "CIVI refresh failed", detail: errBody }, 502);
+      }
+
+      return json({ success: true, message: "CIVI analysis refreshed" });
+    }
+
     // GET — list all or get by id
     if (req.method === "GET") {
       if (id) {
@@ -102,8 +107,6 @@ Deno.serve(async (req) => {
       };
       const { data, error } = await supabase.from("casos_semaforo").insert(payload).select().single();
       if (error) throw error;
-      // Refresh CIVI after write
-      refreshCivi(supabaseUrl, anonKey);
       return json(data, 201);
     }
 
@@ -118,8 +121,6 @@ Deno.serve(async (req) => {
         .select()
         .single();
       if (error) throw error;
-      // Refresh CIVI after write
-      refreshCivi(supabaseUrl, anonKey);
       return json(data);
     }
 
@@ -128,8 +129,6 @@ Deno.serve(async (req) => {
       if (!id) return json({ error: "id query param required" }, 400);
       const { error } = await supabase.from("casos_semaforo").delete().eq("id", id);
       if (error) throw error;
-      // Refresh CIVI after write
-      refreshCivi(supabaseUrl, anonKey);
       return json({ success: true });
     }
 
