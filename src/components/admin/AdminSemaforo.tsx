@@ -324,7 +324,7 @@ export default function AdminSemaforo() {
             <input type="file" accept=".csv" className="hidden" onChange={handleUploadCsv} />
           </label>
           <Button onClick={openNew} className="gap-2">
-            <Plus className="h-4 w-4" /> Nuevo caso
+            <Plus className="h-4 w-4" /> Nueva alerta
           </Button>
         </div>
       </div>
