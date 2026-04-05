@@ -108,7 +108,7 @@ export default function AdminSemaforo() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-casos-semaforo"] });
       queryClient.invalidateQueries({ queryKey: ["casos-semaforo"] });
-      toast({ title: "Caso eliminado" });
+      toast({ title: "Alerta eliminada" });
     },
   });
 
