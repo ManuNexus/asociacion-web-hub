@@ -244,7 +244,7 @@ export default function SemaforoInstitucional() {
           {paginatedCases.length === 0 ? (
             <div className="text-center py-16 space-y-2">
               <Search className="h-10 w-10 text-muted-foreground/40 mx-auto" />
-              <p className="text-muted-foreground font-medium">No hay casos para estos filtros</p>
+              <p className="text-muted-foreground font-medium">No hay alertas para estos filtros</p>
               <p className="text-sm text-muted-foreground/70">Prueba a cambiar los criterios de búsqueda</p>
             </div>
           ) : (
