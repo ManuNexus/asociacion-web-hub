@@ -235,7 +235,7 @@ export default function SemaforoInstitucional() {
         {/* Results count */}
         <div className="container pt-8 pb-2">
           <p className="text-sm text-muted-foreground">
-            {filteredCount === casos.length ? `${filteredCount} casos registrados` : `${filteredCount} de ${casos.length} casos`}
+            {filteredCount === casos.length ? `${filteredCount} alertas registradas` : `${filteredCount} de ${casos.length} alertas`}
           </p>
         </div>
 
