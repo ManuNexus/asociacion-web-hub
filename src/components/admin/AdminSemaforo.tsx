@@ -209,7 +209,7 @@ export default function AdminSemaforo() {
       }));
 
     if (payloads.length === 0) {
-      toast({ title: "No se encontraron casos válidos en el CSV", variant: "destructive" });
+      toast({ title: "No se encontraron alertas válidas en el CSV", variant: "destructive" });
       return;
     }
 
