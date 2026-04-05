@@ -104,7 +104,7 @@ serve(async (req) => {
 Estructura tu análisis así:
 
 ### 📊 Panorama general
-Párrafo de contexto con las cifras clave (total de casos, distribución por gravedad). Usa porcentajes para dar perspectiva.
+Párrafo de contexto con las cifras clave (total de alertas, distribución por gravedad). Usa porcentajes para dar perspectiva.
 
 ### 🔍 Tendencias clave
 - Identifica 2-3 patrones: ¿predominan las condenas o las investigaciones? ¿Hay un ámbito territorial más afectado? ¿La tendencia mensual mejora o empeora?
