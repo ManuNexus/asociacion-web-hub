@@ -310,7 +310,7 @@ export default function AdminSemaforo() {
 
       {/* Casos header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <h3 className="text-lg font-semibold">Casos del Semáforo</h3>
+        <h3 className="text-lg font-semibold">Alertas del Semáforo</h3>
         <div className="flex gap-2 flex-wrap">
           <Button variant="outline" onClick={handleDownloadCsv} className="gap-2" disabled={casos.length === 0}>
             <Download className="h-4 w-4" /> Descargar CSV
