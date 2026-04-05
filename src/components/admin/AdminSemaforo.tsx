@@ -215,7 +215,7 @@ export default function AdminSemaforo() {
 
     const { error } = await supabase.from("casos_semaforo").insert(payloads);
     if (error) {
-      toast({ title: "Error al importar casos", variant: "destructive" });
+      toast({ title: "Error al importar alertas", variant: "destructive" });
     } else {
       queryClient.invalidateQueries({ queryKey: ["admin-casos-semaforo"] });
       queryClient.invalidateQueries({ queryKey: ["casos-semaforo"] });
