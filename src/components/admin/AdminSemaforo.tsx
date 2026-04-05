@@ -137,7 +137,7 @@ export default function AdminSemaforo() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `casos-semaforo-${format(new Date(), "yyyy-MM-dd")}.csv`;
+    a.download = `alertas-semaforo-${format(new Date(), "yyyy-MM-dd")}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   };
