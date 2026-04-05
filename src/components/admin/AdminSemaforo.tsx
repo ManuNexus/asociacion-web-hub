@@ -95,7 +95,7 @@ export default function AdminSemaforo() {
       queryClient.invalidateQueries({ queryKey: ["casos-semaforo"] });
       setDialogOpen(false);
       resetForm();
-      toast({ title: editingCase ? "Caso actualizado" : "Caso creado" });
+      toast({ title: editingCase ? "Alerta actualizada" : "Alerta creada" });
     },
     onError: () => toast({ title: "Error al guardar el caso", variant: "destructive" }),
   });
