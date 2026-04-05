@@ -97,7 +97,7 @@ export default function AdminSemaforo() {
       resetForm();
       toast({ title: editingCase ? "Alerta actualizada" : "Alerta creada" });
     },
-    onError: () => toast({ title: "Error al guardar el caso", variant: "destructive" }),
+    onError: () => toast({ title: "Error al guardar la alerta", variant: "destructive" }),
   });
 
   const deleteMutation = useMutation({
