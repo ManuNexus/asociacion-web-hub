@@ -131,7 +131,7 @@ Cierra con 1-2 frases que valoren el estado actual de la integridad instituciona
 - 🟢 Buenas Prácticas: ${stats.por_gravedad.verde} (${Math.round((stats.por_gravedad.verde / stats.total) * 100)}%)
 - Ámbito local: ${stats.por_ambito.local} | Autonómico: ${stats.por_ambito.autonomico} | Nacional: ${stats.por_ambito.nacional}
 
-**Casos registrados (más recientes primero):**
+**Alertas registradas (más recientes primero):**
 ${casosResumen}`,
           },
         ],
