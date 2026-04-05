@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Sparkles } from "lucide-react";
 import ReactMarkdown from "react-markdown";
+import { formatInMadrid } from "@/lib/timezone";
 
 interface CiviSummaryProps {
   year: string;
