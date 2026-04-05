@@ -1,10 +1,10 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useCallback } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
-import { Download, ExternalLink, Calendar, MapPin, Search, ChevronLeft, ChevronRight, Shield, AlertTriangle, CheckCircle, Info } from "lucide-react";
+import { Download, ExternalLink, Calendar, MapPin, Search, ChevronLeft, ChevronRight, Shield, AlertTriangle, CheckCircle, Info, Brain, List, BarChart3 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,6 +51,14 @@ export default function SemaforoInstitucional() {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
+  const casesRef = useRef<HTMLDivElement>(null);
+  const civiRef = useRef<HTMLDivElement>(null);
+  const chartsRef = useRef<HTMLDivElement>(null);
+
+  const scrollTo = useCallback((ref: React.RefObject<HTMLDivElement | null>) => {
+    ref.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, []);
+
   const { data: casos = [] } = useQuery({
     queryKey: ["casos-semaforo"],
     queryFn: async () => {
@@ -78,7 +86,6 @@ export default function SemaforoInstitucional() {
   });
 
   const years = useMemo(() => getYearsFromCases(casos), [casos]);
-  const currentYear = years[0] || new Date().getFullYear().toString();
 
   const totalCounts = useMemo(() => ({
     rojo: casos.filter((c) => c.gravedad === "rojo").length,
@@ -112,40 +119,76 @@ export default function SemaforoInstitucional() {
     setCurrentPage(1);
   };
 
+  const handleGravedadClick = (g: Gravedad) => {
+    const isActive = selectedGravedad === g;
+    handleFilterChange(setSelectedGravedad, isActive ? null : g);
+    setTimeout(() => scrollTo(casesRef), 100);
+  };
+
   return (
     <Layout>
       <div className="min-h-screen bg-background">
-        {/* Hero */}
+        {/* Hero - compact on mobile */}
         <section className="bg-hero relative overflow-hidden">
           <div className="absolute inset-0 opacity-20">
             <div className="absolute -top-20 -right-20 w-80 h-80 rounded-full bg-secondary/30 blur-3xl" />
             <div className="absolute -bottom-20 -left-20 w-60 h-60 rounded-full bg-secondary/20 blur-3xl" />
           </div>
-          <div className="container relative py-16 md:py-24">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-primary-foreground max-w-3xl leading-[1.1]">
+          <div className="container relative py-8 md:py-24">
+            <h1 className="text-3xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-primary-foreground max-w-3xl leading-[1.1]">
               Semáforo Institucional
             </h1>
-            <p className="mt-4 text-lg text-primary-foreground/70 max-w-2xl leading-relaxed">
+            <p className="hidden md:block mt-4 text-lg text-primary-foreground/70 max-w-2xl leading-relaxed">
               Monitorización en tiempo real de la integridad pública. Condenas, alertas de gestión y buenas prácticas institucionales.
             </p>
+            {/* Quick nav buttons */}
+            <div className="flex flex-wrap gap-2 mt-4 md:mt-6">
+              <Button
+                variant="secondary"
+                size="sm"
+                className="gap-1.5 text-xs"
+                onClick={() => scrollTo(civiRef)}
+              >
+                <Brain className="h-3.5 w-3.5" />
+                Análisis IA
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                className="gap-1.5 text-xs"
+                onClick={() => scrollTo(chartsRef)}
+              >
+                <BarChart3 className="h-3.5 w-3.5" />
+                Radiografía
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                className="gap-1.5 text-xs"
+                onClick={() => scrollTo(casesRef)}
+              >
+                <List className="h-3.5 w-3.5" />
+                Alertas
+              </Button>
+            </div>
           </div>
           <div className="h-1 bg-secondary" />
         </section>
 
-        {/* Explicación */}
+        {/* Explicación + counters */}
         <section className="border-b border-border">
-          <div className="container py-12">
-            <div className="flex items-start gap-3 mb-6">
+          <div className="container py-8 md:py-12">
+            <div className="flex items-start gap-3 mb-4 md:mb-6">
               <Info className="h-5 w-5 text-muted-foreground mt-0.5 shrink-0" />
               <div>
-                <h2 className="text-lg font-bold text-foreground">¿Qué es el Semáforo Institucional?</h2>
-                <p className="mt-1 text-sm text-muted-foreground leading-relaxed max-w-3xl">
-                  Es un sistema de vigilancia ciudadana que clasifica la actuación de las instituciones públicas en tres niveles según su gravedad. Permite a cualquier persona consultar de forma transparente las alertas detectadas y fomentar la rendición de cuentas.
+                <h2 className="text-base md:text-lg font-bold text-foreground">¿Qué es el Semáforo Institucional?</h2>
+                <p className="mt-1 text-xs md:text-sm text-muted-foreground leading-relaxed max-w-3xl">
+                  Sistema de vigilancia ciudadana que clasifica la actuación de las instituciones públicas en tres niveles según su gravedad.
                 </p>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-3 gap-2 md:gap-4">
               {(["rojo", "ambar", "verde"] as Gravedad[]).map((g) => {
                 const config = GRAVEDAD_CONFIG[g];
                 const Icon = config.icon;
@@ -153,20 +196,21 @@ export default function SemaforoInstitucional() {
                 return (
                   <button
                     key={g}
-                    onClick={() => handleFilterChange(setSelectedGravedad, isActive ? null : g)}
-                    className={`relative border rounded-xl p-6 text-left transition-all hover:shadow-card group ${
+                    onClick={() => handleGravedadClick(g)}
+                    className={`relative border rounded-xl p-3 md:p-6 text-left transition-all hover:shadow-card group ${
                       isActive ? `${config.border} ${config.bg} ring-2 ${config.ring}` : "border-border hover:border-muted-foreground/20"
                     }`}
                   >
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className={`p-2 rounded-lg ${config.bg}`}>
-                        <Icon className={`h-5 w-5 ${config.color}`} />
+                    <div className="flex items-center gap-1.5 md:gap-3 mb-1 md:mb-3">
+                      <div className={`p-1 md:p-2 rounded-lg ${config.bg}`}>
+                        <Icon className={`h-3.5 w-3.5 md:h-5 md:w-5 ${config.color}`} />
                       </div>
-                      <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{config.label}</span>
+                      <span className="text-[10px] md:text-xs font-semibold uppercase tracking-wider text-muted-foreground hidden sm:inline">{config.label}</span>
                     </div>
-                    <p className={`text-4xl font-extrabold tracking-tight ${config.color}`}>{totalCounts[g]}</p>
-                    <span className="text-xs text-muted-foreground mt-1 block">
-                      {isActive ? "Clic para quitar filtro" : "Clic para filtrar"}
+                    <p className={`text-2xl md:text-4xl font-extrabold tracking-tight ${config.color}`}>{totalCounts[g]}</p>
+                    <span className="text-[10px] md:text-xs text-muted-foreground mt-0.5 block truncate">
+                      <span className="hidden sm:inline">{isActive ? "Quitar filtro" : "Filtrar"}</span>
+                      <span className="sm:hidden">{config.label.split(" ")[0]}</span>
                     </span>
                   </button>
                 );
@@ -177,137 +221,145 @@ export default function SemaforoInstitucional() {
 
         {/* CIVI AI Analysis + Charts */}
         {casos.length > 0 && (
-          <section className="border-b border-border">
-            <div className="container py-12 space-y-8">
-              <CiviSummary />
-              <SemaforoCharts casos={casos} />
-            </div>
-          </section>
+          <>
+            <section ref={civiRef} className="border-b border-border scroll-mt-16">
+              <div className="container py-8 md:py-12">
+                <CiviSummary />
+              </div>
+            </section>
+            <section ref={chartsRef} className="border-b border-border scroll-mt-16">
+              <div className="container py-8 md:py-12">
+                <SemaforoCharts casos={casos} />
+              </div>
+            </section>
+          </>
         )}
 
         {/* Filters */}
-        <section className="border-b border-border bg-muted/30">
-          <div className="container py-5">
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="relative flex-1 min-w-[200px] max-w-xs">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar..."
-                  value={searchQuery}
-                  onChange={(e) => handleFilterChange(setSearchQuery, e.target.value)}
-                  className="pl-10 h-9"
-                />
+        <div ref={casesRef} className="scroll-mt-16">
+          <section className="border-b border-border bg-muted/30">
+            <div className="container py-3 md:py-5">
+              <div className="flex flex-wrap items-center gap-2 md:gap-3">
+                <div className="relative flex-1 min-w-[140px] max-w-xs">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Buscar..."
+                    value={searchQuery}
+                    onChange={(e) => handleFilterChange(setSearchQuery, e.target.value)}
+                    className="pl-10 h-9 text-sm"
+                  />
+                </div>
+                <Select value={selectedYear || "all"} onValueChange={(v) => handleFilterChange(setSelectedYear, v === "all" ? null : v)}>
+                  <SelectTrigger className="w-[100px] md:w-[120px] h-9 text-xs md:text-sm">
+                    <SelectValue placeholder="Año" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos</SelectItem>
+                    {years.map((year) => (
+                      <SelectItem key={year} value={year}>{year}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select value={selectedAmbito || "all"} onValueChange={(v) => handleFilterChange(setSelectedAmbito, v === "all" ? null : v as Ambito)}>
+                  <SelectTrigger className="w-[110px] md:w-[140px] h-9 text-xs md:text-sm">
+                    <SelectValue placeholder="Ámbito" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos</SelectItem>
+                    {(Object.keys(AMBITO_LABELS) as Ambito[]).map((key) => (
+                      <SelectItem key={key} value={key}>{AMBITO_LABELS[key]}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {informe && (
+                  <a href={informe.archivo_url} target="_blank" rel="noopener noreferrer" className="ml-auto shrink-0">
+                    <Button variant="outline" size="sm" className="gap-2 h-9">
+                      <Download className="h-3.5 w-3.5" />
+                      <span className="hidden sm:inline">Informe</span>
+                    </Button>
+                  </a>
+                )}
               </div>
-              <Select value={selectedYear || "all"} onValueChange={(v) => handleFilterChange(setSelectedYear, v === "all" ? null : v)}>
-                <SelectTrigger className="w-[120px] h-9">
-                  <SelectValue placeholder="Año" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos los años</SelectItem>
-                  {years.map((year) => (
-                    <SelectItem key={year} value={year}>{year}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select value={selectedAmbito || "all"} onValueChange={(v) => handleFilterChange(setSelectedAmbito, v === "all" ? null : v as Ambito)}>
-                <SelectTrigger className="w-[140px] h-9">
-                  <SelectValue placeholder="Ámbito" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos los ámbitos</SelectItem>
-                  {(Object.keys(AMBITO_LABELS) as Ambito[]).map((key) => (
-                    <SelectItem key={key} value={key}>{AMBITO_LABELS[key]}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {informe && (
-                <a href={informe.archivo_url} target="_blank" rel="noopener noreferrer" className="ml-auto shrink-0">
-                  <Button variant="outline" size="sm" className="gap-2 h-9">
-                    <Download className="h-3.5 w-3.5" />
-                    Informe
-                  </Button>
-                </a>
-              )}
             </div>
+          </section>
+
+          {/* Results count */}
+          <div className="container pt-6 md:pt-8 pb-2">
+            <p className="text-xs md:text-sm text-muted-foreground">
+              {filteredCount === casos.length ? `${filteredCount} alertas registradas` : `${filteredCount} de ${casos.length} alertas`}
+            </p>
           </div>
-        </section>
 
-        {/* Results count */}
-        <div className="container pt-8 pb-2">
-          <p className="text-sm text-muted-foreground">
-            {filteredCount === casos.length ? `${filteredCount} alertas registradas` : `${filteredCount} de ${casos.length} alertas`}
-          </p>
-        </div>
-
-        {/* Cases Feed */}
-        <section className="container pb-12">
-          {paginatedCases.length === 0 ? (
-            <div className="text-center py-16 space-y-2">
-              <Search className="h-10 w-10 text-muted-foreground/40 mx-auto" />
-              <p className="text-muted-foreground font-medium">No hay alertas para estos filtros</p>
-              <p className="text-sm text-muted-foreground/70">Prueba a cambiar los criterios de búsqueda</p>
-            </div>
-          ) : (
-            <div className="grid gap-4 mt-4">
-              {paginatedCases.map((caso) => {
-                const config = GRAVEDAD_CONFIG[caso.gravedad];
-                const Icon = config.icon;
-                return (
-                  <article key={caso.id} className={`group relative border rounded-xl p-5 md:p-6 transition-all hover:shadow-card ${config.border} ${config.bg}/40`}>
-                    <div className={`absolute left-0 top-4 bottom-4 w-1 rounded-full ${config.bgSolid}`} />
-                    <div className="flex flex-col sm:flex-row sm:items-start gap-4 pl-4">
-                      <div className="flex items-center gap-2.5 shrink-0">
-                        <Icon className={`h-4 w-4 ${config.color}`} />
-                        <span className={`text-xs font-semibold uppercase tracking-wider ${config.color}`}>{config.label}</span>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-base font-semibold text-foreground leading-snug">{caso.titulo}</h3>
-                        {caso.descripcion && <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed line-clamp-2">{caso.descripcion}</p>}
-                        <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
-                          <span className="flex items-center gap-1.5">
-                            <Calendar className="h-3.5 w-3.5" />
-                            {format(parseISO(caso.fecha), "d MMM yyyy", { locale: es })}
-                          </span>
-                          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-muted text-muted-foreground text-xs font-medium">
-                            <MapPin className="h-3 w-3" />
-                            {AMBITO_LABELS[caso.ambito as Ambito] || caso.ambito}
-                          </span>
-                          {caso.fuente_url && (
-                            <a href={caso.fuente_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-foreground/70 hover:text-foreground transition-colors">
-                              <ExternalLink className="h-3.5 w-3.5" />
-                              Ver fuente
-                            </a>
-                          )}
+          {/* Cases Feed */}
+          <section className="container pb-12">
+            {paginatedCases.length === 0 ? (
+              <div className="text-center py-12 md:py-16 space-y-2">
+                <Search className="h-8 w-8 md:h-10 md:w-10 text-muted-foreground/40 mx-auto" />
+                <p className="text-muted-foreground font-medium text-sm">No hay alertas para estos filtros</p>
+                <p className="text-xs text-muted-foreground/70">Prueba a cambiar los criterios de búsqueda</p>
+              </div>
+            ) : (
+              <div className="grid gap-3 md:gap-4 mt-3 md:mt-4">
+                {paginatedCases.map((caso) => {
+                  const config = GRAVEDAD_CONFIG[caso.gravedad];
+                  const Icon = config.icon;
+                  return (
+                    <article key={caso.id} className={`group relative border rounded-xl p-4 md:p-6 transition-all hover:shadow-card ${config.border} ${config.bg}/40`}>
+                      <div className={`absolute left-0 top-3 bottom-3 md:top-4 md:bottom-4 w-1 rounded-full ${config.bgSolid}`} />
+                      <div className="flex flex-col gap-2 md:gap-4 pl-3 md:pl-4">
+                        <div className="flex items-center gap-2 shrink-0">
+                          <Icon className={`h-3.5 w-3.5 md:h-4 md:w-4 ${config.color}`} />
+                          <span className={`text-[10px] md:text-xs font-semibold uppercase tracking-wider ${config.color}`}>{config.label}</span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-sm md:text-base font-semibold text-foreground leading-snug">{caso.titulo}</h3>
+                          {caso.descripcion && <p className="mt-1 text-xs md:text-sm text-muted-foreground leading-relaxed line-clamp-2">{caso.descripcion}</p>}
+                          <div className="mt-2 md:mt-3 flex flex-wrap items-center gap-2 md:gap-4 text-[10px] md:text-xs text-muted-foreground">
+                            <span className="flex items-center gap-1">
+                              <Calendar className="h-3 w-3" />
+                              {format(parseISO(caso.fecha), "d MMM yyyy", { locale: es })}
+                            </span>
+                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground font-medium">
+                              <MapPin className="h-2.5 w-2.5 md:h-3 md:w-3" />
+                              {AMBITO_LABELS[caso.ambito as Ambito] || caso.ambito}
+                            </span>
+                            {caso.fuente_url && (
+                              <a href={caso.fuente_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-foreground/70 hover:text-foreground transition-colors">
+                                <ExternalLink className="h-3 w-3" />
+                                Fuente
+                              </a>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </article>
-                );
-              })}
-            </div>
-          )}
+                    </article>
+                  );
+                })}
+              </div>
+            )}
 
-          {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2 mt-10">
-              <Button variant="outline" size="icon" disabled={safePage <= 1} onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}>
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                <Button key={page} variant={page === safePage ? "default" : "outline"} size="icon" onClick={() => setCurrentPage(page)} className="w-9 h-9">
-                  {page}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-1.5 md:gap-2 mt-8 md:mt-10">
+                <Button variant="outline" size="icon" className="h-8 w-8 md:h-9 md:w-9" disabled={safePage <= 1} onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}>
+                  <ChevronLeft className="h-4 w-4" />
                 </Button>
-              ))}
-              <Button variant="outline" size="icon" disabled={safePage >= totalPages} onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}>
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
-          )}
-        </section>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <Button key={page} variant={page === safePage ? "default" : "outline"} size="icon" onClick={() => setCurrentPage(page)} className="w-8 h-8 md:w-9 md:h-9 text-xs">
+                    {page}
+                  </Button>
+                ))}
+                <Button variant="outline" size="icon" className="h-8 w-8 md:h-9 md:w-9" disabled={safePage >= totalPages} onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}>
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
+          </section>
+        </div>
 
         {/* Disclaimer */}
         <section className="border-t border-border">
-          <div className="container py-10">
-            <p className="text-xs text-muted-foreground text-center max-w-2xl mx-auto leading-relaxed">
+          <div className="container py-6 md:py-10">
+            <p className="text-[10px] md:text-xs text-muted-foreground text-center max-w-2xl mx-auto leading-relaxed">
               ⚠️ Este sistema de monitorización es completamente autónomo y puede contener errores o imprecisiones. La asociación revisa semanalmente la información publicada para garantizar su veracidad y corregir cualquier dato incorrecto.
             </p>
           </div>
