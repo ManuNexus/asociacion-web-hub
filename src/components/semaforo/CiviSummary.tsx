@@ -87,7 +87,8 @@ export function CiviSummary({ year }: CiviSummaryProps) {
           <div className="flex items-center justify-end gap-1.5 mt-4 pt-3 border-t border-border/50">
             <div className="w-1.5 h-1.5 rounded-full bg-green-500/60" />
             <p className="text-[11px] text-muted-foreground/60">
-              Análisis en caché · Se actualiza cada 24h
+              Análisis en caché
+              {data.cached_at && ` · Actualizado el ${formatInMadrid(data.cached_at, "d 'de' MMMM 'a las' HH:mm")}`}
             </p>
           </div>
         )}
