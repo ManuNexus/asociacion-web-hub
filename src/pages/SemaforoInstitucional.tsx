@@ -25,9 +25,9 @@ interface Caso {
 }
 
 const GRAVEDAD_CONFIG: Record<Gravedad, { label: string; icon: typeof Shield; color: string; bg: string; bgSolid: string; border: string; dot: string; ring: string }> = {
-  rojo: { label: "Condena / Delito", icon: Shield, color: "text-red-700", bg: "bg-red-50", bgSolid: "bg-red-500", border: "border-red-200", dot: "bg-red-500", ring: "ring-red-200" },
-  ambar: { label: "Bajo Investigación", icon: AlertTriangle, color: "text-amber-700", bg: "bg-amber-50", bgSolid: "bg-amber-500", border: "border-amber-200", dot: "bg-amber-500", ring: "ring-amber-200" },
-  verde: { label: "Buena Práctica", icon: CheckCircle, color: "text-emerald-700", bg: "bg-emerald-50", bgSolid: "bg-emerald-500", border: "border-emerald-200", dot: "bg-emerald-500", ring: "ring-emerald-200" },
+  rojo: { label: "Alerta de Integridad", icon: Shield, color: "text-red-700", bg: "bg-red-50", bgSolid: "bg-red-500", border: "border-red-200", dot: "bg-red-500", ring: "ring-red-200" },
+  ambar: { label: "Riesgo Institucional", icon: AlertTriangle, color: "text-amber-700", bg: "bg-amber-50", bgSolid: "bg-amber-500", border: "border-amber-200", dot: "bg-amber-500", ring: "ring-amber-200" },
+  verde: { label: "Estándar de Calidad", icon: CheckCircle, color: "text-emerald-700", bg: "bg-emerald-50", bgSolid: "bg-emerald-500", border: "border-emerald-200", dot: "bg-emerald-500", ring: "ring-emerald-200" },
 };
 
 const AMBITO_LABELS: Record<Ambito, string> = {
