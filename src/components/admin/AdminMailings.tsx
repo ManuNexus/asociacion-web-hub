@@ -242,11 +242,17 @@ export const AdminMailings = () => {
       setImagenUrl(urlData.publicUrl);
       toast({ title: "Imagen subida correctamente" });
     } catch (error: any) {
+      console.error("Upload error:", error);
       toast({
         variant: "destructive",
         title: "Error al subir imagen",
         description: error.message,
       });
+    } finally {
+      // Reset file input so the same file can be re-selected
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
     }
   };
 
