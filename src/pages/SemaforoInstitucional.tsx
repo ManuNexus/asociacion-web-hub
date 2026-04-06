@@ -224,6 +224,11 @@ export default function SemaforoInstitucional() {
                 );
               })}
             </div>
+            {lastUpdated && (
+              <p className="mt-3 text-[11px] text-muted-foreground/60 text-right">
+                Última actualización: {lastUpdated}
+              </p>
+            )}
           </div>
         </section>
 
