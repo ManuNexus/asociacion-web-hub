@@ -90,7 +90,41 @@ const Index = () => {
 
   return (
     <Layout>
-      {/* Hero Section */}
+      <SEO
+        canonical="/"
+        jsonLd={[
+          {
+            "@context": "https://schema.org",
+            "@type": "NGO",
+            name: "AHORA",
+            alternateName: "Asociación AHORA",
+            url: "https://ahoraorg.es",
+            logo: "https://ahoraorg.es/og-image.png",
+            foundingDate: "2025-06-13",
+            address: { "@type": "PostalAddress", streetAddress: "C/ Aragón 458", addressLocality: "Barcelona", postalCode: "08013", addressCountry: "ES" },
+            sameAs: [
+              "https://x.com/AhoraOrg_es",
+              "https://www.facebook.com/profile.php?id=61585031630116",
+              "https://www.youtube.com/@Asociaci%C3%B3nAHORA",
+              "https://www.instagram.com/ahoraorg_es",
+              "https://t.me/ActuaAHORA",
+            ],
+            description: "Asociación civil de ámbito nacional que defiende los valores constitucionales, el pluralismo ideológico y los derechos fundamentales en España.",
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            name: "AHORA",
+            url: "https://ahoraorg.es",
+            potentialAction: {
+              "@type": "SearchAction",
+              target: "https://ahoraorg.es/noticias?q={search_term_string}",
+              "query-input": "required name=search_term_string",
+            },
+          },
+          breadcrumbSchema([{ name: "Inicio", url: "/" }]),
+        ]}
+      />
       <section className="relative min-h-[90vh] md:min-h-[85vh] flex items-center overflow-hidden bg-gradient-to-br from-primary via-primary to-primary/90">
         {/* Decorative elements */}
         <div className="absolute inset-0 overflow-hidden">

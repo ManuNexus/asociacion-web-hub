@@ -112,7 +112,15 @@ const Noticias = () => {
 
   return (
     <Layout>
-      {/* Hero */}
+      <SEO
+        title="Sala de Prensa — Noticias y Comunicados"
+        description="Comunicados, notas de prensa y actualidad de la Asociación AHORA. Información sobre valores constitucionales, democracia y participación ciudadana en España."
+        canonical="/noticias"
+        jsonLd={breadcrumbSchema([
+          { name: "Inicio", url: "/" },
+          { name: "Noticias", url: "/noticias" },
+        ])}
+      />
       <section className="bg-hero py-16 md:py-24">
         <div className="container">
           <div className="max-w-3xl">
