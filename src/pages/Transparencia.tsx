@@ -1,5 +1,6 @@
 import { Layout } from "@/components/layout/Layout";
 import { FileText, Users, Wallet, Building, Download, ExternalLink } from "lucide-react";
+import { SEO, breadcrumbSchema } from "@/components/SEO";
 import { Button } from "@/components/ui/button";
 const documentos = [{
   title: "Estatutos de la Asociación",
