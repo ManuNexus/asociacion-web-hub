@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SemaforoCharts } from "@/components/semaforo/SemaforoCharts";
 import { CiviSummary } from "@/components/semaforo/CiviSummary";
+import { SEO, breadcrumbSchema } from "@/components/SEO";
 
 type Gravedad = "rojo" | "ambar" | "verde";
 type Ambito = "local" | "autonomico" | "nacional";
