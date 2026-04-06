@@ -36,43 +36,45 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const queryClient = new QueryClient();
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <AuthProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <ScrollToTop />
-          <LoadingScreen />
-          <CookieBanner />
-          <Suspense fallback={null}>
-            <PageTransition>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/nosotros" element={<Nosotros />} />
-                <Route path="/noticias" element={<Noticias />} />
-                <Route path="/noticias/:id" element={<NoticiaDetalle />} />
-                <Route path="/transparencia" element={<Transparencia />} />
-                <Route path="/hazte-socio" element={<HazteSocio />} />
-                <Route path="/hazte-amigo" element={<HazteAmigo />} />
-                <Route path="/dona" element={<Dona />} />
-                <Route path="/completar-iban" element={<CompletarIban />} />
-                <Route path="/politica-privacidad" element={<PoliticaPrivacidad />} />
-                <Route path="/condiciones-afiliacion" element={<CondicionesAfiliacion />} />
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/admin/noticias" element={<AdminNoticias />} />
-                <Route path="/socios" element={<PanelSocios />} />
-                <Route path="/contabilidad" element={<Contabilidad />} />
-                <Route path="/eventos" element={<Eventos />} />
-                <Route path="/semaforo-institucional" element={<SemaforoInstitucional />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </PageTransition>
-          </Suspense>
-        </BrowserRouter>
-      </AuthProvider>
-    </TooltipProvider>
-  </QueryClientProvider>
+  <HelmetProvider>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <AuthProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <ScrollToTop />
+            <LoadingScreen />
+            <CookieBanner />
+            <Suspense fallback={null}>
+              <PageTransition>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/nosotros" element={<Nosotros />} />
+                  <Route path="/noticias" element={<Noticias />} />
+                  <Route path="/noticias/:id" element={<NoticiaDetalle />} />
+                  <Route path="/transparencia" element={<Transparencia />} />
+                  <Route path="/hazte-socio" element={<HazteSocio />} />
+                  <Route path="/hazte-amigo" element={<HazteAmigo />} />
+                  <Route path="/dona" element={<Dona />} />
+                  <Route path="/completar-iban" element={<CompletarIban />} />
+                  <Route path="/politica-privacidad" element={<PoliticaPrivacidad />} />
+                  <Route path="/condiciones-afiliacion" element={<CondicionesAfiliacion />} />
+                  <Route path="/auth" element={<Auth />} />
+                  <Route path="/admin/noticias" element={<AdminNoticias />} />
+                  <Route path="/socios" element={<PanelSocios />} />
+                  <Route path="/contabilidad" element={<Contabilidad />} />
+                  <Route path="/eventos" element={<Eventos />} />
+                  <Route path="/semaforo-institucional" element={<SemaforoInstitucional />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </PageTransition>
+            </Suspense>
+          </BrowserRouter>
+        </AuthProvider>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </HelmetProvider>
 );
 
 export default App;
