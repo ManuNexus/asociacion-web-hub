@@ -28,8 +28,9 @@ const CookieBanner = () => {
   }, []);
 
   const updateGtagConsent = (accepted: boolean) => {
-    if (typeof window.gtag === "function") {
-      window.gtag("consent", "update", {
+    const w = window as any;
+    if (typeof w.gtag === "function") {
+      w.gtag("consent", "update", {
         analytics_storage: accepted ? "granted" : "denied",
       });
     }
