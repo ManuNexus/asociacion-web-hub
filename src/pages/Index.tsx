@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import logoIcon from "@/assets/logo-ahora-icon.png";
 import { supabase } from "@/integrations/supabase/client";
 import { formatInMadrid } from "@/lib/timezone";
+import { SEO, breadcrumbSchema } from "@/components/SEO";
 
 const valores = [
   {
