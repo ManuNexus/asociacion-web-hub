@@ -132,7 +132,8 @@ const Nosotros = () => {
                     {m.foto_url ? (
                       <img
                         src={m.foto_url}
-                        alt={`${m.nombre} ${m.apellidos}`}
+                        alt={`${m.nombre} ${m.apellidos} — ${cargoLabels[m.cargo_junta] || m.cargo_junta} de AHORA`}
+                        loading="lazy"
                         className="w-full h-full object-cover"
                       />
                     ) : (
