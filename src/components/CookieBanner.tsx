@@ -27,10 +27,25 @@ const CookieBanner = () => {
     }
   }, []);
 
+  const updateGtagConsent = (accepted: boolean) => {
+    if (typeof window.gtag === "function") {
+      window.gtag("consent", "update", {
+        analytics_storage: accepted ? "granted" : "denied",
+      });
+    }
+  };
+
+  // On mount, restore consent state for GA
+  useEffect(() => {
+    const consent = localStorage.getItem(COOKIE_CONSENT_KEY);
+    if (consent === "accepted") updateGtagConsent(true);
+  }, []);
+
   const saveConsent = (value: string) => {
     const expiryDate = Date.now() + CONSENT_DURATION_DAYS * 24 * 60 * 60 * 1000;
     localStorage.setItem(COOKIE_CONSENT_KEY, value);
     localStorage.setItem(COOKIE_CONSENT_EXPIRY_KEY, String(expiryDate));
+    updateGtagConsent(value === "accepted");
     setVisible(false);
   };
 
