@@ -1,9 +1,18 @@
 import { Layout } from "@/components/layout/Layout";
+import { SEO, breadcrumbSchema } from "@/components/SEO";
 
 const CondicionesAfiliacion = () => {
   return (
     <Layout>
-      {/* Hero */}
+      <SEO
+        title="Condiciones de Afiliación"
+        description="Condiciones que regulan la afiliación y cuotas de socio en la Asociación AHORA. Derechos, obligaciones y proceso de alta."
+        canonical="/condiciones-afiliacion"
+        jsonLd={breadcrumbSchema([
+          { name: "Inicio", url: "/" },
+          { name: "Condiciones de Afiliación", url: "/condiciones-afiliacion" },
+        ])}
+      />
       <section className="bg-hero py-16 md:py-24">
         <div className="container">
           <div className="max-w-3xl">

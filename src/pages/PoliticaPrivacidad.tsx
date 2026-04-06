@@ -1,9 +1,18 @@
 import { Layout } from "@/components/layout/Layout";
+import { SEO, breadcrumbSchema } from "@/components/SEO";
 
 const PoliticaPrivacidad = () => {
   return (
     <Layout>
-      {/* Hero */}
+      <SEO
+        title="Política de Privacidad"
+        description="Información sobre el tratamiento de datos personales de la Asociación AHORA conforme al RGPD y la LOPDGDD."
+        canonical="/politica-privacidad"
+        jsonLd={breadcrumbSchema([
+          { name: "Inicio", url: "/" },
+          { name: "Política de Privacidad", url: "/politica-privacidad" },
+        ])}
+      />
       <section className="bg-hero py-16 md:py-24">
         <div className="container">
           <div className="max-w-3xl">
