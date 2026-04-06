@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
+import { formatInMadrid } from "@/lib/timezone";
 import { Download, ExternalLink, Calendar, MapPin, Search, ChevronLeft, ChevronRight, Shield, AlertTriangle, CheckCircle, Info, Brain, List, BarChart3 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
@@ -22,6 +23,7 @@ interface Caso {
   gravedad: Gravedad;
   ambito: string;
   fuente_url: string | null;
+  updated_at: string;
 }
 
 const GRAVEDAD_CONFIG: Record<Gravedad, { label: string; icon: typeof Shield; color: string; bg: string; bgSolid: string; border: string; dot: string; ring: string }> = {
@@ -92,6 +94,12 @@ export default function SemaforoInstitucional() {
     ambar: casos.filter((c) => c.gravedad === "ambar").length,
     verde: casos.filter((c) => c.gravedad === "verde").length,
   }), [casos]);
+
+  const lastUpdated = useMemo(() => {
+    if (casos.length === 0) return null;
+    const latest = casos.reduce((a, b) => (a.updated_at > b.updated_at ? a : b));
+    return formatInMadrid(latest.updated_at, "dd/MM/yyyy 'a las' HH:mm");
+  }, [casos]);
 
   const filteredCases = useMemo(() => {
     let result = casos;
@@ -216,6 +224,11 @@ export default function SemaforoInstitucional() {
                 );
               })}
             </div>
+            {lastUpdated && (
+              <p className="mt-3 text-[11px] text-muted-foreground/60 text-right">
+                Última actualización: {lastUpdated}
+              </p>
+            )}
           </div>
         </section>
 
