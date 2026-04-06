@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Calendar, MapPin, Clock, Download, CalendarPlus, Building2, X } from "lucide-react";
+import { SEO, breadcrumbSchema } from "@/components/SEO";
 import { format, isPast, isFuture, isToday } from "date-fns";
 import { es } from "date-fns/locale";
 import { Layout } from "@/components/layout/Layout";
