@@ -8,9 +8,27 @@
     <meta name="author" content="Asociación AHORA" />
     <link rel="icon" type="image/png" href="/favicon.png" />
 
+    <!-- Google Analytics 4 — Consent Mode v2 (default denied until user accepts) -->
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('consent', 'default', {
+        'analytics_storage': 'denied',
+        'ad_storage': 'denied',
+        'ad_user_data': 'denied',
+        'ad_personalization': 'denied',
+        'wait_for_update': 500
+      });
+      gtag('js', new Date());
+      gtag('config', 'G-0BKT3Y1JY6');
+    </script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-0BKT3Y1JY6"></script>
+
     <!-- Preconnect to external origins -->
     <link rel="preconnect" href="https://ihxczttkofjnyviqmxpl.supabase.co" crossorigin />
     <link rel="dns-prefetch" href="https://ihxczttkofjnyviqmxpl.supabase.co" />
+    <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin />
+    <link rel="dns-prefetch" href="https://www.google-analytics.com" />
 
     <!-- Fallback OG/Twitter tags (overridden per-page by react-helmet-async) -->
     <meta property="og:title" content="AHORA — Actuar en el presente para construir el futuro" />
