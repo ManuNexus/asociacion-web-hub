@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { Target, Eye, Users, Scale } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { SEO, breadcrumbSchema } from "@/components/SEO";
 
 const cargoLabels: Record<string, string> = {
   presidente: "Presidente",
