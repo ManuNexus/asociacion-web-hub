@@ -12,3 +12,10 @@ Allow: /
 
 User-agent: *
 Allow: /
+Disallow: /auth
+Disallow: /admin/
+Disallow: /socios
+Disallow: /contabilidad
+Disallow: /completar-iban
+
+Sitemap: https://ahoraorg.es/sitemap.xml
