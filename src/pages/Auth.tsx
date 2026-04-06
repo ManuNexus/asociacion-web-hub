@@ -400,6 +400,7 @@ const Auth = () => {
 
   return (
     <Layout>
+      <SEO title="Acceso" noindex />
       <section className="py-16 md:py-24">
         <div className="container max-w-md">
           <Card>
