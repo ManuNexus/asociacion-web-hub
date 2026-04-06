@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { formatInMadrid } from "@/lib/timezone";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
+import { SEO, breadcrumbSchema } from "@/components/SEO";
 import {
   Select,
   SelectContent,
