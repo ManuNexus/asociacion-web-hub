@@ -193,7 +193,9 @@ const NoticiaDetalle = () => {
         description={noticia.extracto || noticia.titulo}
         canonical={`/noticias/${noticia.id}`}
         ogImage={noticia.imagen_url || undefined}
+        ogImageAlt={noticia.titulo}
         ogType="article"
+        datePublished={noticia.fecha_publicacion || undefined}
         jsonLd={[
           articleSchema({
             title: noticia.titulo,
@@ -479,6 +481,7 @@ const NoticiaDetalle = () => {
                       <img
                         src={related.imagen_url}
                         alt={related.titulo}
+                        loading="lazy"
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                     </div>

@@ -5,8 +5,11 @@ interface SEOProps {
   description?: string;
   canonical?: string;
   ogImage?: string;
+  ogImageAlt?: string;
   ogType?: string;
   noindex?: boolean;
+  datePublished?: string;
+  dateModified?: string;
   jsonLd?: Record<string, unknown> | Record<string, unknown>[];
   children?: React.ReactNode;
 }
@@ -22,8 +25,11 @@ export function SEO({
   description = DEFAULT_DESCRIPTION,
   canonical,
   ogImage = DEFAULT_IMAGE,
+  ogImageAlt = "Logo de la Asociación AHORA",
   ogType = "website",
   noindex = false,
+  datePublished,
+  dateModified,
   jsonLd,
   children,
 }: SEOProps) {
@@ -31,9 +37,7 @@ export function SEO({
     ? `${title} | ${SITE_NAME}`
     : `${SITE_NAME} — Actuar en el presente para construir el futuro`;
 
-  const canonicalUrl = canonical
-    ? `${BASE_URL}${canonical}`
-    : undefined;
+  const canonicalUrl = canonical ? `${BASE_URL}${canonical}` : undefined;
 
   const schemas = jsonLd
     ? Array.isArray(jsonLd)
@@ -45,7 +49,11 @@ export function SEO({
     <Helmet>
       <title>{fullTitle}</title>
       <meta name="description" content={description} />
-      {noindex && <meta name="robots" content="noindex, nofollow" />}
+      {noindex ? (
+        <meta name="robots" content="noindex, nofollow" />
+      ) : (
+        <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+      )}
 
       {/* Canonical */}
       {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
@@ -56,8 +64,22 @@ export function SEO({
       <meta property="og:type" content={ogType} />
       {canonicalUrl && <meta property="og:url" content={canonicalUrl} />}
       <meta property="og:image" content={ogImage} />
+      <meta property="og:image:width" content="1200" />
+      <meta property="og:image:height" content="630" />
+      <meta property="og:image:alt" content={ogImageAlt} />
       <meta property="og:site_name" content={SITE_NAME} />
       <meta property="og:locale" content="es_ES" />
+
+      {/* Article dates for og:type article */}
+      {ogType === "article" && datePublished && (
+        <meta property="article:published_time" content={datePublished} />
+      )}
+      {ogType === "article" && dateModified && (
+        <meta property="article:modified_time" content={dateModified} />
+      )}
+      {ogType === "article" && (
+        <meta property="article:author" content="Asociación AHORA" />
+      )}
 
       {/* Twitter */}
       <meta name="twitter:card" content="summary_large_image" />
@@ -65,6 +87,7 @@ export function SEO({
       <meta name="twitter:title" content={fullTitle} />
       <meta name="twitter:description" content={description} />
       <meta name="twitter:image" content={ogImage} />
+      <meta name="twitter:image:alt" content={ogImageAlt} />
 
       {/* JSON-LD structured data */}
       {schemas.map((schema, i) => (
@@ -88,7 +111,7 @@ export const breadcrumbSchema = (
     "@type": "ListItem",
     position: i + 1,
     name: item.name,
-    item: `https://ahoraorg.es${item.url}`,
+    item: `${BASE_URL}${item.url}`,
   })),
 });
 
@@ -98,24 +121,56 @@ export const articleSchema = (article: {
   url: string;
   image?: string;
   datePublished?: string;
+  dateModified?: string;
   author?: string;
 }) => ({
   "@context": "https://schema.org",
   "@type": "NewsArticle",
+  mainEntityOfPage: {
+    "@type": "WebPage",
+    "@id": `${BASE_URL}${article.url}`,
+  },
   headline: article.title,
   description: article.description,
-  url: `https://ahoraorg.es${article.url}`,
-  ...(article.image && { image: article.image }),
+  url: `${BASE_URL}${article.url}`,
+  ...(article.image && {
+    image: {
+      "@type": "ImageObject",
+      url: article.image,
+    },
+  }),
   ...(article.datePublished && { datePublished: article.datePublished }),
+  ...(article.dateModified && { dateModified: article.dateModified }),
+  inLanguage: "es",
   author: {
     "@type": "Organization",
     name: article.author || "AHORA",
-    url: "https://ahoraorg.es",
+    url: BASE_URL,
   },
   publisher: {
     "@type": "Organization",
     name: "AHORA",
-    url: "https://ahoraorg.es",
-    logo: { "@type": "ImageObject", url: "https://ahoraorg.es/og-image.png" },
+    url: BASE_URL,
+    logo: {
+      "@type": "ImageObject",
+      url: `${BASE_URL}/og-image.png`,
+      width: 600,
+      height: 60,
+    },
   },
+});
+
+export const faqSchema = (
+  faqs: { question: string; answer: string }[]
+) => ({
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: faqs.map((faq) => ({
+    "@type": "Question",
+    name: faq.question,
+    acceptedAnswer: {
+      "@type": "Answer",
+      text: faq.answer,
+    },
+  })),
 });

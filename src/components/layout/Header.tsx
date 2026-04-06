@@ -76,12 +76,12 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
       <div className="container flex h-16 items-center justify-between lg:h-20">
-        <Link to="/" className="flex items-center shrink-0">
-          <img src={logoAhora} alt="AHORA" className="h-8 lg:h-10 w-auto object-contain" />
+        <Link to="/" className="flex items-center shrink-0" aria-label="AHORA — Ir al inicio">
+          <img src={logoAhora} alt="AHORA — Asociación civil por los valores constitucionales" className="h-8 lg:h-10 w-auto object-contain" width="120" height="40" />
         </Link>
 
         {/* Desktop Navigation */}
-        <nav className="hidden lg:flex items-center gap-0.5 xl:gap-1">
+        <nav aria-label="Navegación principal" className="hidden lg:flex items-center gap-0.5 xl:gap-1">
           {navLinks.map((link) => (
             <Link
               key={link.href}
