@@ -95,6 +95,12 @@ export default function SemaforoInstitucional() {
     verde: casos.filter((c) => c.gravedad === "verde").length,
   }), [casos]);
 
+  const lastUpdated = useMemo(() => {
+    if (casos.length === 0) return null;
+    const latest = casos.reduce((a, b) => (a.updated_at > b.updated_at ? a : b));
+    return formatInMadrid(latest.updated_at, "dd/MM/yyyy 'a las' HH:mm");
+  }, [casos]);
+
   const filteredCases = useMemo(() => {
     let result = casos;
     if (selectedYear) result = result.filter((c) => format(parseISO(c.fecha), "yyyy") === selectedYear);
