@@ -22,6 +22,7 @@ interface Caso {
   gravedad: Gravedad;
   ambito: string;
   fuente_url: string | null;
+  updated_at: string;
 }
 
 const GRAVEDAD_CONFIG: Record<Gravedad, { label: string; icon: typeof Shield; color: string; bg: string; bgSolid: string; border: string; dot: string; ring: string }> = {
