@@ -10,6 +10,7 @@ import { TweetEmbed, isTweetUrl } from "@/components/TweetEmbed";
 import ArticleCTA from "@/components/ArticleCTA";
 import { AudioPlayer } from "@/components/AudioPlayer";
 import { useAuth } from "@/hooks/useAuth";
+import { SEO, articleSchema, breadcrumbSchema } from "@/components/SEO";
 
 interface Categoria {
   id: string;
@@ -187,6 +188,28 @@ const NoticiaDetalle = () => {
 
   return (
     <Layout>
+      <SEO
+        title={noticia.titulo}
+        description={noticia.extracto || noticia.titulo}
+        canonical={`/noticias/${noticia.id}`}
+        ogImage={noticia.imagen_url || undefined}
+        ogType="article"
+        jsonLd={[
+          articleSchema({
+            title: noticia.titulo,
+            description: noticia.extracto || noticia.titulo,
+            url: `/noticias/${noticia.id}`,
+            image: noticia.imagen_url || undefined,
+            datePublished: noticia.fecha_publicacion || undefined,
+            author: noticia.autor || "AHORA",
+          }),
+          breadcrumbSchema([
+            { name: "Inicio", url: "/" },
+            { name: "Noticias", url: "/noticias" },
+            { name: noticia.titulo, url: `/noticias/${noticia.id}` },
+          ]),
+        ]}
+      />
       {/* Hero Image */}
       {noticia.imagen_url && (
         <div className="relative w-full h-[40vh] md:h-[50vh] overflow-hidden">

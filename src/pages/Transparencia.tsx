@@ -1,5 +1,6 @@
 import { Layout } from "@/components/layout/Layout";
 import { FileText, Users, Wallet, Building, Download, ExternalLink } from "lucide-react";
+import { SEO, breadcrumbSchema } from "@/components/SEO";
 import { Button } from "@/components/ui/button";
 const documentos = [{
   title: "Estatutos de la Asociación",
@@ -47,6 +48,15 @@ const organos = [{
 }];
 const Transparencia = () => {
   return <Layout>
+      <SEO
+        title="Transparencia"
+        description="Portal de transparencia de AHORA: estatutos, acta fundacional, estructura organizativa y gestión económica de la asociación."
+        canonical="/transparencia"
+        jsonLd={breadcrumbSchema([
+          { name: "Inicio", url: "/" },
+          { name: "Transparencia", url: "/transparencia" },
+        ])}
+      />
       {/* Hero */}
       <section className="bg-hero py-16 md:py-24">
         <div className="container">

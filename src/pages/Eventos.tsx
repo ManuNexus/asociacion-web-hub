@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Calendar, MapPin, Clock, Download, CalendarPlus, Building2, X } from "lucide-react";
+import { SEO, breadcrumbSchema } from "@/components/SEO";
 import { format, isPast, isFuture, isToday } from "date-fns";
 import { es } from "date-fns/locale";
 import { Layout } from "@/components/layout/Layout";
@@ -398,6 +399,15 @@ export default function Eventos() {
 
   return (
     <Layout>
+      <SEO
+        title="Eventos"
+        description="Descubre los próximos eventos de AHORA: conferencias, debates y actos sobre democracia, valores constitucionales y participación ciudadana."
+        canonical="/eventos"
+        jsonLd={breadcrumbSchema([
+          { name: "Inicio", url: "/" },
+          { name: "Eventos", url: "/eventos" },
+        ])}
+      />
       <div className="container mx-auto px-4 py-12 md:py-16">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">

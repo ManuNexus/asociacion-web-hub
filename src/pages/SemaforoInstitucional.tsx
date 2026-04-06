@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SemaforoCharts } from "@/components/semaforo/SemaforoCharts";
 import { CiviSummary } from "@/components/semaforo/CiviSummary";
+import { SEO, breadcrumbSchema } from "@/components/SEO";
 
 type Gravedad = "rojo" | "ambar" | "verde";
 type Ambito = "local" | "autonomico" | "nacional";
@@ -135,8 +136,16 @@ export default function SemaforoInstitucional() {
 
   return (
     <Layout>
+      <SEO
+        title="Semáforo Institucional — Observatorio de Integridad Pública"
+        description="Sistema de vigilancia ciudadana que monitoriza la integridad de las instituciones públicas en España. Alertas, investigaciones y buenas prácticas."
+        canonical="/semaforo-institucional"
+        jsonLd={breadcrumbSchema([
+          { name: "Inicio", url: "/" },
+          { name: "Semáforo Institucional", url: "/semaforo-institucional" },
+        ])}
+      />
       <div className="min-h-screen bg-background">
-        {/* Hero - compact on mobile */}
         <section className="bg-hero relative overflow-hidden">
           <div className="absolute inset-0 opacity-20">
             <div className="absolute -top-20 -right-20 w-80 h-80 rounded-full bg-secondary/30 blur-3xl" />

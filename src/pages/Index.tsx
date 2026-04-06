@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import logoIcon from "@/assets/logo-ahora-icon.png";
 import { supabase } from "@/integrations/supabase/client";
 import { formatInMadrid } from "@/lib/timezone";
+import { SEO, breadcrumbSchema } from "@/components/SEO";
 
 const valores = [
   {
@@ -89,7 +90,41 @@ const Index = () => {
 
   return (
     <Layout>
-      {/* Hero Section */}
+      <SEO
+        canonical="/"
+        jsonLd={[
+          {
+            "@context": "https://schema.org",
+            "@type": "NGO",
+            name: "AHORA",
+            alternateName: "Asociación AHORA",
+            url: "https://ahoraorg.es",
+            logo: "https://ahoraorg.es/og-image.png",
+            foundingDate: "2025-06-13",
+            address: { "@type": "PostalAddress", streetAddress: "C/ Aragón 458", addressLocality: "Barcelona", postalCode: "08013", addressCountry: "ES" },
+            sameAs: [
+              "https://x.com/AhoraOrg_es",
+              "https://www.facebook.com/profile.php?id=61585031630116",
+              "https://www.youtube.com/@Asociaci%C3%B3nAHORA",
+              "https://www.instagram.com/ahoraorg_es",
+              "https://t.me/ActuaAHORA",
+            ],
+            description: "Asociación civil de ámbito nacional que defiende los valores constitucionales, el pluralismo ideológico y los derechos fundamentales en España.",
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            name: "AHORA",
+            url: "https://ahoraorg.es",
+            potentialAction: {
+              "@type": "SearchAction",
+              target: "https://ahoraorg.es/noticias?q={search_term_string}",
+              "query-input": "required name=search_term_string",
+            },
+          },
+          breadcrumbSchema([{ name: "Inicio", url: "/" }]),
+        ]}
+      />
       <section className="relative min-h-[90vh] md:min-h-[85vh] flex items-center overflow-hidden bg-gradient-to-br from-primary via-primary to-primary/90">
         {/* Decorative elements */}
         <div className="absolute inset-0 overflow-hidden">
@@ -109,8 +144,8 @@ const Index = () => {
             <div className="mb-8 md:mb-10 animate-fade-in">
               <img 
                 src={logoIcon} 
-                alt="AHORA" 
-                className="w-24 md:w-32 lg:w-40 drop-shadow-[0_0_30px_rgba(241,196,15,0.3)]" 
+                alt="AHORA — Asociación civil por los valores constitucionales" 
+                className="w-24 md:w-32 lg:w-40 drop-shadow-[0_0_30px_rgba(241,196,15,0.3)]"
               />
             </div>
             
@@ -251,6 +286,7 @@ const Index = () => {
                       <img
                         src={noticia.imagen_url}
                         alt={noticia.titulo}
+                        loading="lazy"
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                     </div>

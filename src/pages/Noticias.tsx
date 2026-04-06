@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { formatInMadrid } from "@/lib/timezone";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
+import { SEO, breadcrumbSchema } from "@/components/SEO";
 import {
   Select,
   SelectContent,
@@ -111,7 +112,15 @@ const Noticias = () => {
 
   return (
     <Layout>
-      {/* Hero */}
+      <SEO
+        title="Sala de Prensa — Noticias y Comunicados"
+        description="Comunicados, notas de prensa y actualidad de la Asociación AHORA. Información sobre valores constitucionales, democracia y participación ciudadana en España."
+        canonical="/noticias"
+        jsonLd={breadcrumbSchema([
+          { name: "Inicio", url: "/" },
+          { name: "Noticias", url: "/noticias" },
+        ])}
+      />
       <section className="bg-hero py-16 md:py-24">
         <div className="container">
           <div className="max-w-3xl">
@@ -185,6 +194,7 @@ const Noticias = () => {
                           <img
                             src={noticia.imagen_url}
                             alt={noticia.titulo}
+                            loading="lazy"
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           />
                         </div>

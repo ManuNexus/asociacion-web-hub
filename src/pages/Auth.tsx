@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
+import { SEO } from "@/components/SEO";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -399,6 +400,7 @@ const Auth = () => {
 
   return (
     <Layout>
+      <SEO title="Acceso" noindex />
       <section className="py-16 md:py-24">
         <div className="container max-w-md">
           <Card>

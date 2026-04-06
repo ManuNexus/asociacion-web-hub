@@ -16,7 +16,7 @@ export function Footer() {
           {/* Links */}
           <div className="space-y-4">
             <h4 className="font-semibold">Enlaces</h4>
-            <nav className="flex flex-col gap-2 text-sm">
+            <nav aria-label="Enlaces del pie de página" className="flex flex-col gap-2 text-sm">
               <Link to="/nosotros" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors">
                 Quiénes Somos
               </Link>

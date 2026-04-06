@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { Target, Eye, Users, Scale } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { SEO, breadcrumbSchema } from "@/components/SEO";
 
 const cargoLabels: Record<string, string> = {
   presidente: "Presidente",
@@ -40,7 +41,29 @@ const Nosotros = () => {
   }, []);
   return (
     <Layout>
-      {/* Hero */}
+      <SEO
+        title="Quiénes Somos"
+        description="Conoce la historia, misión y equipo de AHORA, asociación civil que defiende los valores constitucionales y la convivencia democrática en España."
+        canonical="/nosotros"
+        jsonLd={[
+          breadcrumbSchema([
+            { name: "Inicio", url: "/" },
+            { name: "Quiénes Somos", url: "/nosotros" },
+          ]),
+          {
+            "@context": "https://schema.org",
+            "@type": "AboutPage",
+            name: "Quiénes Somos — AHORA",
+            url: "https://ahoraorg.es/nosotros",
+            mainEntity: {
+              "@type": "NGO",
+              name: "AHORA",
+              foundingDate: "2025-06-13",
+              url: "https://ahoraorg.es",
+            },
+          },
+        ]}
+      />
       <section className="bg-hero py-16 md:py-24">
         <div className="container">
           <div className="max-w-3xl">
