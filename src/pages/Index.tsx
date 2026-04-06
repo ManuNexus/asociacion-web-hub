@@ -144,8 +144,8 @@ const Index = () => {
             <div className="mb-8 md:mb-10 animate-fade-in">
               <img 
                 src={logoIcon} 
-                alt="AHORA" 
-                className="w-24 md:w-32 lg:w-40 drop-shadow-[0_0_30px_rgba(241,196,15,0.3)]" 
+                alt="AHORA — Asociación civil por los valores constitucionales" 
+                className="w-24 md:w-32 lg:w-40 drop-shadow-[0_0_30px_rgba(241,196,15,0.3)]"
               />
             </div>
             
