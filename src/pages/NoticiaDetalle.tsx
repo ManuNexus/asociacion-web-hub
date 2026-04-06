@@ -10,6 +10,7 @@ import { TweetEmbed, isTweetUrl } from "@/components/TweetEmbed";
 import ArticleCTA from "@/components/ArticleCTA";
 import { AudioPlayer } from "@/components/AudioPlayer";
 import { useAuth } from "@/hooks/useAuth";
+import { SEO, articleSchema, breadcrumbSchema } from "@/components/SEO";
 
 interface Categoria {
   id: string;
