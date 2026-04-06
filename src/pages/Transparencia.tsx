@@ -58,6 +58,7 @@ const Transparencia = () => {
         ])}
       />
       {/* Hero */}
+      <section className="bg-hero py-16 md:py-24">
         <div className="container">
           <div className="max-w-3xl">
             <h1 className="text-4xl md:text-5xl font-extrabold text-primary-foreground mb-6">
