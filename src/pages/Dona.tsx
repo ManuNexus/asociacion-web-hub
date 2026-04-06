@@ -158,6 +158,15 @@ const Dona = () => {
 
   return (
     <Layout>
+      <SEO
+        title="Dona"
+        description="Haz una donación a AHORA y contribuye a la defensa de los valores constitucionales y la democracia en España. Donación mínima de 20€."
+        canonical="/dona"
+        jsonLd={breadcrumbSchema([
+          { name: "Inicio", url: "/" },
+          { name: "Dona", url: "/dona" },
+        ])}
+      />
       {/* Hero */}
       <section className="bg-hero py-16 md:py-24">
         <div className="container">

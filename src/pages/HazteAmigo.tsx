@@ -145,6 +145,15 @@ const HazteAmigo = () => {
 
   return (
     <Layout>
+      <SEO
+        title="Hazte Amigo"
+        description="Regístrate como amigo de AHORA y mantente informado sobre nuestras actividades y novedades. Sin coste ni compromiso."
+        canonical="/hazte-amigo"
+        jsonLd={breadcrumbSchema([
+          { name: "Inicio", url: "/" },
+          { name: "Hazte Amigo", url: "/hazte-amigo" },
+        ])}
+      />
       {/* Hero */}
       <section className="bg-hero py-16 md:py-24">
         <div className="container">

@@ -253,6 +253,15 @@ const HazteSocio = () => {
 
   return (
     <Layout>
+      <SEO
+        title="Hazte Socio"
+        description="Únete a AHORA como socio. Participa activamente en la defensa de los valores constitucionales y la convivencia democrática en España. Cuota desde 5€/mes."
+        canonical="/hazte-socio"
+        jsonLd={breadcrumbSchema([
+          { name: "Inicio", url: "/" },
+          { name: "Hazte Socio", url: "/hazte-socio" },
+        ])}
+      />
       {/* Hero */}
       <section className="bg-hero py-16 md:py-24">
         <div className="container">
