@@ -10,9 +10,13 @@ import logoIcon from "@/assets/logo-ahora-icon.png";
 
 const navLinks = [
   { href: "/", label: "Inicio" },
-  { href: "/nosotros", label: "Quiénes Somos" },
   { href: "/noticias", label: "Sala de Prensa" },
   { href: "/eventos", label: "Eventos" },
+  { href: "/semaforo-institucional", label: "Semáforo" },
+];
+
+const conocenosLinks = [
+  { href: "/nosotros", label: "Quiénes Somos" },
   { href: "/transparencia", label: "Transparencia" },
 ];
 
