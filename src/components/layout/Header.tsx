@@ -63,11 +63,14 @@ export function Header() {
     if (!loading) fetchSocioData();
   }, [user, isSocio, loading]);
 
-  // Close dropdown on outside click
+  // Close dropdowns on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (participaRef.current && !participaRef.current.contains(e.target as Node)) {
         setIsParticipaOpen(false);
+      }
+      if (conocenosRef.current && !conocenosRef.current.contains(e.target as Node)) {
+        setIsConocenosOpen(false);
       }
     };
     document.addEventListener("mousedown", handler);
@@ -77,8 +80,10 @@ export function Header() {
   // Close dropdown on route change
   useEffect(() => {
     setIsParticipaOpen(false);
+    setIsConocenosOpen(false);
     setIsMenuOpen(false);
     setIsMobileParticipaOpen(false);
+    setIsMobileConocenosOpen(false);
   }, [location.pathname]);
 
   return (
