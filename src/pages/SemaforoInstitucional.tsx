@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { SemaforoCharts } from "@/components/semaforo/SemaforoCharts";
 import { CiviSummary } from "@/components/semaforo/CiviSummary";
 import { SEO, breadcrumbSchema } from "@/components/SEO";
+import { toast } from "sonner";
 
 type Gravedad = "rojo" | "ambar" | "verde";
 type Ambito = "local" | "autonomico" | "nacional";
