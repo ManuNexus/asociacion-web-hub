@@ -54,6 +54,9 @@ export default function SemaforoInstitucional() {
   const [selectedGravedad, setSelectedGravedad] = useState<Gravedad | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [newsletterEmail, setNewsletterEmail] = useState("");
+  const [newsletterName, setNewsletterName] = useState("");
+  const [newsletterLoading, setNewsletterLoading] = useState(false);
 
   const casesRef = useRef<HTMLDivElement>(null);
   const civiRef = useRef<HTMLDivElement>(null);
