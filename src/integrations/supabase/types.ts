@@ -586,6 +586,30 @@ export type Database = {
           },
         ]
       }
+      newsletter_semaforo: {
+        Row: {
+          activo: boolean
+          created_at: string
+          email: string
+          id: string
+          nombre: string | null
+        }
+        Insert: {
+          activo?: boolean
+          created_at?: string
+          email: string
+          id?: string
+          nombre?: string | null
+        }
+        Update: {
+          activo?: boolean
+          created_at?: string
+          email?: string
+          id?: string
+          nombre?: string | null
+        }
+        Relationships: []
+      }
       noticias: {
         Row: {
           autor: string | null
