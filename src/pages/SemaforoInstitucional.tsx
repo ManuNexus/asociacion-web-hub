@@ -408,6 +408,44 @@ export default function SemaforoInstitucional() {
           </section>
         </div>
 
+        {/* Newsletter */}
+        <section className="border-t border-border bg-muted/30">
+          <div className="container py-10 md:py-16">
+            <div className="max-w-xl mx-auto text-center">
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 mb-4">
+                <Mail className="h-6 w-6 text-primary" />
+              </div>
+              <h2 className="text-xl md:text-2xl font-bold tracking-tight mb-2">Informe Trimestral</h2>
+              <p className="text-sm text-muted-foreground mb-6">
+                Recibe en tu correo el informe trimestral del Semáforo Institucional con el análisis completo de alertas y tendencias.
+              </p>
+              <form onSubmit={handleNewsletterSubmit} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+                <Input
+                  type="text"
+                  placeholder="Tu nombre (opcional)"
+                  value={newsletterName}
+                  onChange={(e) => setNewsletterName(e.target.value)}
+                  className="sm:w-36"
+                />
+                <Input
+                  type="email"
+                  placeholder="tu@correo.com"
+                  value={newsletterEmail}
+                  onChange={(e) => setNewsletterEmail(e.target.value)}
+                  required
+                  className="flex-1"
+                />
+                <Button type="submit" disabled={newsletterLoading} className="shrink-0">
+                  {newsletterLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Suscribirme"}
+                </Button>
+              </form>
+              <p className="text-[10px] text-muted-foreground mt-3">
+                Sin spam. Solo informes trimestrales. Puedes darte de baja en cualquier momento.
+              </p>
+            </div>
+          </div>
+        </section>
+
         {/* Disclaimer */}
         <section className="border-t border-border">
           <div className="container py-6 md:py-10">
