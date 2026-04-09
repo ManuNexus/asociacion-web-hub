@@ -427,43 +427,76 @@ export default function SemaforoInstitucional() {
           </section>
         </div>
 
-        {/* Newsletter */}
-        <section className="border-t border-border bg-muted/30">
-          <div className="container py-10 md:py-16">
-            <div className="max-w-xl mx-auto text-center">
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 mb-4">
-                <Mail className="h-6 w-6 text-primary" />
+        {/* Newsletter Popup */}
+        <Dialog open={newsletterOpen} onOpenChange={(open) => { if (!open) handleNewsletterClose(); }}>
+          <DialogContent className="max-w-md p-0 overflow-hidden">
+            {!newsletterSuccess ? (
+              <div className="p-6 text-center">
+                <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-primary/10 mb-4">
+                  <Mail className="h-7 w-7 text-primary" />
+                </div>
+                <h2 className="text-xl font-bold tracking-tight mb-2">Informe Trimestral</h2>
+                <p className="text-sm text-muted-foreground mb-6">
+                  Recibe en tu correo el informe trimestral del Semáforo Institucional con el análisis completo de alertas y tendencias.
+                </p>
+                <form onSubmit={handleNewsletterSubmit} className="space-y-3">
+                  <Input
+                    type="text"
+                    placeholder="Tu nombre (opcional)"
+                    value={newsletterName}
+                    onChange={(e) => setNewsletterName(e.target.value)}
+                  />
+                  <Input
+                    type="email"
+                    placeholder="tu@correo.com"
+                    value={newsletterEmail}
+                    onChange={(e) => setNewsletterEmail(e.target.value)}
+                    required
+                  />
+                  <Button type="submit" disabled={newsletterLoading} className="w-full">
+                    {newsletterLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Suscribirme"}
+                  </Button>
+                </form>
+                <p className="text-[10px] text-muted-foreground mt-3">
+                  Sin spam. Solo informes trimestrales. Puedes darte de baja en cualquier momento.
+                </p>
               </div>
-              <h2 className="text-xl md:text-2xl font-bold tracking-tight mb-2">Informe Trimestral</h2>
-              <p className="text-sm text-muted-foreground mb-6">
-                Recibe en tu correo el informe trimestral del Semáforo Institucional con el análisis completo de alertas y tendencias.
-              </p>
-              <form onSubmit={handleNewsletterSubmit} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-                <Input
-                  type="text"
-                  placeholder="Tu nombre (opcional)"
-                  value={newsletterName}
-                  onChange={(e) => setNewsletterName(e.target.value)}
-                  className="sm:w-36"
-                />
-                <Input
-                  type="email"
-                  placeholder="tu@correo.com"
-                  value={newsletterEmail}
-                  onChange={(e) => setNewsletterEmail(e.target.value)}
-                  required
-                  className="flex-1"
-                />
-                <Button type="submit" disabled={newsletterLoading} className="shrink-0">
-                  {newsletterLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Suscribirme"}
-                </Button>
-              </form>
-              <p className="text-[10px] text-muted-foreground mt-3">
-                Sin spam. Solo informes trimestrales. Puedes darte de baja en cualquier momento.
-              </p>
-            </div>
-          </div>
-        </section>
+            ) : (
+              <div className="p-6 text-center">
+                <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-emerald-100 mb-4">
+                  <CheckCircle className="h-7 w-7 text-emerald-600" />
+                </div>
+                <h2 className="text-xl font-bold tracking-tight mb-2">¡Suscripción completada!</h2>
+                <p className="text-sm text-muted-foreground mb-6">
+                  Recibirás el próximo informe trimestral en tu correo. Mientras tanto, si quieres ayudarnos a seguir realizando acciones como el Semáforo Institucional, puedes:
+                </p>
+                <div className="grid gap-3">
+                  <Link to="/hazte-socio" onClick={handleNewsletterClose}>
+                    <Button variant="default" className="w-full gap-2">
+                      <Users className="h-4 w-4" /> Hazte Socio
+                    </Button>
+                  </Link>
+                  <Link to="/hazte-amigo" onClick={handleNewsletterClose}>
+                    <Button variant="outline" className="w-full gap-2">
+                      <Heart className="h-4 w-4" /> Hazte Amigo
+                    </Button>
+                  </Link>
+                  <Link to="/dona" onClick={handleNewsletterClose}>
+                    <Button variant="outline" className="w-full gap-2">
+                      <HandHeart className="h-4 w-4" /> Haz una donación
+                    </Button>
+                  </Link>
+                </div>
+                <button
+                  onClick={handleNewsletterClose}
+                  className="mt-4 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Quizás más tarde
+                </button>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
 
         {/* Disclaimer */}
         <section className="border-t border-border">
