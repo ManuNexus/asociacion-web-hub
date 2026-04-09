@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 import { formatInMadrid } from "@/lib/timezone";
-import { Download, ExternalLink, Calendar, MapPin, Search, ChevronLeft, ChevronRight, Shield, AlertTriangle, CheckCircle, Info, Brain, List, BarChart3, Mail, Loader2, X, Heart, Users, HandHeart } from "lucide-react";
+import { Download, ExternalLink, Calendar, MapPin, Search, ChevronLeft, ChevronRight, Shield, AlertTriangle, CheckCircle, Info, Brain, List, BarChart3, Mail, Loader2, Heart, Users, HandHeart } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
