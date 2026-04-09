@@ -486,6 +486,10 @@ export const AdminMailings = () => {
                       <Badge variant="outline" className="text-xs shrink-0">
                         Amigo
                       </Badge>
+                    ) : dest.tipo === "newsletter" ? (
+                      <Badge variant="outline" className="text-xs shrink-0">
+                        Newsletter
+                      </Badge>
                     ) : null}
                   </div>
                 ))}
