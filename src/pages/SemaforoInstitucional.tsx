@@ -138,6 +138,32 @@ export default function SemaforoInstitucional() {
     setTimeout(() => scrollTo(casesRef), 100);
   };
 
+  const handleNewsletterSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!newsletterEmail.trim()) return;
+    setNewsletterLoading(true);
+    try {
+      const { error } = await supabase
+        .from("newsletter_semaforo")
+        .insert({ email: newsletterEmail.trim().toLowerCase(), nombre: newsletterName.trim() || null });
+      if (error) {
+        if (error.code === "23505") {
+          toast.info("Este correo ya está suscrito al informe trimestral.");
+        } else {
+          throw error;
+        }
+      } else {
+        toast.success("¡Te has suscrito al informe trimestral!");
+      }
+      setNewsletterEmail("");
+      setNewsletterName("");
+    } catch {
+      toast.error("No se pudo completar la suscripción. Inténtalo de nuevo.");
+    } finally {
+      setNewsletterLoading(false);
+    }
+  };
+
   return (
     <Layout>
       <SEO
