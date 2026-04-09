@@ -1,17 +1,18 @@
-import { useState, useMemo, useRef, useCallback } from "react";
+import { useState, useMemo, useRef, useCallback, FormEvent } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 import { formatInMadrid } from "@/lib/timezone";
-import { Download, ExternalLink, Calendar, MapPin, Search, ChevronLeft, ChevronRight, Shield, AlertTriangle, CheckCircle, Info, Brain, List, BarChart3 } from "lucide-react";
+import { Download, ExternalLink, Calendar, MapPin, Search, ChevronLeft, ChevronRight, Shield, AlertTriangle, CheckCircle, Info, Brain, List, BarChart3, Mail, Loader2 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SemaforoCharts } from "@/components/semaforo/SemaforoCharts";
 import { CiviSummary } from "@/components/semaforo/CiviSummary";
 import { SEO, breadcrumbSchema } from "@/components/SEO";
+import { toast } from "sonner";
 
 type Gravedad = "rojo" | "ambar" | "verde";
 type Ambito = "local" | "autonomico" | "nacional";
@@ -53,6 +54,9 @@ export default function SemaforoInstitucional() {
   const [selectedGravedad, setSelectedGravedad] = useState<Gravedad | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [newsletterEmail, setNewsletterEmail] = useState("");
+  const [newsletterName, setNewsletterName] = useState("");
+  const [newsletterLoading, setNewsletterLoading] = useState(false);
 
   const casesRef = useRef<HTMLDivElement>(null);
   const civiRef = useRef<HTMLDivElement>(null);
@@ -132,6 +136,32 @@ export default function SemaforoInstitucional() {
     const isActive = selectedGravedad === g;
     handleFilterChange(setSelectedGravedad, isActive ? null : g);
     setTimeout(() => scrollTo(casesRef), 100);
+  };
+
+  const handleNewsletterSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!newsletterEmail.trim()) return;
+    setNewsletterLoading(true);
+    try {
+      const { error } = await supabase
+        .from("newsletter_semaforo")
+        .insert({ email: newsletterEmail.trim().toLowerCase(), nombre: newsletterName.trim() || null });
+      if (error) {
+        if (error.code === "23505") {
+          toast.info("Este correo ya está suscrito al informe trimestral.");
+        } else {
+          throw error;
+        }
+      } else {
+        toast.success("¡Te has suscrito al informe trimestral!");
+      }
+      setNewsletterEmail("");
+      setNewsletterName("");
+    } catch {
+      toast.error("No se pudo completar la suscripción. Inténtalo de nuevo.");
+    } finally {
+      setNewsletterLoading(false);
+    }
   };
 
   return (
@@ -377,6 +407,44 @@ export default function SemaforoInstitucional() {
             )}
           </section>
         </div>
+
+        {/* Newsletter */}
+        <section className="border-t border-border bg-muted/30">
+          <div className="container py-10 md:py-16">
+            <div className="max-w-xl mx-auto text-center">
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 mb-4">
+                <Mail className="h-6 w-6 text-primary" />
+              </div>
+              <h2 className="text-xl md:text-2xl font-bold tracking-tight mb-2">Informe Trimestral</h2>
+              <p className="text-sm text-muted-foreground mb-6">
+                Recibe en tu correo el informe trimestral del Semáforo Institucional con el análisis completo de alertas y tendencias.
+              </p>
+              <form onSubmit={handleNewsletterSubmit} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+                <Input
+                  type="text"
+                  placeholder="Tu nombre (opcional)"
+                  value={newsletterName}
+                  onChange={(e) => setNewsletterName(e.target.value)}
+                  className="sm:w-36"
+                />
+                <Input
+                  type="email"
+                  placeholder="tu@correo.com"
+                  value={newsletterEmail}
+                  onChange={(e) => setNewsletterEmail(e.target.value)}
+                  required
+                  className="flex-1"
+                />
+                <Button type="submit" disabled={newsletterLoading} className="shrink-0">
+                  {newsletterLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Suscribirme"}
+                </Button>
+              </form>
+              <p className="text-[10px] text-muted-foreground mt-3">
+                Sin spam. Solo informes trimestrales. Puedes darte de baja en cualquier momento.
+              </p>
+            </div>
+          </div>
+        </section>
 
         {/* Disclaimer */}
         <section className="border-t border-border">
