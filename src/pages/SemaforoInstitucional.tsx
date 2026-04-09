@@ -59,6 +59,8 @@ export default function SemaforoInstitucional() {
   const [newsletterEmail, setNewsletterEmail] = useState("");
   const [newsletterName, setNewsletterName] = useState("");
   const [newsletterLoading, setNewsletterLoading] = useState(false);
+  const [newsletterOpen, setNewsletterOpen] = useState(false);
+  const [newsletterSuccess, setNewsletterSuccess] = useState(false);
 
   const casesRef = useRef<HTMLDivElement>(null);
   const civiRef = useRef<HTMLDivElement>(null);
