@@ -437,7 +437,7 @@ export const AdminMailings = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
           
-          <Select value={filterType} onValueChange={(v: "todos" | "junta" | "socios" | "amigos") => setFilterType(v)}>
+          <Select value={filterType} onValueChange={(v: "todos" | "junta" | "socios" | "amigos" | "newsletter") => setFilterType(v)}>
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
@@ -446,6 +446,7 @@ export const AdminMailings = () => {
               <SelectItem value="junta">Solo Junta Directiva</SelectItem>
               <SelectItem value="socios">Solo socios (sin junta)</SelectItem>
               <SelectItem value="amigos">Solo amigos</SelectItem>
+              <SelectItem value="newsletter">Solo newsletter semáforo</SelectItem>
             </SelectContent>
           </Select>
 
