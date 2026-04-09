@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useCallback, FormEvent } from "react";
+import { useState, useMemo, useRef, useCallback, useEffect, FormEvent } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
