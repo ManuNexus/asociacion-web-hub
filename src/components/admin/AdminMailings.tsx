@@ -119,7 +119,7 @@ export const AdminMailings = () => {
   const fetchDestinatarios = async () => {
     setLoading(true);
     
-    const [sociosRes, amigosRes] = await Promise.all([
+    const [sociosRes, amigosRes, newsletterRes] = await Promise.all([
       supabase
         .from("socios")
         .select("id, nombre, apellidos, email, cargo_junta")
@@ -129,6 +129,11 @@ export const AdminMailings = () => {
         .from("amigos")
         .select("id, nombre, apellidos, email")
         .order("apellidos"),
+      supabase
+        .from("newsletter_semaforo")
+        .select("id, email, nombre")
+        .eq("activo", true)
+        .order("email"),
     ]);
 
     const sociosList: Destinatario[] = (sociosRes.data || []).map(s => ({
@@ -142,7 +147,24 @@ export const AdminMailings = () => {
       cargo_junta: null,
     }));
 
-    setDestinatarios([...sociosList, ...amigosList]);
+    // Get all emails from socios and amigos to avoid duplicates
+    const existingEmails = new Set([
+      ...sociosList.map(s => s.email.toLowerCase()),
+      ...amigosList.map(a => a.email.toLowerCase()),
+    ]);
+
+    const newsletterList: Destinatario[] = (newsletterRes.data || [])
+      .filter(n => !existingEmails.has(n.email.toLowerCase()))
+      .map(n => ({
+        id: n.id,
+        nombre: n.nombre || "",
+        apellidos: "",
+        email: n.email,
+        tipo: "newsletter" as const,
+        cargo_junta: null,
+      }));
+
+    setDestinatarios([...sociosList, ...amigosList, ...newsletterList]);
     setLoading(false);
   };
 
