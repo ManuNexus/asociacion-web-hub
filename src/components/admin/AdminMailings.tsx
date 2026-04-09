@@ -39,7 +39,7 @@ interface Destinatario {
   nombre: string;
   apellidos: string;
   email: string;
-  tipo: "socio" | "amigo";
+  tipo: "socio" | "amigo" | "newsletter";
   cargo_junta?: string | null;
 }
 
