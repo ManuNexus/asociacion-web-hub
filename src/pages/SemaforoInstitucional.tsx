@@ -1,18 +1,20 @@
-import { useState, useMemo, useRef, useCallback, FormEvent } from "react";
+import { useState, useMemo, useRef, useCallback, useEffect, FormEvent } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 import { formatInMadrid } from "@/lib/timezone";
-import { Download, ExternalLink, Calendar, MapPin, Search, ChevronLeft, ChevronRight, Shield, AlertTriangle, CheckCircle, Info, Brain, List, BarChart3, Mail, Loader2 } from "lucide-react";
+import { Download, ExternalLink, Calendar, MapPin, Search, ChevronLeft, ChevronRight, Shield, AlertTriangle, CheckCircle, Info, Brain, List, BarChart3, Mail, Loader2, Heart, Users, HandHeart } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { SemaforoCharts } from "@/components/semaforo/SemaforoCharts";
 import { CiviSummary } from "@/components/semaforo/CiviSummary";
 import { SEO, breadcrumbSchema } from "@/components/SEO";
 import { toast } from "sonner";
+import { Link } from "react-router-dom";
 
 type Gravedad = "rojo" | "ambar" | "verde";
 type Ambito = "local" | "autonomico" | "nacional";
@@ -57,10 +59,20 @@ export default function SemaforoInstitucional() {
   const [newsletterEmail, setNewsletterEmail] = useState("");
   const [newsletterName, setNewsletterName] = useState("");
   const [newsletterLoading, setNewsletterLoading] = useState(false);
+  const [newsletterOpen, setNewsletterOpen] = useState(false);
+  const [newsletterSuccess, setNewsletterSuccess] = useState(false);
 
   const casesRef = useRef<HTMLDivElement>(null);
   const civiRef = useRef<HTMLDivElement>(null);
   const chartsRef = useRef<HTMLDivElement>(null);
+
+  // Show newsletter popup after 3s, once per session
+  useEffect(() => {
+    const dismissed = sessionStorage.getItem("semaforo-newsletter-dismissed");
+    if (dismissed) return;
+    const timer = setTimeout(() => setNewsletterOpen(true), 3000);
+    return () => clearTimeout(timer);
+  }, []);
 
   const scrollTo = useCallback((ref: React.RefObject<HTMLDivElement | null>) => {
     ref.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -149,11 +161,12 @@ export default function SemaforoInstitucional() {
       if (error) {
         if (error.code === "23505") {
           toast.info("Este correo ya está suscrito al informe trimestral.");
+          setNewsletterSuccess(true);
         } else {
           throw error;
         }
       } else {
-        toast.success("¡Te has suscrito al informe trimestral!");
+        setNewsletterSuccess(true);
       }
       setNewsletterEmail("");
       setNewsletterName("");
@@ -162,6 +175,12 @@ export default function SemaforoInstitucional() {
     } finally {
       setNewsletterLoading(false);
     }
+  };
+
+  const handleNewsletterClose = () => {
+    setNewsletterOpen(false);
+    setNewsletterSuccess(false);
+    sessionStorage.setItem("semaforo-newsletter-dismissed", "1");
   };
 
   return (
@@ -408,43 +427,76 @@ export default function SemaforoInstitucional() {
           </section>
         </div>
 
-        {/* Newsletter */}
-        <section className="border-t border-border bg-muted/30">
-          <div className="container py-10 md:py-16">
-            <div className="max-w-xl mx-auto text-center">
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 mb-4">
-                <Mail className="h-6 w-6 text-primary" />
+        {/* Newsletter Popup */}
+        <Dialog open={newsletterOpen} onOpenChange={(open) => { if (!open) handleNewsletterClose(); }}>
+          <DialogContent className="max-w-md p-0 overflow-hidden">
+            {!newsletterSuccess ? (
+              <div className="p-6 text-center">
+                <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-primary/10 mb-4">
+                  <Mail className="h-7 w-7 text-primary" />
+                </div>
+                <h2 className="text-xl font-bold tracking-tight mb-2">Informe Trimestral</h2>
+                <p className="text-sm text-muted-foreground mb-6">
+                  Recibe en tu correo el informe trimestral del Semáforo Institucional con el análisis completo de alertas y tendencias.
+                </p>
+                <form onSubmit={handleNewsletterSubmit} className="space-y-3">
+                  <Input
+                    type="text"
+                    placeholder="Tu nombre (opcional)"
+                    value={newsletterName}
+                    onChange={(e) => setNewsletterName(e.target.value)}
+                  />
+                  <Input
+                    type="email"
+                    placeholder="tu@correo.com"
+                    value={newsletterEmail}
+                    onChange={(e) => setNewsletterEmail(e.target.value)}
+                    required
+                  />
+                  <Button type="submit" disabled={newsletterLoading} className="w-full">
+                    {newsletterLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Suscribirme"}
+                  </Button>
+                </form>
+                <p className="text-[10px] text-muted-foreground mt-3">
+                  Sin spam. Solo informes trimestrales. Puedes darte de baja en cualquier momento.
+                </p>
               </div>
-              <h2 className="text-xl md:text-2xl font-bold tracking-tight mb-2">Informe Trimestral</h2>
-              <p className="text-sm text-muted-foreground mb-6">
-                Recibe en tu correo el informe trimestral del Semáforo Institucional con el análisis completo de alertas y tendencias.
-              </p>
-              <form onSubmit={handleNewsletterSubmit} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-                <Input
-                  type="text"
-                  placeholder="Tu nombre (opcional)"
-                  value={newsletterName}
-                  onChange={(e) => setNewsletterName(e.target.value)}
-                  className="sm:w-36"
-                />
-                <Input
-                  type="email"
-                  placeholder="tu@correo.com"
-                  value={newsletterEmail}
-                  onChange={(e) => setNewsletterEmail(e.target.value)}
-                  required
-                  className="flex-1"
-                />
-                <Button type="submit" disabled={newsletterLoading} className="shrink-0">
-                  {newsletterLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Suscribirme"}
-                </Button>
-              </form>
-              <p className="text-[10px] text-muted-foreground mt-3">
-                Sin spam. Solo informes trimestrales. Puedes darte de baja en cualquier momento.
-              </p>
-            </div>
-          </div>
-        </section>
+            ) : (
+              <div className="p-6 text-center">
+                <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-emerald-100 mb-4">
+                  <CheckCircle className="h-7 w-7 text-emerald-600" />
+                </div>
+                <h2 className="text-xl font-bold tracking-tight mb-2">¡Suscripción completada!</h2>
+                <p className="text-sm text-muted-foreground mb-6">
+                  Recibirás el próximo informe trimestral en tu correo. Mientras tanto, si quieres ayudarnos a seguir realizando acciones como el Semáforo Institucional, puedes:
+                </p>
+                <div className="grid gap-3">
+                  <Link to="/hazte-socio" onClick={handleNewsletterClose}>
+                    <Button variant="default" className="w-full gap-2">
+                      <Users className="h-4 w-4" /> Hazte Socio
+                    </Button>
+                  </Link>
+                  <Link to="/hazte-amigo" onClick={handleNewsletterClose}>
+                    <Button variant="outline" className="w-full gap-2">
+                      <Heart className="h-4 w-4" /> Hazte Amigo
+                    </Button>
+                  </Link>
+                  <Link to="/dona" onClick={handleNewsletterClose}>
+                    <Button variant="outline" className="w-full gap-2">
+                      <HandHeart className="h-4 w-4" /> Haz una donación
+                    </Button>
+                  </Link>
+                </div>
+                <button
+                  onClick={handleNewsletterClose}
+                  className="mt-4 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Quizás más tarde
+                </button>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
 
         {/* Disclaimer */}
         <section className="border-t border-border">

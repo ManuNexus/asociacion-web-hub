@@ -39,7 +39,7 @@ interface Destinatario {
   nombre: string;
   apellidos: string;
   email: string;
-  tipo: "socio" | "amigo";
+  tipo: "socio" | "amigo" | "newsletter";
   cargo_junta?: string | null;
 }
 
@@ -107,7 +107,7 @@ export const AdminMailings = () => {
   const [selectedDestinatarios, setSelectedDestinatarios] = useState<Set<string>>(new Set());
   const [selectedTemplate, setSelectedTemplate] = useState<string>("");
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterType, setFilterType] = useState<"todos" | "junta" | "socios" | "amigos">("todos");
+  const [filterType, setFilterType] = useState<"todos" | "junta" | "socios" | "amigos" | "newsletter">("todos");
   
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -119,7 +119,7 @@ export const AdminMailings = () => {
   const fetchDestinatarios = async () => {
     setLoading(true);
     
-    const [sociosRes, amigosRes] = await Promise.all([
+    const [sociosRes, amigosRes, newsletterRes] = await Promise.all([
       supabase
         .from("socios")
         .select("id, nombre, apellidos, email, cargo_junta")
@@ -129,6 +129,11 @@ export const AdminMailings = () => {
         .from("amigos")
         .select("id, nombre, apellidos, email")
         .order("apellidos"),
+      supabase
+        .from("newsletter_semaforo")
+        .select("id, email, nombre")
+        .eq("activo", true)
+        .order("email"),
     ]);
 
     const sociosList: Destinatario[] = (sociosRes.data || []).map(s => ({
@@ -142,7 +147,24 @@ export const AdminMailings = () => {
       cargo_junta: null,
     }));
 
-    setDestinatarios([...sociosList, ...amigosList]);
+    // Get all emails from socios and amigos to avoid duplicates
+    const existingEmails = new Set([
+      ...sociosList.map(s => s.email.toLowerCase()),
+      ...amigosList.map(a => a.email.toLowerCase()),
+    ]);
+
+    const newsletterList: Destinatario[] = (newsletterRes.data || [])
+      .filter(n => !existingEmails.has(n.email.toLowerCase()))
+      .map(n => ({
+        id: n.id,
+        nombre: n.nombre || "",
+        apellidos: "",
+        email: n.email,
+        tipo: "newsletter" as const,
+        cargo_junta: null,
+      }));
+
+    setDestinatarios([...sociosList, ...amigosList, ...newsletterList]);
     setLoading(false);
   };
 
@@ -194,7 +216,8 @@ export const AdminMailings = () => {
         filterType === "todos" ||
         (filterType === "junta" && s.cargo_junta) ||
         (filterType === "socios" && s.tipo === "socio" && !s.cargo_junta) ||
-        (filterType === "amigos" && s.tipo === "amigo");
+        (filterType === "amigos" && s.tipo === "amigo") ||
+        (filterType === "newsletter" && s.tipo === "newsletter");
       
       return matchesSearch && matchesFilter;
     });
@@ -415,7 +438,7 @@ export const AdminMailings = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
           
-          <Select value={filterType} onValueChange={(v: "todos" | "junta" | "socios" | "amigos") => setFilterType(v)}>
+          <Select value={filterType} onValueChange={(v: "todos" | "junta" | "socios" | "amigos" | "newsletter") => setFilterType(v)}>
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
@@ -424,6 +447,7 @@ export const AdminMailings = () => {
               <SelectItem value="junta">Solo Junta Directiva</SelectItem>
               <SelectItem value="socios">Solo socios (sin junta)</SelectItem>
               <SelectItem value="amigos">Solo amigos</SelectItem>
+              <SelectItem value="newsletter">Solo newsletter semáforo</SelectItem>
             </SelectContent>
           </Select>
 
@@ -461,6 +485,10 @@ export const AdminMailings = () => {
                     ) : dest.tipo === "amigo" ? (
                       <Badge variant="outline" className="text-xs shrink-0">
                         Amigo
+                      </Badge>
+                    ) : dest.tipo === "newsletter" ? (
+                      <Badge variant="outline" className="text-xs shrink-0">
+                        Newsletter
                       </Badge>
                     ) : null}
                   </div>
