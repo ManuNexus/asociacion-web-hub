@@ -107,7 +107,7 @@ export const AdminMailings = () => {
   const [selectedDestinatarios, setSelectedDestinatarios] = useState<Set<string>>(new Set());
   const [selectedTemplate, setSelectedTemplate] = useState<string>("");
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterType, setFilterType] = useState<"todos" | "junta" | "socios" | "amigos">("todos");
+  const [filterType, setFilterType] = useState<"todos" | "junta" | "socios" | "amigos" | "newsletter">("todos");
   
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
