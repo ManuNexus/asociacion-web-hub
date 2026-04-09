@@ -5,14 +5,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 import { formatInMadrid } from "@/lib/timezone";
-import { Download, ExternalLink, Calendar, MapPin, Search, ChevronLeft, ChevronRight, Shield, AlertTriangle, CheckCircle, Info, Brain, List, BarChart3, Mail, Loader2 } from "lucide-react";
+import { Download, ExternalLink, Calendar, MapPin, Search, ChevronLeft, ChevronRight, Shield, AlertTriangle, CheckCircle, Info, Brain, List, BarChart3, Mail, Loader2, X, Heart, Users, HandHeart } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { SemaforoCharts } from "@/components/semaforo/SemaforoCharts";
 import { CiviSummary } from "@/components/semaforo/CiviSummary";
 import { SEO, breadcrumbSchema } from "@/components/SEO";
 import { toast } from "sonner";
+import { Link } from "react-router-dom";
 
 type Gravedad = "rojo" | "ambar" | "verde";
 type Ambito = "local" | "autonomico" | "nacional";
