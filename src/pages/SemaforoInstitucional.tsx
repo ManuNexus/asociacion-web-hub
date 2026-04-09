@@ -161,11 +161,12 @@ export default function SemaforoInstitucional() {
       if (error) {
         if (error.code === "23505") {
           toast.info("Este correo ya está suscrito al informe trimestral.");
+          setNewsletterSuccess(true);
         } else {
           throw error;
         }
       } else {
-        toast.success("¡Te has suscrito al informe trimestral!");
+        setNewsletterSuccess(true);
       }
       setNewsletterEmail("");
       setNewsletterName("");
@@ -174,6 +175,12 @@ export default function SemaforoInstitucional() {
     } finally {
       setNewsletterLoading(false);
     }
+  };
+
+  const handleNewsletterClose = () => {
+    setNewsletterOpen(false);
+    setNewsletterSuccess(false);
+    sessionStorage.setItem("semaforo-newsletter-dismissed", "1");
   };
 
   return (
