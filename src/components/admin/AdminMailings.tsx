@@ -216,7 +216,8 @@ export const AdminMailings = () => {
         filterType === "todos" ||
         (filterType === "junta" && s.cargo_junta) ||
         (filterType === "socios" && s.tipo === "socio" && !s.cargo_junta) ||
-        (filterType === "amigos" && s.tipo === "amigo");
+        (filterType === "amigos" && s.tipo === "amigo") ||
+        (filterType === "newsletter" && s.tipo === "newsletter");
       
       return matchesSearch && matchesFilter;
     });
