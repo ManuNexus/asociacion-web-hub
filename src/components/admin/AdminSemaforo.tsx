@@ -7,10 +7,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
-import { Plus, Trash2, Pencil, Upload, FileText, Download, UploadCloud } from "lucide-react";
+import { Plus, Trash2, Pencil, Upload, FileText, Download, UploadCloud, Mail, Users, Search } from "lucide-react";
 
 interface Caso {
   id: string;
@@ -34,6 +36,7 @@ export default function AdminSemaforo() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingCase, setEditingCase] = useState<Caso | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [newsletterSearch, setNewsletterSearch] = useState("");
 
   // Form state
   const [titulo, setTitulo] = useState("");
@@ -67,6 +70,48 @@ export default function AdminSemaforo() {
       if (error) throw error;
       return data;
     },
+  });
+
+  const { data: subscribers = [] } = useQuery({
+    queryKey: ["admin-newsletter-semaforo"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("newsletter_semaforo")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const toggleSubscriberMutation = useMutation({
+    mutationFn: async ({ id, activo }: { id: string; activo: boolean }) => {
+      const { error } = await supabase
+        .from("newsletter_semaforo")
+        .update({ activo })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-newsletter-semaforo"] });
+      toast({ title: "Suscriptor actualizado" });
+    },
+  });
+
+  const deleteSubscriberMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("newsletter_semaforo").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-newsletter-semaforo"] });
+      toast({ title: "Suscriptor eliminado" });
+    },
+  });
+
+  const filteredSubscribers = subscribers.filter((s) => {
+    const q = newsletterSearch.toLowerCase();
+    return !q || s.email.toLowerCase().includes(q) || (s.nombre || "").toLowerCase().includes(q);
   });
 
   const saveMutation = useMutation({
@@ -306,6 +351,76 @@ export default function AdminSemaforo() {
             disabled={uploading}
           />
         </label>
+      </div>
+
+      {/* Newsletter subscribers */}
+      <div className="border border-border rounded-xl p-6">
+        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+          <Mail className="h-5 w-5" /> Suscriptores Newsletter Semáforo
+          <Badge variant="secondary" className="ml-2">
+            <Users className="h-3 w-3 mr-1" />
+            {subscribers.filter((s) => s.activo).length} activos
+          </Badge>
+          <Badge variant="outline">
+            {subscribers.length} total
+          </Badge>
+        </h3>
+
+        <div className="relative mb-4">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Buscar por email o nombre..."
+            value={newsletterSearch}
+            onChange={(e) => setNewsletterSearch(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+
+        <div className="space-y-2 max-h-80 overflow-y-auto">
+          {filteredSubscribers.map((s) => (
+            <div
+              key={s.id}
+              className="flex items-center gap-3 border border-border rounded-lg p-3"
+            >
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate">
+                  {s.email}
+                  {!s.activo && (
+                    <Badge variant="outline" className="ml-2 text-muted-foreground">Inactivo</Badge>
+                  )}
+                </p>
+                {s.nombre && (
+                  <p className="text-xs text-muted-foreground">{s.nombre}</p>
+                )}
+                <p className="text-xs text-muted-foreground">
+                  {format(parseISO(s.created_at), "d MMM yyyy", { locale: es })}
+                </p>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <Switch
+                  checked={s.activo}
+                  onCheckedChange={(checked) =>
+                    toggleSubscriberMutation.mutate({ id: s.id, activo: checked })
+                  }
+                />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => {
+                    if (confirm("¿Eliminar este suscriptor?")) deleteSubscriberMutation.mutate(s.id);
+                  }}
+                >
+                  <Trash2 className="h-4 w-4 text-destructive" />
+                </Button>
+              </div>
+            </div>
+          ))}
+          {filteredSubscribers.length === 0 && (
+            <p className="text-center text-muted-foreground py-6">
+              {newsletterSearch ? "Sin resultados" : "No hay suscriptores aún."}
+            </p>
+          )}
+        </div>
       </div>
 
       {/* Casos header */}
