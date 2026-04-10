@@ -180,7 +180,7 @@ export default function SemaforoInstitucional() {
   const handleNewsletterClose = () => {
     setNewsletterOpen(false);
     setNewsletterSuccess(false);
-    sessionStorage.setItem("semaforo-newsletter-dismissed", "1");
+    localStorage.setItem("semaforo-newsletter-dismissed", "1");
   };
 
   return (
