@@ -7,10 +7,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
-import { Plus, Trash2, Pencil, Upload, FileText, Download, UploadCloud } from "lucide-react";
+import { Plus, Trash2, Pencil, Upload, FileText, Download, UploadCloud, Mail, Users, Search } from "lucide-react";
 
 interface Caso {
   id: string;
