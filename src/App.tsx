@@ -45,6 +45,7 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <ScrollToTop />
+            <GoogleAnalytics />
             <LoadingScreen />
             <CookieBanner />
             <Suspense fallback={null}>
