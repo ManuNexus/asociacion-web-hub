@@ -353,6 +353,76 @@ export default function AdminSemaforo() {
         </label>
       </div>
 
+      {/* Newsletter subscribers */}
+      <div className="border border-border rounded-xl p-6">
+        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+          <Mail className="h-5 w-5" /> Suscriptores Newsletter Semáforo
+          <Badge variant="secondary" className="ml-2">
+            <Users className="h-3 w-3 mr-1" />
+            {subscribers.filter((s) => s.activo).length} activos
+          </Badge>
+          <Badge variant="outline">
+            {subscribers.length} total
+          </Badge>
+        </h3>
+
+        <div className="relative mb-4">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Buscar por email o nombre..."
+            value={newsletterSearch}
+            onChange={(e) => setNewsletterSearch(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+
+        <div className="space-y-2 max-h-80 overflow-y-auto">
+          {filteredSubscribers.map((s) => (
+            <div
+              key={s.id}
+              className="flex items-center gap-3 border border-border rounded-lg p-3"
+            >
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate">
+                  {s.email}
+                  {!s.activo && (
+                    <Badge variant="outline" className="ml-2 text-muted-foreground">Inactivo</Badge>
+                  )}
+                </p>
+                {s.nombre && (
+                  <p className="text-xs text-muted-foreground">{s.nombre}</p>
+                )}
+                <p className="text-xs text-muted-foreground">
+                  {format(parseISO(s.created_at), "d MMM yyyy", { locale: es })}
+                </p>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <Switch
+                  checked={s.activo}
+                  onCheckedChange={(checked) =>
+                    toggleSubscriberMutation.mutate({ id: s.id, activo: checked })
+                  }
+                />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => {
+                    if (confirm("¿Eliminar este suscriptor?")) deleteSubscriberMutation.mutate(s.id);
+                  }}
+                >
+                  <Trash2 className="h-4 w-4 text-destructive" />
+                </Button>
+              </div>
+            </div>
+          ))}
+          {filteredSubscribers.length === 0 && (
+            <p className="text-center text-muted-foreground py-6">
+              {newsletterSearch ? "Sin resultados" : "No hay suscriptores aún."}
+            </p>
+          )}
+        </div>
+      </div>
+
       {/* Casos header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <h3 className="text-lg font-semibold">Alertas del Semáforo</h3>
