@@ -72,6 +72,48 @@ export default function AdminSemaforo() {
     },
   });
 
+  const { data: subscribers = [] } = useQuery({
+    queryKey: ["admin-newsletter-semaforo"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("newsletter_semaforo")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const toggleSubscriberMutation = useMutation({
+    mutationFn: async ({ id, activo }: { id: string; activo: boolean }) => {
+      const { error } = await supabase
+        .from("newsletter_semaforo")
+        .update({ activo })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-newsletter-semaforo"] });
+      toast({ title: "Suscriptor actualizado" });
+    },
+  });
+
+  const deleteSubscriberMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("newsletter_semaforo").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-newsletter-semaforo"] });
+      toast({ title: "Suscriptor eliminado" });
+    },
+  });
+
+  const filteredSubscribers = subscribers.filter((s) => {
+    const q = newsletterSearch.toLowerCase();
+    return !q || s.email.toLowerCase().includes(q) || (s.nombre || "").toLowerCase().includes(q);
+  });
+
   const saveMutation = useMutation({
     mutationFn: async () => {
       const payload = {
