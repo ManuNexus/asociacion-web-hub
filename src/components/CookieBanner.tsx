@@ -32,6 +32,9 @@ const CookieBanner = () => {
     if (typeof w.gtag === "function") {
       w.gtag("consent", "update", {
         analytics_storage: accepted ? "granted" : "denied",
+        ad_storage: accepted ? "granted" : "denied",
+        ad_user_data: accepted ? "granted" : "denied",
+        ad_personalization: accepted ? "granted" : "denied",
       });
     }
   };
