@@ -36,6 +36,7 @@ export default function AdminSemaforo() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingCase, setEditingCase] = useState<Caso | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [newsletterSearch, setNewsletterSearch] = useState("");
 
   // Form state
   const [titulo, setTitulo] = useState("");
