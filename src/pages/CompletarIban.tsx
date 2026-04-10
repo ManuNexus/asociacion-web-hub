@@ -43,19 +43,21 @@ const CompletarIban = () => {
         return;
       }
 
-      const { data, error } = await supabase
-        .from("solicitudes_socio")
-        .select("nombre, apellidos, email, iban")
-        .eq("id", solicitudId)
-        .single();
+      try {
+        const { data, error } = await supabase.functions.invoke('completar-iban', {
+          body: { action: 'get', solicitud_id: solicitudId },
+        });
 
-      if (error || !data) {
+        if (error || !data || data.error) {
+          setNotFound(true);
+        } else if (data.has_iban) {
+          setAlreadyCompleted(true);
+          setSolicitud(data);
+        } else {
+          setSolicitud(data);
+        }
+      } catch {
         setNotFound(true);
-      } else if (data.iban) {
-        setAlreadyCompleted(true);
-        setSolicitud(data);
-      } else {
-        setSolicitud(data);
       }
       setIsLoading(false);
     };
@@ -92,16 +94,16 @@ const CompletarIban = () => {
     
     try {
       const validData = validationResult.data;
-      const { error } = await supabase
-        .from("solicitudes_socio")
-        .update({
+      const { data, error } = await supabase.functions.invoke('completar-iban', {
+        body: {
+          action: 'update',
+          solicitud_id: solicitudId,
           iban: validData.iban.replace(/\s/g, '').toUpperCase(),
           titular_cuenta: validData.titularCuenta || null,
-          iban_submitted_at: new Date().toISOString(),
-        })
-        .eq("id", solicitudId);
+        },
+      });
 
-      if (error) throw error;
+      if (error || data?.error) throw new Error(data?.error || 'Error');
 
       toast({
         title: "¡Datos bancarios guardados!",
