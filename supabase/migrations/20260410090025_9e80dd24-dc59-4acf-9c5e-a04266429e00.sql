@@ -1,0 +1,1 @@
+UPDATE socios SET foto_url = 'https://ihxczttkofjnyviqmxpl.supabase.co/storage/v1/object/public/fotos-junta/javier-edrosa.jpg' WHERE apellidos = 'Edrosa Pérez' AND nombre = 'Javier';
