@@ -66,9 +66,9 @@ export default function SemaforoInstitucional() {
   const civiRef = useRef<HTMLDivElement>(null);
   const chartsRef = useRef<HTMLDivElement>(null);
 
-  // Show newsletter popup after 3s, once per session
+  // Show newsletter popup after 3s, only if never dismissed/submitted
   useEffect(() => {
-    const dismissed = sessionStorage.getItem("semaforo-newsletter-dismissed");
+    const dismissed = localStorage.getItem("semaforo-newsletter-dismissed");
     if (dismissed) return;
     const timer = setTimeout(() => setNewsletterOpen(true), 3000);
     return () => clearTimeout(timer);
