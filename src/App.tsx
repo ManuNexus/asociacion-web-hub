@@ -9,6 +9,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { PageTransition } from "@/components/PageTransition";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { LoadingScreen } from "@/components/LoadingScreen";
+import { GoogleAnalytics } from "@/components/GoogleAnalytics";
 import CookieBanner from "@/components/CookieBanner";
 
 // Eager load the landing page for best LCP
