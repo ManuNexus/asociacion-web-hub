@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, ArrowLeft, Calendar, Clock, ChevronRight, Star, Lock } from "lucide-react";
+import { Loader2, ArrowLeft, Calendar, Clock, Star, Lock, Link2, Check } from "lucide-react";
 import { formatInMadrid } from "@/lib/timezone";
 import logoIcon from "@/assets/logo-ahora-icon.png";
 import { TweetEmbed, isTweetUrl } from "@/components/TweetEmbed";
