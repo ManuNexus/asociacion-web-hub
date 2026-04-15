@@ -324,6 +324,17 @@ const NoticiaDetalle = () => {
                     {social.icon}
                   </a>
                 ))}
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(shareUrl);
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000);
+                  }}
+                  className="flex items-center justify-center w-10 h-10 rounded-full bg-secondary/50 text-foreground hover:bg-primary hover:text-primary-foreground transition-colors"
+                  title="Copiar enlace"
+                >
+                  {copied ? <Check className="w-5 h-5" /> : <Link2 className="w-5 h-5" />}
+                </button>
               </div>
             </div>
           </header>
