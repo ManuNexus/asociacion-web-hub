@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, ArrowLeft, Calendar, Clock, ChevronRight, Star, Lock } from "lucide-react";
+import { Loader2, ArrowLeft, Calendar, Clock, Star, Lock, Link2, Check } from "lucide-react";
 import { formatInMadrid } from "@/lib/timezone";
 import logoIcon from "@/assets/logo-ahora-icon.png";
 import { TweetEmbed, isTweetUrl } from "@/components/TweetEmbed";
@@ -40,6 +40,7 @@ const NoticiaDetalle = () => {
   const [noticia, setNoticia] = useState<Noticia | null>(null);
   const [relatedNoticias, setRelatedNoticias] = useState<Noticia[]>([]);
   const [loading, setLoading] = useState(true);
+  const [copied, setCopied] = useState(false);
   const [notFound, setNotFound] = useState(false);
   
   // Check if user can view exclusive content
@@ -323,6 +324,17 @@ const NoticiaDetalle = () => {
                     {social.icon}
                   </a>
                 ))}
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(shareUrl);
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000);
+                  }}
+                  className="flex items-center justify-center w-10 h-10 rounded-full bg-secondary/50 text-foreground hover:bg-primary hover:text-primary-foreground transition-colors"
+                  title="Copiar enlace"
+                >
+                  {copied ? <Check className="w-5 h-5" /> : <Link2 className="w-5 h-5" />}
+                </button>
               </div>
             </div>
           </header>
