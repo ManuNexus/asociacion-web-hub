@@ -40,6 +40,7 @@ const NoticiaDetalle = () => {
   const [noticia, setNoticia] = useState<Noticia | null>(null);
   const [relatedNoticias, setRelatedNoticias] = useState<Noticia[]>([]);
   const [loading, setLoading] = useState(true);
+  const [copied, setCopied] = useState(false);
   const [notFound, setNotFound] = useState(false);
   
   // Check if user can view exclusive content
