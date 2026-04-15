@@ -100,8 +100,10 @@ const NoticiaDetalle = () => {
     return Math.max(1, Math.ceil(words / 200));
   };
 
-  // Use production URL for sharing - the page has proper meta tags for social media crawlers
-  const shareUrl = noticia ? `https://ahoraorg.es/noticias/${noticia.id}` : "";
+  // Use the og-news edge function for sharing so crawlers see proper OG meta tags
+  // The edge function serves HTML with OG tags and redirects real browsers to ahoraorg.es
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const shareUrl = noticia ? `${supabaseUrl}/functions/v1/og-news?id=${noticia.id}` : "";
   const shareTitle = noticia?.titulo || "";
 
   const socialLinks = [
