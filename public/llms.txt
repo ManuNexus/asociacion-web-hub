@@ -1,0 +1,22 @@
+# AHORA — Asociación por los Valores Constitucionales
+
+> Asociación civil de ámbito nacional en España que defiende los valores constitucionales, el pluralismo ideológico y los derechos fundamentales. Promueve la transparencia institucional y la participación ciudadana.
+
+AHORA es una organización sin ánimo de lucro (NIF G24999484) con sede en Barcelona. Publica noticias, organiza eventos, mantiene un observatorio de integridad institucional (Semáforo Institucional) y permite afiliarse como Socio, Amigo o donar puntualmente.
+
+## Pages
+
+- [Inicio](/): Presentación de la asociación, manifiesto y vías de acción.
+- [Nosotros](/nosotros): Quiénes somos, misión, valores, Junta Directiva y equipo.
+- [Noticias](/noticias): Comunicados, notas de prensa y artículos de la asociación.
+- [Eventos](/eventos): Calendario de actos públicos, asambleas y encuentros.
+- [Transparencia](/transparencia): Cuentas anuales, estatutos y documentos institucionales.
+- [Semáforo Institucional](/semaforo-institucional): Observatorio ciudadano que evalúa la integridad de instituciones públicas con análisis IA (CIVI).
+- [Hazte Socio](/hazte-socio): Formulario y condiciones para afiliarse como socio con cuota.
+- [Hazte Amigo](/hazte-amigo): Alta gratuita como simpatizante para recibir información.
+- [Dona](/dona): Donaciones puntuales por transferencia bancaria.
+
+## Optional
+
+- [Política de Privacidad](/politica-privacidad): Tratamiento de datos personales (RGPD).
+- [Condiciones de Afiliación](/condiciones-afiliacion): Términos legales de la membresía.
