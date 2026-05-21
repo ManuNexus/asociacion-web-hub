@@ -18,4 +18,4 @@ Disallow: /socios
 Disallow: /contabilidad
 Disallow: /completar-iban
 
-Sitemap: https://ihxczttkofjnyviqmxpl.supabase.co/functions/v1/sitemap
+Sitemap: https://ahoraorg.es/sitemap.xml
