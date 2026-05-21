@@ -50,7 +50,17 @@
     <meta name="twitter:description" content="Asociación civil que defiende los valores constitucionales, el pluralismo ideológico y los derechos fundamentales en España." />
     <meta name="twitter:image" content="https://ahoraorg.es/og-image.png" />
 
-    <link rel="canonical" href="https://ahoraorg.es" />
+    <!-- Canonical se gestiona por ruta vía react-helmet-async (src/components/SEO.tsx) -->
+
+    <!-- Hreflang -->
+    <link rel="alternate" hreflang="es-ES" href="https://ahoraorg.es" />
+    <link rel="alternate" hreflang="x-default" href="https://ahoraorg.es" />
+
+    <!-- PWA / móvil -->
+    <meta name="application-name" content="AHORA" />
+    <meta name="apple-mobile-web-app-title" content="AHORA" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="mobile-web-app-capable" content="yes" />
 
     <!-- Geo targeting Spain -->
     <meta name="geo.region" content="ES" />
