@@ -357,38 +357,11 @@ const NoticiaDetalle = () => {
             </div>
           )}
 
-          {/* Exclusive Content Gate */}
-          {noticia.solo_socios && !canViewExclusive ? (
-            <div className="px-6 md:px-10 py-12">
-              <div className="bg-gradient-to-br from-primary/5 via-secondary/30 to-primary/5 rounded-xl border border-primary/20 p-8 text-center">
-                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <Lock className="h-8 w-8 text-primary" />
-                </div>
-                <h3 className="text-xl md:text-2xl font-bold text-foreground mb-3">
-                  Contenido exclusivo para socios
-                </h3>
-                <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                  Para leer esta noticia completa debes ser socio de AHORA. 
-                  Inicia sesión si ya eres socio o únete a nuestra comunidad.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                  <Button 
-                    onClick={() => navigate("/auth")}
-                    className="bg-primary hover:bg-primary/90"
-                  >
-                    Iniciar sesión
-                  </Button>
-                  <Button 
-                    variant="outline"
-                    onClick={() => navigate("/hazte-socio")}
-                    className="border-primary text-primary hover:bg-primary/10"
-                  >
-                    Únete a AHORA
-                  </Button>
-                </div>
-              </div>
-            </div>
-          ) : (
+          {/* Las noticias marcadas como "exclusivas" ahora son accesibles para todos
+              (socios + amigos + público). El flag solo_socios solo controla a quién
+              se envía la notificación anticipada por email. */}
+          {(
+
             <>
               {/* CTA Block */}
               <div className="px-6 md:px-10 py-6">
