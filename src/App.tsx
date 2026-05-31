@@ -11,6 +11,7 @@ import { ScrollToTop } from "@/components/ScrollToTop";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { GoogleAnalytics } from "@/components/GoogleAnalytics";
 import CookieBanner from "@/components/CookieBanner";
+import { InAppBrowserBanner } from "@/components/InAppBrowserBanner";
 
 // Eager load the landing page for best LCP
 import Index from "./pages/Index";
@@ -47,6 +48,7 @@ const App = () => (
             <ScrollToTop />
             <GoogleAnalytics />
             <LoadingScreen />
+            <InAppBrowserBanner />
             <CookieBanner />
             <Suspense fallback={null}>
               <PageTransition>
