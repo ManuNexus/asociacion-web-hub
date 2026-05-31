@@ -12,14 +12,16 @@ import { LoadingScreen } from "@/components/LoadingScreen";
 import { GoogleAnalytics } from "@/components/GoogleAnalytics";
 import CookieBanner from "@/components/CookieBanner";
 import { InAppBrowserBanner } from "@/components/InAppBrowserBanner";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 // Eager load the landing page for best LCP
 import Index from "./pages/Index";
+// Eager load NoticiaDetalle to avoid lazy-chunk failures in Facebook/Instagram in-app browsers
+import NoticiaDetalle from "./pages/NoticiaDetalle";
 
 // Lazy load other pages to reduce initial bundle size
 const Nosotros = lazy(() => import("./pages/Nosotros"));
 const Noticias = lazy(() => import("./pages/Noticias"));
-const NoticiaDetalle = lazy(() => import("./pages/NoticiaDetalle"));
 const Transparencia = lazy(() => import("./pages/Transparencia"));
 const HazteSocio = lazy(() => import("./pages/HazteSocio"));
 const HazteAmigo = lazy(() => import("./pages/HazteAmigo"));
@@ -38,6 +40,7 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const queryClient = new QueryClient();
 
 const App = () => (
+  <ErrorBoundary>
   <HelmetProvider>
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
@@ -79,6 +82,7 @@ const App = () => (
       </TooltipProvider>
     </QueryClientProvider>
   </HelmetProvider>
+  </ErrorBoundary>
 );
 
 export default App;
