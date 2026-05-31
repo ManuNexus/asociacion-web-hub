@@ -98,14 +98,31 @@ serve(async (req) => {
         );
       }
 
-      if (!socios || socios.length === 0) {
+      // Also fetch all amigos
+      const { data: amigos, error: amigosError } = await supabase
+        .from("amigos")
+        .select("email, nombre, apellidos");
+
+      if (amigosError) {
+        console.error("Error fetching amigos:", amigosError);
+      }
+
+      // Combine socios + amigos, deduplicate by email
+      const combined = [...(socios || []), ...(amigos || [])];
+      const seen = new Set<string>();
+      recipients = combined.filter(r => {
+        const email = r.email?.toLowerCase().trim();
+        if (!email || seen.has(email)) return false;
+        seen.add(email);
+        return true;
+      });
+
+      if (recipients.length === 0) {
         return new Response(
-          JSON.stringify({ message: "No active socios to notify" }),
+          JSON.stringify({ message: "No recipients to notify" }),
           { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
         );
       }
-      
-      recipients = socios;
     }
 
     console.log(`Sending exclusive news notification to ${recipients.length} recipient(s)`);
