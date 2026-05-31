@@ -70,8 +70,8 @@ export function InAppBrowserBanner() {
           </p>
           <p className="text-xs text-primary-foreground/80 mt-0.5">
             {isIOS
-              ? "Para una mejor experiencia, pulsa los tres puntos «···» y elige «Abrir en el navegador»."
-              : "Ábrela en tu navegador para que cargue correctamente."}
+              ? "Ábrela en tu navegador para disfrutar de todas las funciones de la web. Pulsa los tres puntos «···» y elige «Abrir en el navegador»."
+              : "Ábrela en tu navegador para disfrutar de todas las funciones de la web."}
           </p>
         </div>
         {!isIOS && (
