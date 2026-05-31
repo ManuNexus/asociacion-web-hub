@@ -43,13 +43,15 @@ export class ErrorBoundary extends Component<Props, State> {
   render() {
     if (!this.state.hasError) return this.props.children;
 
+    const errMsg = this.state.error?.message || String(this.state.error || "Error desconocido");
+    const errStack = this.state.error?.stack || "";
+
     return (
       <div className="min-h-screen flex items-center justify-center p-6 bg-background">
         <div className="max-w-md w-full text-center space-y-4">
           <h1 className="text-2xl font-bold text-primary">Algo ha fallado al cargar</h1>
           <p className="text-sm text-muted-foreground">
-            Si estás dentro de la aplicación de Facebook o Instagram, ábrelo en tu navegador
-            (Chrome o Safari) para una mejor experiencia.
+            Intenta recargar. Si el problema persiste, comparte el detalle de abajo con nosotros.
           </p>
           <div className="flex flex-col gap-2">
             <button
@@ -65,6 +67,18 @@ export class ErrorBoundary extends Component<Props, State> {
               Abrir en el navegador
             </button>
           </div>
+          <details className="text-left bg-muted/50 rounded-md p-3 text-xs">
+            <summary className="cursor-pointer font-medium">Detalles técnicos</summary>
+            <p className="mt-2 font-mono break-all text-destructive">{errMsg}</p>
+            {errStack && (
+              <pre className="mt-2 overflow-auto max-h-48 text-[10px] whitespace-pre-wrap">
+                {errStack}
+              </pre>
+            )}
+            <p className="mt-2 text-[10px] text-muted-foreground break-all">
+              UA: {typeof navigator !== "undefined" ? navigator.userAgent : ""}
+            </p>
+          </details>
         </div>
       </div>
     );
