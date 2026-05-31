@@ -13,7 +13,16 @@ function stripHtml(html: string): string {
   return doc.body.textContent || "";
 }
 
-export function AudioPlayer({ title, content }: AudioPlayerProps) {
+export function AudioPlayer(props: AudioPlayerProps) {
+  // Algunos navegadores (Facebook/Instagram in-app en Android) no exponen speechSynthesis.
+  // Hacemos un guard fuera del componente con hooks para evitar ReferenceError al renderizar.
+  if (typeof window === "undefined" || !("speechSynthesis" in window)) {
+    return null;
+  }
+  return <AudioPlayerInner {...props} />;
+}
+
+function AudioPlayerInner({ title, content }: AudioPlayerProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [progress, setProgress] = useState(0);
