@@ -357,10 +357,28 @@ const NoticiaDetalle = () => {
             </div>
           )}
 
-          {/* Las noticias marcadas como "exclusivas" ahora son accesibles para todos
-              (socios + amigos + público). El flag solo_socios solo controla a quién
-              se envía la notificación anticipada por email. */}
-          {(
+          {/* Las noticias marcadas como "solo_socios" requieren iniciar sesión como socio/admin */}
+          {noticia.solo_socios && !canViewExclusive ? (
+            <div className="px-6 md:px-10 py-12">
+              <div className="bg-secondary/30 border border-border rounded-xl p-8 text-center">
+                <Lock className="h-12 w-12 mx-auto text-primary mb-4" />
+                <h2 className="text-2xl font-bold text-foreground mb-2">Contenido exclusivo para socios</h2>
+                <p className="text-muted-foreground mb-6">
+                  Esta noticia está reservada para socios de AHORA. Inicia sesión con tu cuenta de socio para leerla completa.
+                </p>
+                <div className="flex flex-wrap gap-3 justify-center">
+                  {!user ? (
+                    <>
+                      <Button onClick={() => navigate("/auth")}>Iniciar sesión</Button>
+                      <Button variant="outline" onClick={() => navigate("/hazte-socio")}>Hazte socio</Button>
+                    </>
+                  ) : (
+                    <Button variant="outline" onClick={() => navigate("/hazte-socio")}>Hazte socio</Button>
+                  )}
+                </div>
+              </div>
+            </div>
+          ) : (
 
             <>
               {/* CTA Block */}
