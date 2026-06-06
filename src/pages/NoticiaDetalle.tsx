@@ -345,7 +345,7 @@ const NoticiaDetalle = () => {
           )}
 
           {/* Extracto with visual separator */}
-          {noticia.extracto && (
+          {noticia.extracto && (!noticia.solo_socios || canViewExclusive) && (
             <div className="px-6 md:px-10">
               <div className="relative py-6 border-y border-border">
                 {/* Decorative quote */}
