@@ -337,15 +337,15 @@ const NoticiaDetalle = () => {
             </div>
           </header>
 
-          {/* Audio Player */}
-          {noticia.contenido && (
+          {/* Audio Player - oculto si la noticia es exclusiva y el usuario no es socio/admin */}
+          {noticia.contenido && (!noticia.solo_socios || canViewExclusive) && (
             <div className="px-6 md:px-10 mt-4 mb-6">
               <AudioPlayer title={noticia.titulo} content={noticia.contenido} />
             </div>
           )}
 
           {/* Extracto with visual separator */}
-          {noticia.extracto && (
+          {noticia.extracto && (!noticia.solo_socios || canViewExclusive) && (
             <div className="px-6 md:px-10">
               <div className="relative py-6 border-y border-border">
                 {/* Decorative quote */}
