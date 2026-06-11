@@ -56,11 +56,16 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Nuevo amigo registrado:", amigo.email);
 
+    const nombre = esc(amigo.nombre);
+    const apellidos = esc(amigo.apellidos);
+    const email = esc(amigo.email);
+    const telefono = esc(amigo.telefono);
+
     // Email 1: Notificación al administrador
     const adminEmailResponse = await resend.emails.send({
       from: "AHORA <socios@ahoraorg.es>",
       to: ["marrorra2001@gmail.com", "presidencia@ahoraorg.es"],
-      subject: `Nuevo amigo registrado: ${amigo.nombre} ${amigo.apellidos}`,
+      subject: `Nuevo amigo registrado: ${nombre} ${apellidos}`,
       html: `
         <!DOCTYPE html>
         <html>
@@ -79,16 +84,16 @@ const handler = async (req: Request): Promise<Response> => {
                 <table style="width: 100%; border-collapse: collapse;">
                   <tr>
                     <td style="padding: 8px 0; color: #666; font-weight: bold; width: 140px;">Nombre:</td>
-                    <td style="padding: 8px 0; color: #333;">${amigo.nombre} ${amigo.apellidos}</td>
+                    <td style="padding: 8px 0; color: #333;">${nombre} ${apellidos}</td>
                   </tr>
                   <tr>
                     <td style="padding: 8px 0; color: #666; font-weight: bold;">Email:</td>
-                    <td style="padding: 8px 0; color: #333;"><a href="mailto:${amigo.email}" style="color: #2d5a87;">${amigo.email}</a></td>
+                    <td style="padding: 8px 0; color: #333;"><a href="mailto:${email}" style="color: #2d5a87;">${email}</a></td>
                   </tr>
-                  ${amigo.telefono ? `
+                  ${telefono ? `
                   <tr>
                     <td style="padding: 8px 0; color: #666; font-weight: bold;">Teléfono:</td>
-                    <td style="padding: 8px 0; color: #333;">${amigo.telefono}</td>
+                    <td style="padding: 8px 0; color: #333;">${telefono}</td>
                   </tr>
                   ` : ''}
                 </table>
@@ -125,7 +130,7 @@ const handler = async (req: Request): Promise<Response> => {
             </div>
             <div style="padding: 30px;">
               <p style="color: #333; font-size: 16px; margin-bottom: 20px;">
-                Hola <strong>${amigo.nombre}</strong>,
+                Hola <strong>${nombre}</strong>,
               </p>
               
               <p style="color: #333; font-size: 16px; margin-bottom: 20px;">
