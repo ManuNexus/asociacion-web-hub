@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { Resend } from "https://esm.sh/resend@2.0.0";
+import { escapeHtml as esc } from "../_shared/escape-html.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -64,6 +65,12 @@ serve(async (req: Request): Promise<Response> => {
 
     console.log(`Solicitud de baja de ${socio.nombre} ${socio.apellidos} (${socio.email})`);
 
+    const nombreSafe = esc(socio.nombre);
+    const apellidosSafe = esc(socio.apellidos);
+    const emailSafe = esc(socio.email);
+    const numeroSocioSafe = esc(socio.numero_socio);
+    const motivoSafe = esc(motivo);
+
     const fechaSolicitud = new Date().toLocaleDateString('es-ES', {
       day: '2-digit',
       month: 'long',
@@ -97,14 +104,14 @@ serve(async (req: Request): Promise<Response> => {
               <h1 style="margin: 0;">Solicitud de baja recibida</h1>
             </div>
             <div class="content">
-              <p>Hola <strong>${socio.nombre}</strong>,</p>
+              <p>Hola <strong>${nombreSafe}</strong>,</p>
               
               <p>Hemos recibido tu solicitud de baja como socio/a de AHORA.</p>
               
               <div class="info-box">
                 <p><strong>Fecha de solicitud:</strong> ${fechaSolicitud}</p>
                 <p><strong>Motivo indicado:</strong></p>
-                <p style="font-style: italic; color: #555;">"${motivo}"</p>
+                <p style="font-style: italic; color: #555;">"${motivoSafe}"</p>
               </div>
               
               <p>La Junta Directiva ha sido notificada y <strong>procesará tu solicitud en los próximos días</strong>. Recibirás una confirmación cuando la baja sea efectiva.</p>
@@ -117,7 +124,7 @@ serve(async (req: Request): Promise<Response> => {
             </div>
             <div class="footer">
               <p>AHORA - Actuar en el presente para construir el futuro</p>
-              <p>Este correo fue enviado a ${socio.email}</p>
+              <p>Este correo fue enviado a ${emailSafe}</p>
             </div>
           </div>
         </body>
@@ -131,7 +138,7 @@ serve(async (req: Request): Promise<Response> => {
     await resend.emails.send({
       from: "AHORA <socios@ahoraorg.es>",
       to: ["presidencia@ahoraorg.es"],
-      subject: `⚠️ Solicitud de baja: ${socio.nombre} ${socio.apellidos}`,
+      subject: `⚠️ Solicitud de baja: ${socio.nombre} ${socio.apellidos}`.replace(/[\r\n]/g, " "),
       html: `
         <!DOCTYPE html>
         <html>
@@ -157,15 +164,15 @@ serve(async (req: Request): Promise<Response> => {
               
               <div class="info-box">
                 <h3 style="margin-top: 0; color: #1e3a5f;">Datos del socio</h3>
-                <p><strong>Nombre:</strong> ${socio.nombre} ${socio.apellidos}</p>
-                <p><strong>Email:</strong> ${socio.email}</p>
-                <p><strong>Nº de socio:</strong> ${socio.numero_socio || 'No asignado'}</p>
+                <p><strong>Nombre:</strong> ${nombreSafe} ${apellidosSafe}</p>
+                <p><strong>Email:</strong> ${emailSafe}</p>
+                <p><strong>Nº de socio:</strong> ${numeroSocioSafe || 'No asignado'}</p>
                 <p><strong>Fecha solicitud:</strong> ${fechaSolicitud}</p>
               </div>
               
               <div class="info-box">
                 <h3 style="margin-top: 0; color: #1e3a5f;">Motivo de la baja</h3>
-                <p style="font-style: italic; color: #555;">"${motivo}"</p>
+                <p style="font-style: italic; color: #555;">"${motivoSafe}"</p>
               </div>
               
               <div class="warning">

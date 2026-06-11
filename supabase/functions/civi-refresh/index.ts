@@ -12,6 +12,16 @@ Deno.serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+    // Only allow service-role callers (cron / admin). Reject anon/user JWTs.
+    const auth = req.headers.get("Authorization") || "";
+    const token = auth.replace(/^Bearer\s+/i, "");
+    if (token !== serviceKey) {
+      return new Response(JSON.stringify({ error: "Forbidden" }), {
+        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const supabase = createClient(supabaseUrl, serviceKey);
 
     // Get all years with data

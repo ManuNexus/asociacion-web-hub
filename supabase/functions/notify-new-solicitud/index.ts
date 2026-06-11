@@ -1,5 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { Resend } from "https://esm.sh/resend@2.0.0";
+import { escapeHtml as esc } from "../_shared/escape-html.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -20,20 +22,55 @@ interface SolicitudData {
 }
 
 const handler = async (req: Request): Promise<Response> => {
-  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
     const solicitud: SolicitudData = await req.json();
+
+    if (!solicitud?.email || !solicitud?.nombre || !solicitud?.apellidos || !solicitud?.dni) {
+      return new Response(JSON.stringify({ error: "Missing required fields" }), {
+        status: 400, headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
+    // Anti-spam: verify a real solicitud_socio row was created in the last 60s for this email
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
+
+    const { data: recent } = await supabaseAdmin
+      .from("solicitudes_socio")
+      .select("id")
+      .eq("email", solicitud.email)
+      .gte("created_at", new Date(Date.now() - 60_000).toISOString())
+      .maybeSingle();
+
+    if (!recent) {
+      console.warn("No recent solicitud found for:", solicitud.email);
+      return new Response(JSON.stringify({ error: "No recent registration found" }), {
+        status: 403, headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
     console.log("Nueva solicitud de socio recibida:", solicitud.email);
+
+    const nombre = esc(solicitud.nombre);
+    const apellidos = esc(solicitud.apellidos);
+    const email = esc(solicitud.email);
+    const dni = esc(solicitud.dni);
+    const telefono = esc(solicitud.telefono);
+    const ciudad = esc(solicitud.ciudad);
+    const provincia = esc(solicitud.provincia);
+    const motivacion = esc(solicitud.motivacion);
 
     // Email 1: Notificación al administrador y presidencia
     const adminEmailResponse = await resend.emails.send({
       from: "AHORA <socios@ahoraorg.es>",
       to: ["marrorra2001@gmail.com", "presidencia@ahoraorg.es"],
-      subject: `Nueva solicitud de socio: ${solicitud.nombre} ${solicitud.apellidos}`,
+      subject: `Nueva solicitud de socio: ${nombre} ${apellidos}`,
       html: `
         <!DOCTYPE html>
         <html>
@@ -55,35 +92,35 @@ const handler = async (req: Request): Promise<Response> => {
                 <table style="width: 100%; border-collapse: collapse;">
                   <tr>
                     <td style="padding: 8px 0; color: #666; font-weight: bold; width: 140px;">Nombre:</td>
-                    <td style="padding: 8px 0; color: #333;">${solicitud.nombre} ${solicitud.apellidos}</td>
+                    <td style="padding: 8px 0; color: #333;">${nombre} ${apellidos}</td>
                   </tr>
                   <tr>
                     <td style="padding: 8px 0; color: #666; font-weight: bold;">DNI/NIE:</td>
-                    <td style="padding: 8px 0; color: #333;">${solicitud.dni}</td>
+                    <td style="padding: 8px 0; color: #333;">${dni}</td>
                   </tr>
                   <tr>
                     <td style="padding: 8px 0; color: #666; font-weight: bold;">Email:</td>
-                    <td style="padding: 8px 0; color: #333;"><a href="mailto:${solicitud.email}" style="color: #2d5a87;">${solicitud.email}</a></td>
+                    <td style="padding: 8px 0; color: #333;"><a href="mailto:${email}" style="color: #2d5a87;">${email}</a></td>
                   </tr>
-                  ${solicitud.telefono ? `
+                  ${telefono ? `
                   <tr>
                     <td style="padding: 8px 0; color: #666; font-weight: bold;">Teléfono:</td>
-                    <td style="padding: 8px 0; color: #333;">${solicitud.telefono}</td>
+                    <td style="padding: 8px 0; color: #333;">${telefono}</td>
                   </tr>
                   ` : ''}
-                  ${solicitud.ciudad || solicitud.provincia ? `
+                  ${ciudad || provincia ? `
                   <tr>
                     <td style="padding: 8px 0; color: #666; font-weight: bold;">Ubicación:</td>
-                    <td style="padding: 8px 0; color: #333;">${[solicitud.ciudad, solicitud.provincia].filter(Boolean).join(', ')}</td>
+                    <td style="padding: 8px 0; color: #333;">${[ciudad, provincia].filter(Boolean).join(', ')}</td>
                   </tr>
                   ` : ''}
                 </table>
               </div>
               
-              ${solicitud.motivacion ? `
+              ${motivacion ? `
               <div style="background-color: #fef3c7; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
                 <h3 style="color: #92400e; font-size: 16px; margin: 0 0 10px 0;">Motivación:</h3>
-                <p style="color: #78350f; margin: 0; font-style: italic;">"${solicitud.motivacion}"</p>
+                <p style="color: #78350f; margin: 0; font-style: italic;">"${motivacion}"</p>
               </div>
               ` : ''}
               
@@ -110,7 +147,6 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Email de notificación al admin enviado:", adminEmailResponse);
 
-    // Esperar 1 segundo antes de enviar el segundo email (rate limiting)
     await new Promise(resolve => setTimeout(resolve, 1000));
 
     // Email 2: Confirmación al solicitante
@@ -131,7 +167,7 @@ const handler = async (req: Request): Promise<Response> => {
             </div>
             <div style="padding: 30px;">
               <p style="color: #333; font-size: 16px; margin-bottom: 20px;">
-                Hola <strong>${solicitud.nombre}</strong>,
+                Hola <strong>${nombre}</strong>,
               </p>
               
               <p style="color: #333; font-size: 16px; margin-bottom: 20px;">
@@ -151,16 +187,16 @@ const handler = async (req: Request): Promise<Response> => {
                 <table style="width: 100%; border-collapse: collapse;">
                   <tr>
                     <td style="padding: 8px 0; color: #666; font-weight: bold; width: 140px;">Nombre:</td>
-                    <td style="padding: 8px 0; color: #333;">${solicitud.nombre} ${solicitud.apellidos}</td>
+                    <td style="padding: 8px 0; color: #333;">${nombre} ${apellidos}</td>
                   </tr>
                   <tr>
                     <td style="padding: 8px 0; color: #666; font-weight: bold;">Email:</td>
-                    <td style="padding: 8px 0; color: #333;">${solicitud.email}</td>
+                    <td style="padding: 8px 0; color: #333;">${email}</td>
                   </tr>
-                  ${solicitud.telefono ? `
+                  ${telefono ? `
                   <tr>
                     <td style="padding: 8px 0; color: #666; font-weight: bold;">Teléfono:</td>
-                    <td style="padding: 8px 0; color: #333;">${solicitud.telefono}</td>
+                    <td style="padding: 8px 0; color: #333;">${telefono}</td>
                   </tr>
                   ` : ''}
                 </table>

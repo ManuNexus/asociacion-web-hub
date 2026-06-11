@@ -23,6 +23,12 @@ serve(async (req) => {
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, serviceKey);
 
+    // Only service-role callers can trigger fresh AI generation. Public callers
+    // only ever read the cached result to prevent AI credit abuse.
+    const auth = req.headers.get("Authorization") || "";
+    const token = auth.replace(/^Bearer\s+/i, "");
+    const isPrivileged = token && token === serviceKey;
+
     // Check cache first
     const { data: cached } = await supabase
       .from("civi_cache")
@@ -33,6 +39,13 @@ serve(async (req) => {
 
     if (cached) {
       return new Response(JSON.stringify({ contenido: cached.contenido, datos_extra: cached.datos_extra, cached: true, cached_at: cached.created_at }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (!isPrivileged) {
+      // No fresh cache and caller is not authorized to regenerate — return empty.
+      return new Response(JSON.stringify({ contenido: null, datos_extra: null, cached: false, empty: true }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
