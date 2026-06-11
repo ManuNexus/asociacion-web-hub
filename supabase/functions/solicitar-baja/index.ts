@@ -65,6 +65,12 @@ serve(async (req: Request): Promise<Response> => {
 
     console.log(`Solicitud de baja de ${socio.nombre} ${socio.apellidos} (${socio.email})`);
 
+    const nombreSafe = esc(socio.nombre);
+    const apellidosSafe = esc(socio.apellidos);
+    const emailSafe = esc(socio.email);
+    const numeroSocioSafe = esc(socio.numero_socio);
+    const motivoSafe = esc(motivo);
+
     const fechaSolicitud = new Date().toLocaleDateString('es-ES', {
       day: '2-digit',
       month: 'long',
