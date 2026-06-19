@@ -56,6 +56,12 @@
     <priority>0.3</priority>
   </url>
   <url>
+    <loc>https://ahoraorg.es/noticias/3448ae3d-262a-43cd-a15b-e6ee663ea1cc</loc>
+    <lastmod>2026-06-19</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://ahoraorg.es/noticias/16abcf31-989e-4b5f-9563-9a3df511d45e</loc>
     <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
