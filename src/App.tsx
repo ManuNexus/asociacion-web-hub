@@ -25,6 +25,7 @@ const Noticias = lazy(() => import("./pages/Noticias"));
 const Transparencia = lazy(() => import("./pages/Transparencia"));
 const HazteSocio = lazy(() => import("./pages/HazteSocio"));
 const TarjetaConfirmada = lazy(() => import("./pages/TarjetaConfirmada"));
+const TarjetaSocioConfirmada = lazy(() => import("./pages/TarjetaSocioConfirmada"));
 const HazteAmigo = lazy(() => import("./pages/HazteAmigo"));
 const Dona = lazy(() => import("./pages/Dona"));
 const CompletarIban = lazy(() => import("./pages/CompletarIban"));
@@ -72,6 +73,7 @@ const App = () => (
                   <Route path="/auth" element={<Auth />} />
                   <Route path="/admin/noticias" element={<AdminNoticias />} />
                   <Route path="/socios" element={<PanelSocios />} />
+                  <Route path="/socios/tarjeta-confirmada" element={<TarjetaSocioConfirmada />} />
                   <Route path="/contabilidad" element={<Contabilidad />} />
                   <Route path="/eventos" element={<Eventos />} />
                   <Route path="/semaforo-institucional" element={<SemaforoInstitucional />} />
