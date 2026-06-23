@@ -305,17 +305,43 @@ const Dona = () => {
               </p>
             )}
 
-            <Button
-              onClick={handleDonate}
-              disabled={finalAmount <= 0}
-              className="w-full bg-secondary text-secondary-foreground hover:bg-secondary/90 font-semibold text-lg py-6"
-            >
-              Donar {finalAmount > 0 ? `${finalAmount.toFixed(2)} €` : ""}
-            </Button>
+            <div className="space-y-3">
+              <Button
+                onClick={handleDonateCard}
+                disabled={finalAmount <= 0 || stripeLoading}
+                className="w-full bg-secondary text-secondary-foreground hover:bg-secondary/90 font-semibold text-lg py-6"
+              >
+                {stripeLoading ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  <>
+                    <CreditCard className="h-5 w-5 mr-2" />
+                    Donar con tarjeta {finalAmount > 0 ? `${finalAmount.toFixed(2)} €` : ""}
+                  </>
+                )}
+              </Button>
+
+              <Button
+                onClick={handleDonateBank}
+                disabled={finalAmount <= 0 || stripeLoading}
+                variant="outline"
+                className="w-full font-semibold text-lg py-6"
+              >
+                <Landmark className="h-5 w-5 mr-2" />
+                Donar por transferencia
+              </Button>
+            </div>
+
+            {paymentStatus === "cancel" && (
+              <p className="text-sm text-muted-foreground text-center">
+                Has cancelado el pago. Puedes intentarlo de nuevo cuando quieras.
+              </p>
+            )}
 
             <p className="text-xs text-muted-foreground">
-              La donación se realiza mediante transferencia bancaria. Al pulsar "Donar" te mostraremos los datos bancarios y el concepto a indicar.
+              El pago con tarjeta se procesa de forma segura a través de Stripe. La transferencia bancaria es una alternativa sin comisiones.
             </p>
+
           </div>
         </div>
       </section>
