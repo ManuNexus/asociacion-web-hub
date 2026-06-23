@@ -569,9 +569,23 @@ export const AdminSocios = () => {
                           {socio.tipo_cuota === "reducida" ? "Reducida" : "Normal"}
                         </Badge>
                         {socio.metodo_pago_activo === "tarjeta" && socio.tarjeta_lista ? (
-                          <Badge className="bg-emerald-600 hover:bg-emerald-700 text-white text-[10px]">
-                            💳 Tarjeta {socio.tarjeta_last4 ? `••${socio.tarjeta_last4}` : ""}
-                          </Badge>
+                          <>
+                            <Badge className="bg-emerald-600 hover:bg-emerald-700 text-white text-[10px]">
+                              💳 Tarjeta {socio.tarjeta_last4 ? `••${socio.tarjeta_last4}` : ""}
+                            </Badge>
+                            {socio.estado_suscripcion_stripe && (
+                              <span className="text-[10px] text-muted-foreground">
+                                {socio.estado_suscripcion_stripe === "active" || socio.estado_suscripcion_stripe === "trialing"
+                                  ? "✅ "
+                                  : "⚠️ "}
+                                {socio.ultimo_pago_tarjeta
+                                  ? `Últ: ${format(new Date(socio.ultimo_pago_tarjeta), "dd/MM/yy")}`
+                                  : "Sin cobros"}
+                                {socio.proximo_pago_tarjeta &&
+                                  ` · Próx: ${format(new Date(socio.proximo_pago_tarjeta), "dd/MM/yy")}`}
+                              </span>
+                            )}
+                          </>
                         ) : (
                           <Badge variant="outline" className="text-[10px] border-blue-400 text-blue-700">
                             🏦 SEPA
