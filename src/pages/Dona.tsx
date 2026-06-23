@@ -18,9 +18,23 @@ const CONCEPT = "Donación puntual - Asociación AHORA";
 
 const Dona = () => {
   const { toast } = useToast();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
   const [customAmount, setCustomAmount] = useState("");
   const [showBankDetails, setShowBankDetails] = useState(false);
+  const [stripeLoading, setStripeLoading] = useState(false);
+  const [paymentStatus, setPaymentStatus] = useState<"success" | "cancel" | null>(null);
+
+  useEffect(() => {
+    const status = searchParams.get("status");
+    if (status === "success" || status === "cancel") {
+      setPaymentStatus(status);
+      // Clean URL
+      searchParams.delete("status");
+      searchParams.delete("session_id");
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, []);
 
   const isCustom = selectedAmount === null && customAmount !== "";
 
@@ -39,14 +53,14 @@ const Dona = () => {
 
   const isBelowMinimum = finalAmount > 0 && finalAmount < MIN_AMOUNT;
 
-  const handleDonate = () => {
+  const validateAmount = () => {
     if (finalAmount <= 0) {
       toast({
         title: "Selecciona una cantidad",
         description: "Por favor, elige o introduce una cantidad para donar.",
         variant: "destructive",
       });
-      return;
+      return false;
     }
     if (finalAmount < MIN_AMOUNT) {
       toast({
@@ -54,15 +68,63 @@ const Dona = () => {
         description: `Debido a las comisiones bancarias, no podemos aceptar donaciones inferiores a ${MIN_AMOUNT}€.`,
         variant: "destructive",
       });
-      return;
+      return false;
     }
+    return true;
+  };
+
+  const handleDonateBank = () => {
+    if (!validateAmount()) return;
     setShowBankDetails(true);
+  };
+
+  const handleDonateCard = async () => {
+    if (!validateAmount()) return;
+    setStripeLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-donation", {
+        body: { amount: finalAmount },
+      });
+      if (error) throw error;
+      if (!data?.url) throw new Error("No se pudo iniciar el pago.");
+      window.location.href = data.url;
+    } catch (err) {
+      toast({
+        title: "Error al iniciar el pago",
+        description: err instanceof Error ? err.message : "Inténtalo de nuevo en unos minutos.",
+        variant: "destructive",
+      });
+      setStripeLoading(false);
+    }
   };
 
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
     toast({ title: `${label} copiado`, description: text });
   };
+
+  if (paymentStatus === "success") {
+    return (
+      <Layout>
+        <SEO title="Donación recibida" description="Gracias por tu donación a AHORA." canonical="/dona" noindex />
+        <section className="py-16 md:py-24">
+          <div className="container">
+            <div className="max-w-lg mx-auto text-center space-y-6">
+              <div className="w-16 h-16 rounded-full bg-secondary/20 flex items-center justify-center mx-auto">
+                <CheckCircle2 className="h-8 w-8 text-secondary" />
+              </div>
+              <h1 className="text-3xl font-extrabold text-foreground">¡Gracias por tu donación!</h1>
+              <p className="text-muted-foreground">
+                Hemos recibido tu donación correctamente. Recibirás un email de confirmación de Stripe en breve.
+              </p>
+              <Button onClick={() => setPaymentStatus(null)}>Volver</Button>
+            </div>
+          </div>
+        </section>
+      </Layout>
+    );
+  }
+
 
   if (showBankDetails) {
     return (
