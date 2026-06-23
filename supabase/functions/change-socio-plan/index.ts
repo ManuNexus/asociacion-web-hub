@@ -55,13 +55,32 @@ serve(async (req) => {
     const newPrice = nuevo_tipo === "anual" ? PRICE_ANUAL : PRICE_MENSUAL;
 
     const sub = await stripe.subscriptions.retrieve(socio.stripe_subscription_id);
-    const itemId = sub.items.data[0]?.id;
-    if (!itemId) throw new Error("Suscripción sin items");
+    const anchor = sub.current_period_end; // mantener próxima renovación
+    const customerId = typeof sub.customer === "string" ? sub.customer : sub.customer.id;
+    const defaultPm =
+      (typeof sub.default_payment_method === "string"
+        ? sub.default_payment_method
+        : sub.default_payment_method?.id) ?? undefined;
 
-    const updated = await stripe.subscriptions.update(socio.stripe_subscription_id, {
-      items: [{ id: itemId, price: newPrice }],
+    // Cancelar suscripción actual (sin reembolso) y crear una nueva con el nuevo precio
+    // anclada a la fecha de próxima renovación. Stripe no permite cambiar el intervalo
+    // manteniendo billing_cycle_anchor en una update, por eso re-creamos.
+    try {
+      await stripe.subscriptions.cancel(socio.stripe_subscription_id, {
+        invoice_now: false,
+        prorate: false,
+      });
+    } catch (e: any) {
+      console.warn("[change-socio-plan] cancel previo:", e?.message);
+    }
+
+    const updated = await stripe.subscriptions.create({
+      customer: customerId,
+      items: [{ price: newPrice }],
+      default_payment_method: defaultPm,
+      billing_cycle_anchor: anchor,
       proration_behavior: "none",
-      billing_cycle_anchor: "unchanged",
+      metadata: { socio_id: socio.id, plan_change: "1" },
     });
 
     const proximo = updated.current_period_end
