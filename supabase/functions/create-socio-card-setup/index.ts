@@ -30,29 +30,27 @@ serve(async (req) => {
     const user = userData.user;
     console.log("[create-socio-card-setup] user", { id: user.id, email: user.email });
 
-    const { data: socio, error } = await supabase
+    let { data: socio, error } = await supabase
       .from("socios")
       .select("id, user_id, nombre, apellidos, email, dni, stripe_customer_id, activo")
       .eq("user_id", user.id)
       .maybeSingle();
-    console.log("[create-socio-card-setup] socio lookup", { found: !!socio, err: error?.message });
+    console.log("[create-socio-card-setup] socio lookup by user_id", { found: !!socio, err: error?.message });
 
     if (error) throw new Error(`Error buscando socio: ${error.message}`);
-    if (!socio) {
-      // Fallback: try by email if exists
+    if (!socio && user.email) {
       const { data: byEmail } = await supabase
         .from("socios")
         .select("id, user_id, nombre, apellidos, email, dni, stripe_customer_id, activo")
-        .eq("email", user.email ?? "__none__")
+        .ilike("email", user.email)
         .maybeSingle();
       if (byEmail) {
         console.log("[create-socio-card-setup] linking socio by email", byEmail.id);
         await supabase.from("socios").update({ user_id: user.id }).eq("id", byEmail.id);
-        (socio as any) = byEmail;
-      } else {
-        throw new Error("Tu cuenta no está vinculada a un registro de socio. Contacta con la Junta.");
+        socio = byEmail;
       }
     }
+    if (!socio) throw new Error("Tu cuenta no está vinculada a un registro de socio. Contacta con la Junta.");
     if (!socio.activo) throw new Error("Tu cuenta de socio no está activa");
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!, {
