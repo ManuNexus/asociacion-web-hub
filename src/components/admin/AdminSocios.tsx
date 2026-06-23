@@ -458,6 +458,20 @@ export const AdminSocios = () => {
             <Button
               variant="outline"
               size="sm"
+              onClick={handleSyncStripe}
+              disabled={syncingStripe}
+              title="Comprobar cobros con tarjeta en Stripe"
+            >
+              {syncingStripe ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <CreditCard className="mr-2 h-4 w-4" />
+              )}
+              Sincronizar Stripe
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
               onClick={handleSyncEmails}
               disabled={syncingEmails}
               title="Sincronizar emails de socios con emails de acceso"
