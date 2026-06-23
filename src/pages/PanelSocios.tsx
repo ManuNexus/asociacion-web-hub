@@ -1091,6 +1091,42 @@ const PanelSocios = () => {
                               <Button onClick={handleCardSetup} variant="outline" className="w-full">
                                 Actualizar tarjeta
                               </Button>
+                              {(() => {
+                                const tipoActual = (s.tipo_pago || "mensual") as "mensual" | "anual";
+                                const nuevoTipo: "mensual" | "anual" = tipoActual === "mensual" ? "anual" : "mensual";
+                                const importeNuevo = nuevoTipo === "anual" ? 50 : 5;
+                                const proximoIso = s.proximo_pago_tarjeta as string | null;
+                                const proximoFmt = proximoIso
+                                  ? new Date(proximoIso).toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric" })
+                                  : "tu próxima fecha de cobro";
+                                const labelNuevo = nuevoTipo === "anual" ? "anual (50€/año)" : "mensual (5€/mes)";
+                                return (
+                                  <div className="pt-2 border-t">
+                                    <p className="text-xs text-muted-foreground mb-2">
+                                      Plan actual: <strong>{tipoActual === "anual" ? "Anual (50€/año)" : "Mensual (5€/mes)"}</strong>
+                                    </p>
+                                    <Button
+                                      variant="secondary"
+                                      className="w-full"
+                                      disabled={changingPlan}
+                                      onClick={() => {
+                                        if (
+                                          window.confirm(
+                                            `¿Estás seguro de que quieres cambiar tu plan a ${labelNuevo}?\n\nTu próxima renovación será el ${proximoFmt} por un importe de ${importeNuevo}€.`
+                                          )
+                                        ) {
+                                          handleChangePlan(nuevoTipo);
+                                        }
+                                      }}
+                                    >
+                                      {changingPlan ? (
+                                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                      ) : null}
+                                      Cambiar a plan {nuevoTipo}
+                                    </Button>
+                                  </div>
+                                );
+                              })()}
                             </>
                           ) : (
                             <>
