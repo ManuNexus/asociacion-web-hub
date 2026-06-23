@@ -849,12 +849,15 @@ export type Database = {
           foto_url: string | null
           iban: string | null
           id: string
+          metodo_pago: string | null
           nombre: string
           numero_socio: string | null
           provincia: string | null
           social_instagram: string | null
           social_linkedin: string | null
           social_x: string | null
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
           telefono: string | null
           tipo_cuota: string
           tipo_pago: string
@@ -880,12 +883,15 @@ export type Database = {
           foto_url?: string | null
           iban?: string | null
           id?: string
+          metodo_pago?: string | null
           nombre: string
           numero_socio?: string | null
           provincia?: string | null
           social_instagram?: string | null
           social_linkedin?: string | null
           social_x?: string | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
           telefono?: string | null
           tipo_cuota?: string
           tipo_pago?: string
@@ -911,12 +917,15 @@ export type Database = {
           foto_url?: string | null
           iban?: string | null
           id?: string
+          metodo_pago?: string | null
           nombre?: string
           numero_socio?: string | null
           provincia?: string | null
           social_instagram?: string | null
           social_linkedin?: string | null
           social_x?: string | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
           telefono?: string | null
           tipo_cuota?: string
           tipo_pago?: string
@@ -943,9 +952,15 @@ export type Database = {
           iban_submitted_at: string | null
           id: string
           ip_address: string | null
+          metodo_pago: string
           motivacion: string | null
           nombre: string
           provincia: string | null
+          stripe_customer_id: string | null
+          stripe_payment_method_id: string | null
+          stripe_setup_intent_id: string | null
+          stripe_subscription_id: string | null
+          tarjeta_lista: boolean
           telefono: string | null
           tipo_pago: string
           titular_cuenta: string | null
@@ -968,9 +983,15 @@ export type Database = {
           iban_submitted_at?: string | null
           id?: string
           ip_address?: string | null
+          metodo_pago?: string
           motivacion?: string | null
           nombre: string
           provincia?: string | null
+          stripe_customer_id?: string | null
+          stripe_payment_method_id?: string | null
+          stripe_setup_intent_id?: string | null
+          stripe_subscription_id?: string | null
+          tarjeta_lista?: boolean
           telefono?: string | null
           tipo_pago?: string
           titular_cuenta?: string | null
@@ -993,9 +1014,15 @@ export type Database = {
           iban_submitted_at?: string | null
           id?: string
           ip_address?: string | null
+          metodo_pago?: string
           motivacion?: string | null
           nombre?: string
           provincia?: string | null
+          stripe_customer_id?: string | null
+          stripe_payment_method_id?: string | null
+          stripe_setup_intent_id?: string | null
+          stripe_subscription_id?: string | null
+          tarjeta_lista?: boolean
           telefono?: string | null
           tipo_pago?: string
           titular_cuenta?: string | null

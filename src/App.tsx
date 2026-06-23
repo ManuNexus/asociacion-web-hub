@@ -24,6 +24,7 @@ const Nosotros = lazy(() => import("./pages/Nosotros"));
 const Noticias = lazy(() => import("./pages/Noticias"));
 const Transparencia = lazy(() => import("./pages/Transparencia"));
 const HazteSocio = lazy(() => import("./pages/HazteSocio"));
+const TarjetaConfirmada = lazy(() => import("./pages/TarjetaConfirmada"));
 const HazteAmigo = lazy(() => import("./pages/HazteAmigo"));
 const Dona = lazy(() => import("./pages/Dona"));
 const CompletarIban = lazy(() => import("./pages/CompletarIban"));
@@ -62,6 +63,7 @@ const App = () => (
                   <Route path="/noticias/:id" element={<NoticiaDetalle />} />
                   <Route path="/transparencia" element={<Transparencia />} />
                   <Route path="/hazte-socio" element={<HazteSocio />} />
+                  <Route path="/hazte-socio/tarjeta-confirmada" element={<TarjetaConfirmada />} />
                   <Route path="/hazte-amigo" element={<HazteAmigo />} />
                   <Route path="/dona" element={<Dona />} />
                   <Route path="/completar-iban" element={<CompletarIban />} />

@@ -93,6 +93,9 @@ interface SolicitudSocio {
   iban: string | null;
   titular_cuenta: string | null;
   tipo_pago: string;
+  metodo_pago?: string | null;
+  tarjeta_lista?: boolean | null;
+  stripe_customer_id?: string | null;
 }
 
 const AdminNoticias = () => {
@@ -1483,9 +1486,22 @@ const AdminNoticias = () => {
                     </p>
                   </div>
                   
+                  {viewingSolicitud.metodo_pago === 'tarjeta' && !viewingSolicitud.tarjeta_lista && (
+                    <div className="rounded-md border border-amber-300 bg-amber-50 p-3 text-xs text-amber-800">
+                      Este socio eligió pago con <strong>tarjeta</strong> pero aún no la ha registrado. No se puede aprobar hasta que complete el registro de su tarjeta.
+                    </div>
+                  )}
+                  {viewingSolicitud.metodo_pago === 'tarjeta' && viewingSolicitud.tarjeta_lista && (
+                    <div className="rounded-md border border-blue-300 bg-blue-50 p-3 text-xs text-blue-900">
+                      Al aprobar se cobrará <strong>{viewingSolicitud.tipo_pago === 'anual' ? '50€' : '5€'}</strong> a la tarjeta registrada e iniciará la suscripción en Stripe.
+                    </div>
+                  )}
                   <Button
                     onClick={() => handleInviteSocio(viewingSolicitud)}
-                    disabled={invitingId === viewingSolicitud.id}
+                    disabled={
+                      invitingId === viewingSolicitud.id ||
+                      (viewingSolicitud.metodo_pago === 'tarjeta' && !viewingSolicitud.tarjeta_lista)
+                    }
                     className="w-full bg-green-600 hover:bg-green-700"
                   >
                     {invitingId === viewingSolicitud.id ? (

@@ -24,6 +24,7 @@ const membershipSchema = z.object({
   email: z.string().trim().min(1, "El email es obligatorio").email("Email inválido").max(255, "Máximo 255 caracteres"),
   telefono: z.string().trim().min(1, "El teléfono es obligatorio").max(20, "Máximo 20 caracteres").regex(/^[0-9+\s()-]+$/, "Formato de teléfono inválido"),
   tipoPago: z.enum(["mensual", "anual"], { errorMap: () => ({ message: "Selecciona un tipo de pago" }) }),
+  metodoPago: z.enum(["sepa", "tarjeta"], { errorMap: () => ({ message: "Selecciona un método de pago" }) }),
   aceptaEstatutos: z.literal(true, { errorMap: () => ({ message: "Debes aceptar los estatutos" }) }),
   aceptaPrivacidad: z.literal(true, { errorMap: () => ({ message: "Debes aceptar la política de privacidad" }) }),
   aceptaCondiciones: z.literal(true, { errorMap: () => ({ message: "Debes aceptar las condiciones de afiliación" }) }),
@@ -73,6 +74,7 @@ const HazteSocio = () => {
     email: "",
     telefono: "",
     tipoPago: "mensual" as "mensual" | "anual",
+    metodoPago: "sepa" as "sepa" | "tarjeta",
     aceptaEstatutos: false,
     aceptaPrivacidad: false,
     aceptaCondiciones: false,
@@ -150,6 +152,7 @@ const HazteSocio = () => {
         email: validData.email,
         telefono: validData.telefono,
         tipo_pago: validData.tipoPago,
+        metodo_pago: validData.metodoPago,
         ip_address: ipAddress,
         version_documento: '2025-02-14-v1',
       }).select('id').single();
@@ -169,16 +172,41 @@ const HazteSocio = () => {
         },
       }).catch(err => console.error('Error sending notification:', err));
 
+      // If card payment → create Stripe Setup Checkout and redirect
+      if (validData.metodoPago === "tarjeta") {
+        const { data: setupData, error: setupError } = await supabase.functions.invoke(
+          "create-socio-setup",
+          { body: { solicitud_id: insertedData.id } }
+        );
+        if (setupError || setupData?.error || !setupData?.url) {
+          throw new Error(setupData?.error || "No se pudo iniciar el registro de la tarjeta");
+        }
+        toast({
+          title: "Solicitud creada",
+          description: "Te redirigimos a la pasarela segura para registrar tu tarjeta.",
+        });
+        const newTab = window.open(setupData.url, "_blank");
+        if (!newTab) {
+          // Popup blocked → fallback to top-level navigation
+          try {
+            (window.top ?? window).location.href = setupData.url;
+          } catch {
+            window.location.href = setupData.url;
+          }
+        }
+        return;
+      }
+
       toast({
         title: "¡Solicitud enviada!",
         description: "Ahora completa tus datos bancarios para finalizar el proceso.",
       });
 
       setStep(2);
-    } catch {
+    } catch (err: any) {
       toast({
         title: "Error",
-        description: "No se pudo enviar la solicitud. Inténtalo de nuevo.",
+        description: err?.message || "No se pudo enviar la solicitud. Inténtalo de nuevo.",
         variant: "destructive",
       });
     } finally {
@@ -233,6 +261,7 @@ const HazteSocio = () => {
         email: "",
         telefono: "",
         tipoPago: "mensual",
+        metodoPago: "sepa",
         aceptaEstatutos: false,
         aceptaPrivacidad: false,
         aceptaCondiciones: false,
@@ -472,7 +501,38 @@ const HazteSocio = () => {
                       </RadioGroup>
                       {formErrors.tipoPago && <p className="text-sm text-destructive">{formErrors.tipoPago}</p>}
                     </div>
+
+                    <div className="space-y-3 pt-2">
+                      <Label>¿Cómo prefieres pagar? *</Label>
+                      <RadioGroup
+                        value={formData.metodoPago}
+                        onValueChange={(value: "sepa" | "tarjeta") => {
+                          setFormData(prev => ({ ...prev, metodoPago: value }));
+                          if (formErrors.metodoPago) {
+                            setFormErrors(prev => ({ ...prev, metodoPago: "" }));
+                          }
+                        }}
+                        className="grid gap-3 md:grid-cols-2"
+                      >
+                        <div className={`flex items-start space-x-3 border rounded-lg p-4 cursor-pointer transition-colors ${formData.metodoPago === 'sepa' ? 'border-primary bg-primary/5' : 'border-border hover:border-muted-foreground'}`}>
+                          <RadioGroupItem value="sepa" id="metodo-sepa" className="mt-1" />
+                          <Label htmlFor="metodo-sepa" className="cursor-pointer flex-1">
+                            <div className="font-semibold flex items-center gap-2"><Building2 className="h-4 w-4" /> Domiciliación SEPA</div>
+                            <div className="text-xs text-muted-foreground mt-1">Te pediremos tu IBAN en el siguiente paso.</div>
+                          </Label>
+                        </div>
+                        <div className={`flex items-start space-x-3 border rounded-lg p-4 cursor-pointer transition-colors ${formData.metodoPago === 'tarjeta' ? 'border-primary bg-primary/5' : 'border-border hover:border-muted-foreground'}`}>
+                          <RadioGroupItem value="tarjeta" id="metodo-tarjeta" className="mt-1" />
+                          <Label htmlFor="metodo-tarjeta" className="cursor-pointer flex-1">
+                            <div className="font-semibold flex items-center gap-2"><CreditCard className="h-4 w-4" /> Tarjeta (Stripe)</div>
+                            <div className="text-xs text-muted-foreground mt-1">Registras tu tarjeta de forma segura. No se cobrará nada hasta que la Junta apruebe tu solicitud.</div>
+                          </Label>
+                        </div>
+                      </RadioGroup>
+                      {formErrors.metodoPago && <p className="text-sm text-destructive">{formErrors.metodoPago}</p>}
+                    </div>
                   </div>
+
 
                   {/* Aceptaciones */}
                   <div className="space-y-4">
