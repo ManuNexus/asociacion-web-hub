@@ -425,6 +425,30 @@ export const AdminSocios = () => {
     }
   };
 
+  const handleSyncStripe = async () => {
+    setSyncingStripe(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("sync-stripe-socios", {
+        body: {},
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast({
+        title: "Sincronización Stripe",
+        description: `Se actualizaron ${data?.total ?? 0} socio(s) con tarjeta.`,
+      });
+      await fetchSocios();
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message || "No se pudo sincronizar con Stripe",
+      });
+    } finally {
+      setSyncingStripe(false);
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
