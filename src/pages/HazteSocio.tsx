@@ -145,7 +145,9 @@ const HazteSocio = () => {
         console.warn('Could not fetch IP address');
       }
 
-      const { data: insertedData, error } = await supabase.from("solicitudes_socio").insert({
+      const newSolicitudId = crypto.randomUUID();
+      const { error } = await supabase.from("solicitudes_socio").insert({
+        id: newSolicitudId,
         nombre: validData.nombre,
         apellidos: validData.apellidos,
         dni: validData.dni.toUpperCase(),
@@ -155,11 +157,11 @@ const HazteSocio = () => {
         metodo_pago: validData.metodoPago,
         ip_address: ipAddress,
         version_documento: '2025-02-14-v1',
-      }).select('id').single();
+      });
 
       if (error) throw error;
 
-      setSolicitudId(insertedData.id);
+      setSolicitudId(newSolicitudId);
 
       // Send notification email to admin and confirmation to user
       supabase.functions.invoke('notify-new-solicitud', {
@@ -176,7 +178,7 @@ const HazteSocio = () => {
       if (validData.metodoPago === "tarjeta") {
         const { data: setupData, error: setupError } = await supabase.functions.invoke(
           "create-socio-setup",
-          { body: { solicitud_id: insertedData.id } }
+          { body: { solicitud_id: newSolicitudId } }
         );
         if (setupError || setupData?.error || !setupData?.url) {
           throw new Error(setupData?.error || "No se pudo iniciar el registro de la tarjeta");
