@@ -73,7 +73,7 @@ serve(async (req) => {
   } catch (err: any) {
     console.error("[create-socio-card-setup] ERROR", err?.message);
     return new Response(JSON.stringify({ error: err?.message ?? "Error" }), {
-      status: 400,
+      status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
