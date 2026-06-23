@@ -207,6 +207,33 @@ const PanelSocios = () => {
     setLoading(false);
   };
 
+  const handleChangePlan = async (nuevoTipo: "mensual" | "anual") => {
+    setChangingPlan(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("change-socio-plan", {
+        body: { nuevo_tipo: nuevoTipo },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      const fecha = data?.proximo_pago
+        ? new Date(data.proximo_pago).toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric" })
+        : "-";
+      toast({
+        title: "Plan actualizado",
+        description: `Tu nuevo plan es ${nuevoTipo}. Próxima renovación: ${fecha} (${data?.importe ?? 0}€).`,
+      });
+      await fetchMiSocio();
+    } catch (e: any) {
+      toast({
+        title: "Error",
+        description: e?.message || "No se pudo cambiar el plan",
+        variant: "destructive",
+      });
+    } finally {
+      setChangingPlan(false);
+    }
+  };
+
   const fetchMiSocio = async () => {
     if (!user) return;
     const { data, error } = await supabase
