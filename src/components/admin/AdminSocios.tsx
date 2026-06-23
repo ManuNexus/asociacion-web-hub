@@ -80,6 +80,10 @@ interface Socio {
   social_x: string | null;
   social_instagram: string | null;
   social_linkedin: string | null;
+  metodo_pago_activo?: string | null;
+  tarjeta_lista?: boolean | null;
+  tarjeta_brand?: string | null;
+  tarjeta_last4?: string | null;
 }
 
 interface SocioWithJunta extends Socio {
@@ -517,9 +521,20 @@ export const AdminSocios = () => {
                       )}
                     </TableCell>
                     <TableCell>
-                      <Badge variant="secondary">
-                        {socio.tipo_cuota === "reducida" ? "Reducida" : "Normal"}
-                      </Badge>
+                      <div className="flex flex-col gap-1 items-start">
+                        <Badge variant="secondary">
+                          {socio.tipo_cuota === "reducida" ? "Reducida" : "Normal"}
+                        </Badge>
+                        {socio.metodo_pago_activo === "tarjeta" && socio.tarjeta_lista ? (
+                          <Badge className="bg-emerald-600 hover:bg-emerald-700 text-white text-[10px]">
+                            💳 Tarjeta {socio.tarjeta_last4 ? `••${socio.tarjeta_last4}` : ""}
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-[10px] border-blue-400 text-blue-700">
+                            🏦 SEPA
+                          </Badge>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell>
                       <Badge
