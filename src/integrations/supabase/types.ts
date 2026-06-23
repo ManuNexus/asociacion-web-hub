@@ -843,6 +843,7 @@ export type Database = {
           dia_cobro: number | null
           direccion: string | null
           email: string
+          estado_suscripcion_stripe: string | null
           fecha_alta: string
           fecha_nacimiento: string | null
           fecha_primera_cuota: string | null
@@ -854,6 +855,7 @@ export type Database = {
           nombre: string
           numero_socio: string | null
           provincia: string | null
+          proximo_pago_tarjeta: string | null
           social_instagram: string | null
           social_linkedin: string | null
           social_x: string | null
@@ -868,6 +870,8 @@ export type Database = {
           tipo_cuota: string
           tipo_pago: string
           titular_cuenta: string | null
+          ultima_sync_stripe: string | null
+          ultimo_pago_tarjeta: string | null
           updated_at: string
           user_id: string
         }
@@ -883,6 +887,7 @@ export type Database = {
           dia_cobro?: number | null
           direccion?: string | null
           email: string
+          estado_suscripcion_stripe?: string | null
           fecha_alta?: string
           fecha_nacimiento?: string | null
           fecha_primera_cuota?: string | null
@@ -894,6 +899,7 @@ export type Database = {
           nombre: string
           numero_socio?: string | null
           provincia?: string | null
+          proximo_pago_tarjeta?: string | null
           social_instagram?: string | null
           social_linkedin?: string | null
           social_x?: string | null
@@ -908,6 +914,8 @@ export type Database = {
           tipo_cuota?: string
           tipo_pago?: string
           titular_cuenta?: string | null
+          ultima_sync_stripe?: string | null
+          ultimo_pago_tarjeta?: string | null
           updated_at?: string
           user_id: string
         }
@@ -923,6 +931,7 @@ export type Database = {
           dia_cobro?: number | null
           direccion?: string | null
           email?: string
+          estado_suscripcion_stripe?: string | null
           fecha_alta?: string
           fecha_nacimiento?: string | null
           fecha_primera_cuota?: string | null
@@ -934,6 +943,7 @@ export type Database = {
           nombre?: string
           numero_socio?: string | null
           provincia?: string | null
+          proximo_pago_tarjeta?: string | null
           social_instagram?: string | null
           social_linkedin?: string | null
           social_x?: string | null
@@ -948,6 +958,8 @@ export type Database = {
           tipo_cuota?: string
           tipo_pago?: string
           titular_cuenta?: string | null
+          ultima_sync_stripe?: string | null
+          ultimo_pago_tarjeta?: string | null
           updated_at?: string
           user_id?: string
         }

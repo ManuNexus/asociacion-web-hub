@@ -84,6 +84,10 @@ interface Socio {
   tarjeta_lista?: boolean | null;
   tarjeta_brand?: string | null;
   tarjeta_last4?: string | null;
+  estado_suscripcion_stripe?: string | null;
+  ultimo_pago_tarjeta?: string | null;
+  proximo_pago_tarjeta?: string | null;
+  ultima_sync_stripe?: string | null;
 }
 
 interface SocioWithJunta extends Socio {
@@ -120,6 +124,7 @@ export const AdminSocios = () => {
   const [socialLinkedin, setSocialLinkedin] = useState("");
   
   const [syncingEmails, setSyncingEmails] = useState(false);
+  const [syncingStripe, setSyncingStripe] = useState(false);
   const bajaRequestInFlight = useRef(false);
   const { toast } = useToast();
 
@@ -420,12 +425,50 @@ export const AdminSocios = () => {
     }
   };
 
+  const handleSyncStripe = async () => {
+    setSyncingStripe(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("sync-stripe-socios", {
+        body: {},
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast({
+        title: "Sincronización Stripe",
+        description: `Se actualizaron ${data?.total ?? 0} socio(s) con tarjeta.`,
+      });
+      await fetchSocios();
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message || "No se pudo sincronizar con Stripe",
+      });
+    } finally {
+      setSyncingStripe(false);
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <CardTitle>Gestión de Socios</CardTitle>
           <div className="flex gap-2 flex-wrap">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleSyncStripe}
+              disabled={syncingStripe}
+              title="Comprobar cobros con tarjeta en Stripe"
+            >
+              {syncingStripe ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <CreditCard className="mr-2 h-4 w-4" />
+              )}
+              Sincronizar Stripe
+            </Button>
             <Button
               variant="outline"
               size="sm"
@@ -526,9 +569,23 @@ export const AdminSocios = () => {
                           {socio.tipo_cuota === "reducida" ? "Reducida" : "Normal"}
                         </Badge>
                         {socio.metodo_pago_activo === "tarjeta" && socio.tarjeta_lista ? (
-                          <Badge className="bg-emerald-600 hover:bg-emerald-700 text-white text-[10px]">
-                            💳 Tarjeta {socio.tarjeta_last4 ? `••${socio.tarjeta_last4}` : ""}
-                          </Badge>
+                          <>
+                            <Badge className="bg-emerald-600 hover:bg-emerald-700 text-white text-[10px]">
+                              💳 Tarjeta {socio.tarjeta_last4 ? `••${socio.tarjeta_last4}` : ""}
+                            </Badge>
+                            {socio.estado_suscripcion_stripe && (
+                              <span className="text-[10px] text-muted-foreground">
+                                {socio.estado_suscripcion_stripe === "active" || socio.estado_suscripcion_stripe === "trialing"
+                                  ? "✅ "
+                                  : "⚠️ "}
+                                {socio.ultimo_pago_tarjeta
+                                  ? `Últ: ${format(new Date(socio.ultimo_pago_tarjeta), "dd/MM/yy")}`
+                                  : "Sin cobros"}
+                                {socio.proximo_pago_tarjeta &&
+                                  ` · Próx: ${format(new Date(socio.proximo_pago_tarjeta), "dd/MM/yy")}`}
+                              </span>
+                            )}
+                          </>
                         ) : (
                           <Badge variant="outline" className="text-[10px] border-blue-400 text-blue-700">
                             🏦 SEPA
