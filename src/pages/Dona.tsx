@@ -87,7 +87,12 @@ const Dona = () => {
       });
       if (error) throw error;
       if (!data?.url) throw new Error("No se pudo iniciar el pago.");
-      window.location.href = data.url;
+      const win = window.open(data.url, "_blank", "noopener,noreferrer");
+      if (!win) {
+        // Popup bloqueado o iframe restringido: navega en el mismo contexto
+        window.top ? (window.top.location.href = data.url) : (window.location.href = data.url);
+      }
+      setStripeLoading(false);
     } catch (err) {
       toast({
         title: "Error al iniciar el pago",
