@@ -235,6 +235,9 @@ serve(async (req: Request): Promise<Response> => {
         titular_cuenta: titular_cuenta || null,
         dia_cobro: billingDay,
         activo: true,
+        metodo_pago: metodoPago,
+        stripe_customer_id: solicitud.stripe_customer_id || null,
+        stripe_subscription_id: stripeSubscriptionId,
       }, { onConflict: 'user_id' });
 
     if (socioError) {
@@ -244,7 +247,7 @@ serve(async (req: Request): Promise<Response> => {
     // Update solicitud status to accepted
     const { error: solicitudError } = await supabaseAdmin
       .from("solicitudes_socio")
-      .update({ estado: "aceptado" })
+      .update({ estado: "aceptado", stripe_subscription_id: stripeSubscriptionId })
       .eq("id", solicitud_id);
 
     if (solicitudError) {
