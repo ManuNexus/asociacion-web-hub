@@ -62,7 +62,7 @@ serve(async (req) => {
       const customer = await stripe.customers.create({
         email: socio.email,
         name: `${socio.nombre} ${socio.apellidos}`.trim(),
-        metadata: { socio_id: socio.id, dni: socio.dni ?? "" },
+        metadata: { socio_id: socio.id },
       });
       customerId = customer.id;
       await supabase
