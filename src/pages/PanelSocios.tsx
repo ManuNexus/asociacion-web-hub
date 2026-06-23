@@ -133,6 +133,7 @@ const PanelSocios = () => {
   const [loading, setLoading] = useState(true);
   const [voting, setVoting] = useState<string | null>(null);
   const [downloadingCert, setDownloadingCert] = useState<string | null>(null);
+  const [changingPlan, setChangingPlan] = useState(false);
   const [currentDocPath, setCurrentDocPath] = useState<string[]>([]);
   
   
