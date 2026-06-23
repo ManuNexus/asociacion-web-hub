@@ -78,7 +78,7 @@ serve(async (req) => {
       customer: customerId,
       items: [{ price: newPrice }],
       default_payment_method: defaultPm,
-      billing_cycle_anchor: anchor,
+      trial_end: anchor, // sin cobro hasta esta fecha; primer cobro será ahí
       proration_behavior: "none",
       metadata: { socio_id: socio.id, plan_change: "1" },
     });

@@ -127,7 +127,7 @@ serve(async (req) => {
       customer: customerId,
       items: [{ price: priceId }],
       default_payment_method: paymentMethodId,
-      billing_cycle_anchor: anchor,
+      trial_end: anchor,
       proration_behavior: "none",
       metadata: { socio_id: socio.id },
     });
