@@ -32,7 +32,7 @@ serve(async (req) => {
 
     let { data: socio, error } = await supabase
       .from("socios")
-      .select("id, user_id, nombre, apellidos, email, dni, stripe_customer_id, activo")
+      .select("id, user_id, nombre, apellidos, email, stripe_customer_id, activo")
       .eq("user_id", user.id)
       .maybeSingle();
     console.log("[create-socio-card-setup] socio lookup by user_id", { found: !!socio, err: error?.message });
@@ -41,7 +41,7 @@ serve(async (req) => {
     if (!socio && user.email) {
       const { data: byEmail } = await supabase
         .from("socios")
-        .select("id, user_id, nombre, apellidos, email, dni, stripe_customer_id, activo")
+        .select("id, user_id, nombre, apellidos, email, stripe_customer_id, activo")
         .ilike("email", user.email)
         .maybeSingle();
       if (byEmail) {
