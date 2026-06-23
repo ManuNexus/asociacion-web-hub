@@ -65,3 +65,6 @@ verify_jwt = false
 
 [functions.api-semaforo]
 verify_jwt = false
+
+[functions.create-donation]
+verify_jwt = false

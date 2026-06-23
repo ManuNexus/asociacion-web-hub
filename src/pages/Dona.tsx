@@ -1,11 +1,13 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
 import { SEO, breadcrumbSchema } from "@/components/SEO";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Heart, Copy, CheckCircle2 } from "lucide-react";
+import { Heart, Copy, CheckCircle2, CreditCard, Landmark, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const AMOUNTS = [20, 40, 50] as const;
 const MIN_AMOUNT = 20;
@@ -16,9 +18,23 @@ const CONCEPT = "Donación puntual - Asociación AHORA";
 
 const Dona = () => {
   const { toast } = useToast();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
   const [customAmount, setCustomAmount] = useState("");
   const [showBankDetails, setShowBankDetails] = useState(false);
+  const [stripeLoading, setStripeLoading] = useState(false);
+  const [paymentStatus, setPaymentStatus] = useState<"success" | "cancel" | null>(null);
+
+  useEffect(() => {
+    const status = searchParams.get("status");
+    if (status === "success" || status === "cancel") {
+      setPaymentStatus(status);
+      // Clean URL
+      searchParams.delete("status");
+      searchParams.delete("session_id");
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, []);
 
   const isCustom = selectedAmount === null && customAmount !== "";
 
@@ -37,14 +53,14 @@ const Dona = () => {
 
   const isBelowMinimum = finalAmount > 0 && finalAmount < MIN_AMOUNT;
 
-  const handleDonate = () => {
+  const validateAmount = () => {
     if (finalAmount <= 0) {
       toast({
         title: "Selecciona una cantidad",
         description: "Por favor, elige o introduce una cantidad para donar.",
         variant: "destructive",
       });
-      return;
+      return false;
     }
     if (finalAmount < MIN_AMOUNT) {
       toast({
@@ -52,15 +68,63 @@ const Dona = () => {
         description: `Debido a las comisiones bancarias, no podemos aceptar donaciones inferiores a ${MIN_AMOUNT}€.`,
         variant: "destructive",
       });
-      return;
+      return false;
     }
+    return true;
+  };
+
+  const handleDonateBank = () => {
+    if (!validateAmount()) return;
     setShowBankDetails(true);
+  };
+
+  const handleDonateCard = async () => {
+    if (!validateAmount()) return;
+    setStripeLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-donation", {
+        body: { amount: finalAmount },
+      });
+      if (error) throw error;
+      if (!data?.url) throw new Error("No se pudo iniciar el pago.");
+      window.location.href = data.url;
+    } catch (err) {
+      toast({
+        title: "Error al iniciar el pago",
+        description: err instanceof Error ? err.message : "Inténtalo de nuevo en unos minutos.",
+        variant: "destructive",
+      });
+      setStripeLoading(false);
+    }
   };
 
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
     toast({ title: `${label} copiado`, description: text });
   };
+
+  if (paymentStatus === "success") {
+    return (
+      <Layout>
+        <SEO title="Donación recibida" description="Gracias por tu donación a AHORA." canonical="/dona" noindex />
+        <section className="py-16 md:py-24">
+          <div className="container">
+            <div className="max-w-lg mx-auto text-center space-y-6">
+              <div className="w-16 h-16 rounded-full bg-secondary/20 flex items-center justify-center mx-auto">
+                <CheckCircle2 className="h-8 w-8 text-secondary" />
+              </div>
+              <h1 className="text-3xl font-extrabold text-foreground">¡Gracias por tu donación!</h1>
+              <p className="text-muted-foreground">
+                Hemos recibido tu donación correctamente. Recibirás un email de confirmación de Stripe en breve.
+              </p>
+              <Button onClick={() => setPaymentStatus(null)}>Volver</Button>
+            </div>
+          </div>
+        </section>
+      </Layout>
+    );
+  }
+
 
   if (showBankDetails) {
     return (
@@ -241,17 +305,43 @@ const Dona = () => {
               </p>
             )}
 
-            <Button
-              onClick={handleDonate}
-              disabled={finalAmount <= 0}
-              className="w-full bg-secondary text-secondary-foreground hover:bg-secondary/90 font-semibold text-lg py-6"
-            >
-              Donar {finalAmount > 0 ? `${finalAmount.toFixed(2)} €` : ""}
-            </Button>
+            <div className="space-y-3">
+              <Button
+                onClick={handleDonateCard}
+                disabled={finalAmount <= 0 || stripeLoading}
+                className="w-full bg-secondary text-secondary-foreground hover:bg-secondary/90 font-semibold text-lg py-6"
+              >
+                {stripeLoading ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  <>
+                    <CreditCard className="h-5 w-5 mr-2" />
+                    Donar con tarjeta {finalAmount > 0 ? `${finalAmount.toFixed(2)} €` : ""}
+                  </>
+                )}
+              </Button>
+
+              <Button
+                onClick={handleDonateBank}
+                disabled={finalAmount <= 0 || stripeLoading}
+                variant="outline"
+                className="w-full font-semibold text-lg py-6"
+              >
+                <Landmark className="h-5 w-5 mr-2" />
+                Donar por transferencia
+              </Button>
+            </div>
+
+            {paymentStatus === "cancel" && (
+              <p className="text-sm text-muted-foreground text-center">
+                Has cancelado el pago. Puedes intentarlo de nuevo cuando quieras.
+              </p>
+            )}
 
             <p className="text-xs text-muted-foreground">
-              La donación se realiza mediante transferencia bancaria. Al pulsar "Donar" te mostraremos los datos bancarios y el concepto a indicar.
+              El pago con tarjeta se procesa de forma segura a través de Stripe. La transferencia bancaria es una alternativa sin comisiones.
             </p>
+
           </div>
         </div>
       </section>
