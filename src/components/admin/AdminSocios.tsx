@@ -84,6 +84,10 @@ interface Socio {
   tarjeta_lista?: boolean | null;
   tarjeta_brand?: string | null;
   tarjeta_last4?: string | null;
+  estado_suscripcion_stripe?: string | null;
+  ultimo_pago_tarjeta?: string | null;
+  proximo_pago_tarjeta?: string | null;
+  ultima_sync_stripe?: string | null;
 }
 
 interface SocioWithJunta extends Socio {
