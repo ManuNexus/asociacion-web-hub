@@ -988,8 +988,12 @@ const PanelSocios = () => {
                         const diaCobro = socioData?.dia_cobro || 1;
                         const fechaAlta = socioData?.fecha_alta ? new Date(socioData.fecha_alta) : new Date();
                         const importe = tipoPago === "anual" ? 50 : 5;
-                        
-                        // Calculate next billing date
+                        const metodoPago = socioData?.metodo_pago_activo || "sepa";
+                        const proximoStripe = socioData?.proximo_pago_tarjeta
+                          ? new Date(socioData.proximo_pago_tarjeta)
+                          : null;
+
+                        // Calculate next billing date (fallback when no Stripe data)
                         const calcularProximoCobro = () => {
                           const hoy = new Date();
                           
@@ -1018,7 +1022,10 @@ const PanelSocios = () => {
                           }
                         };
                         
-                        const proximoCobro = calcularProximoCobro();
+                        // Source of truth: Stripe sync when paying by card; otherwise calculated
+                        const proximoCobro = (metodoPago === "tarjeta" && proximoStripe)
+                          ? proximoStripe
+                          : calcularProximoCobro();
                         const diasRestantes = Math.ceil((proximoCobro.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
                         
                         return (
