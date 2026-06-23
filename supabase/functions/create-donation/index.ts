@@ -7,7 +7,7 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-const MIN_AMOUNT = 20;
+const MIN_AMOUNT = 1;
 const MAX_AMOUNT = 10000;
 
 serve(async (req) => {

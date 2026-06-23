@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
 const AMOUNTS = [20, 40, 50] as const;
-const MIN_AMOUNT = 20;
+const MIN_AMOUNT = 1;
 const BANK_ACCOUNT = "ES82 0081 0057 3500 0307 5110";
 const BENEFICIARY = "Asociación AHORA";
 const BIC_SWIFT = "BSAB ESBB";
@@ -229,7 +229,7 @@ const Dona = () => {
     <Layout>
       <SEO
         title="Dona"
-        description="Haz una donación a AHORA y contribuye a la defensa de los valores constitucionales y la democracia en España. Donación mínima de 20€."
+        description="Haz una donación a AHORA y contribuye a la defensa de los valores constitucionales y la democracia en España. Donación mínima de 1€."
         canonical="/dona"
         jsonLd={breadcrumbSchema([
           { name: "Inicio", url: "/" },
