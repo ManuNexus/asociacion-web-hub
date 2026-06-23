@@ -1,90 +1,86 @@
 ## Resumen
 
-En el formulario de `/hazte-socio` el usuario podrá elegir **SEPA** (flujo actual sin cambios) o **Tarjeta**. Si elige tarjeta, se guardará el método de pago en Stripe **sin cobrar**, y el cargo se hará automáticamente sólo cuando la Junta apruebe la solicitud (mediante la creación de la suscripción). Si pasan 15 días sin aprobar (o se deniega), no se cobra nunca.
+Permitir que **socios actuales** (que pagan por SEPA o que se dieron de alta antes) puedan añadir/cambiar una tarjeta en Stripe desde su perfil (`/panel-socios`). Cuando lo hagan:
 
-## Precios Stripe usados
+1. Se guarda el método de pago en Stripe **sin cobrar nada en ese momento**.
+2. Se crea una suscripción en Stripe cuya **primera fecha de cobro = próxima fecha de pago** que ya tenían (mes/año según `tipo_pago` y `dia_cobro`).
+3. En el panel de admin se ve claramente que el socio paga por **tarjeta** (Stripe) y no por SEPA.
 
-- Cuota mensual (5€/mes) → `price_1TlZiSGds51tUOqDwqLQf1xQ`
-- Cuota anual (50€/año) → `price_1TlZixGds51tUOqDZc30UxrY`
+## Cambios en BD (tabla `socios`)
 
-(Estos IDs están en modo **live**; las pruebas reales harán cargos reales salvo que pongamos el panel en test).
+Añadir columnas (todas opcionales):
 
-## Cambios en base de datos (`solicitudes_socio`)
-
-Nuevas columnas (todas opcionales, no rompen lo existente):
-
-- `metodo_pago` text — `'sepa'` (por defecto) o `'tarjeta'`
-- `stripe_customer_id` text
-- `stripe_setup_intent_id` text
 - `stripe_payment_method_id` text
-- `stripe_subscription_id` text — se rellena al aprobar
-- `tarjeta_lista` boolean — `true` cuando el SetupIntent se ha confirmado
+- `stripe_setup_intent_id` text
+- `tarjeta_lista` boolean default false
+- `metodo_pago_activo` text — `'sepa'` (por defecto) o `'tarjeta'`. Esta es la fuente de verdad para el panel admin.
 
-## Flujo nuevo en el formulario público
+(`stripe_customer_id` y `stripe_subscription_id` ya existen.)
+
+## Flujo del socio en `/panel-socios`
+
+Nueva sección "Método de pago" en la pestaña de cuenta:
 
 ```text
-Paso 1: datos personales + tipo de cuota (mensual/anual)
-        + nuevo selector: ¿cómo quieres pagar? [SEPA] [Tarjeta]
-   │
-   ├── SEPA  → Paso 2 actual: IBAN  → FIN (espera a la Junta)
-   │
-   └── Tarjeta
-         1. Se inserta la solicitud (metodo_pago='tarjeta')
-         2. Edge fn `create-socio-setup` crea Stripe Customer
-            + Checkout Session en mode:'setup'
-         3. Redirección a Stripe Checkout (en nueva pestaña, igual que /dona)
-         4. Success URL → /hazte-socio/tarjeta-confirmada?session_id=...
-         5. Esa página llama a `confirm-socio-payment-method`
-            que guarda setup_intent_id, payment_method_id y tarjeta_lista=true
-         6. Pantalla "Tarjeta registrada. Te avisaremos cuando la Junta resuelva".
+Si metodo_pago_activo = 'sepa':
+   Muestra: "Actualmente pagas por domiciliación bancaria (SEPA)"
+   Botón: [Cambiar a tarjeta]
+
+Si metodo_pago_activo = 'tarjeta' y tarjeta_lista = true:
+   Muestra: "Pagas con tarjeta ****1234"
+   Botón: [Actualizar tarjeta]
 ```
 
-## Cambios en la aprobación (Junta)
+Al pulsar el botón:
 
-Modificar `invite-socio` (ya existente). Cuando `solicitud.metodo_pago === 'tarjeta'` y hay `stripe_customer_id` + `stripe_payment_method_id`:
+1. Llama a nueva edge fn `create-socio-card-setup` con el `socio_id` (autenticado).
+2. La función crea/recupera el customer de Stripe, crea una Checkout Session `mode:'setup'` y devuelve la URL.
+3. Se abre Stripe Checkout en una pestaña nueva.
+4. Success URL → `/panel-socios/tarjeta-confirmada?session_id=...`
+5. Esa página llama a `confirm-socio-card-update`, que:
+   - Cancela la suscripción anterior si existía (`stripe_subscription_id` vigente).
+   - Marca el nuevo `payment_method` como default del customer.
+   - Calcula la **próxima fecha de pago** según `dia_cobro` y `tipo_pago` (ver más abajo) y crea la suscripción con `billing_cycle_anchor` = esa fecha y `proration_behavior: 'none'`. Así Stripe **no cobra hasta esa fecha**.
+   - Guarda `stripe_subscription_id`, `stripe_payment_method_id`, `tarjeta_lista=true`, `metodo_pago_activo='tarjeta'` en `socios`.
+6. Vuelve al panel con un toast "Tarjeta registrada. Próximo cobro: DD/MM/AAAA".
 
-1. Marcar el `payment_method` como default del customer.
-2. Crear la suscripción en Stripe con el `price_id` correspondiente al `tipo_pago` y `default_payment_method` ya configurado → Stripe cobra **en ese momento**.
-3. Guardar `stripe_subscription_id` en la solicitud y en `socios`.
-4. Si Stripe falla (tarjeta caducada, fondos…), devolver error a la admin y NO continuar con la activación.
+### Cálculo de "próxima fecha de pago"
 
-Si la Junta **deniega** o pasan 15 días: simplemente no se ejecuta nada en Stripe. No hay cargos pendientes que cancelar (el SetupIntent no cobra). Opcional: cron de limpieza que borre customers huérfanos > 30 días.
+- **Mensual**: el próximo día `dia_cobro` que esté en el futuro. Si `dia_cobro` ya pasó este mes → mes siguiente.
+- **Anual**: misma lógica pero con la fecha aniversario. Si el socio no tiene fecha aniversario clara, usamos `dia_cobro` del mes de `fecha_alta`; si ya pasó este año → año siguiente.
 
-## UI de admin
+Si por la razón que sea la fecha calculada está a menos de 24h, se desplaza al siguiente ciclo para evitar cobros inmediatos inesperados.
 
-En la tabla y diálogo de detalle de solicitudes mostrar:
-- Badge "SEPA" o "Tarjeta"
-- Si tarjeta: estado de la tarjeta (✅ registrada / ⏳ pendiente de completar)
-- Bloquear el botón "Aprobar" si eligió tarjeta pero `tarjeta_lista=false` (con mensaje claro).
+## Cambios en panel de admin (`AdminSocios.tsx`)
 
-## Edge Functions a crear
+En la tabla de socios y en el diálogo de detalle:
 
-1. `create-socio-setup` (`verify_jwt = false`)
-   - Input: `solicitud_id`
-   - Valida que la solicitud existe, < 24h, `metodo_pago='tarjeta'`, sin customer aún
-   - Crea Stripe Customer + Checkout Session `mode:'setup'`, `payment_method_types:['card']`, metadata con `solicitud_id`
-   - Guarda `stripe_customer_id` en la solicitud
-   - Devuelve `{ url }`
+- Badge junto al socio: **"SEPA"** (azul) o **"Tarjeta"** (verde si `tarjeta_lista=true`, gris ⏳ si pendiente).
+- Filtro nuevo en la cabecera: "Método de pago: Todos / SEPA / Tarjeta".
+- En el detalle: si es tarjeta, mostrar `stripe_subscription_id` y la próxima fecha de cobro (si la podemos sacar del campo o vía función). Sencillo: solo mostrar el badge y los IDs.
 
-2. `confirm-socio-payment-method` (`verify_jwt = false`)
-   - Input: `session_id`
-   - Recupera la session de Stripe, extrae `setup_intent` y `payment_method`
-   - Actualiza la solicitud (con check de que el `solicitud_id` del metadata coincide)
-   - Devuelve OK
+## Edge functions a crear
 
-3. Modificación de `invite-socio` (existente) — añadir bloque "si tarjeta → crear suscripción".
+1. `create-socio-card-setup` (`verify_jwt = true`)
+   - Valida que el usuario autenticado es ese socio (`socios.user_id = auth.uid()`).
+   - Crea customer si no existe, abre Checkout Session `mode:'setup'` con metadata `socio_id`.
+   - Devuelve `{ url }`.
 
-## Notas técnicas
+2. `confirm-socio-card-update` (`verify_jwt = true`)
+   - Recibe `session_id`.
+   - Valida que el `socio_id` del metadata pertenece al usuario.
+   - Cancela suscripción previa (si la hay).
+   - Crea nueva suscripción con `billing_cycle_anchor` calculado.
+   - Actualiza `socios`.
 
-- Dominio de redirección: `https://ahoraorg.es` (memoria del proyecto).
-- Se mantiene `verify_jwt = false` en las nuevas funciones porque la solicitud es pública (igual que `completar-iban`). Validación: la solicitud debe existir y haberse creado en las últimas 24h.
-- No se tocan webhooks de Stripe (no son necesarios para este flujo).
-- No se cambia el flujo SEPA actual ni el de donaciones.
+## Lo que NO toca este cambio
 
-## Lo que necesito de ti antes de implementar
+- Flujo público de `/hazte-socio` (sigue igual, ya implementado).
+- Flujo SEPA actual y cobros existentes (no se cancela nada de SEPA, solo se cambia la marca `metodo_pago_activo` cuando completan la tarjeta).
+- Webhooks de Stripe (no necesarios).
 
-- Confirma que los `price_id` de arriba son correctos (5€/mes y 50€/año, en EUR, recurrentes). ✅ ya verificado vía API.
-- ¿Quieres que el botón "Aprobar" en admin muestre explícitamente "Esto cobrará XX€ ahora a la tarjeta" antes de confirmar? Recomendado.
-- ¿Mantenemos los productos actuales en **live** o quieres que te configure todo en modo **test** primero para probar?
+## Preguntas antes de implementar
 
-Si das luz verde, empiezo por la migración de BD y luego las funciones + frontend.
+1. Cuando un socio que pagaba por SEPA pasa a tarjeta, **¿quieres que el sistema marque automáticamente que ya no se le cobra por SEPA** (`metodo_pago_activo='tarjeta'`) o prefieres que admin lo confirme manualmente?
+2. ¿Mostramos también un botón "Volver a SEPA" en el panel del socio o eso solo lo gestiona admin?
+3. Para socios sin `dia_cobro` definido, ¿uso el día 1 del mes siguiente como fallback?
