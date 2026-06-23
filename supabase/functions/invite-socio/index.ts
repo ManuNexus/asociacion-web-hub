@@ -1,8 +1,12 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { Resend } from "https://esm.sh/resend@2.0.0";
+import Stripe from "https://esm.sh/stripe@18.5.0?target=deno";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+
+const STRIPE_PRICE_MENSUAL = "price_1TlZiSGds51tUOqDwqLQf1xQ";
+const STRIPE_PRICE_ANUAL = "price_1TlZixGds51tUOqDZc30UxrY";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -27,6 +31,10 @@ interface SolicitudData {
   tipo_pago: string;
   iban: string | null;
   titular_cuenta: string | null;
+  metodo_pago?: string | null;
+  stripe_customer_id?: string | null;
+  stripe_payment_method_id?: string | null;
+  tarjeta_lista?: boolean | null;
 }
 
 serve(async (req: Request): Promise<Response> => {
@@ -92,7 +100,7 @@ serve(async (req: Request): Promise<Response> => {
     // Fetch solicitud data
     const { data: solicitudData, error: solicitudFetchError } = await supabaseAdmin
       .from("solicitudes_socio")
-      .select("tipo_pago, iban, titular_cuenta")
+      .select("tipo_pago, iban, titular_cuenta, metodo_pago, stripe_customer_id, stripe_payment_method_id, tarjeta_lista")
       .eq("id", solicitud_id)
       .single();
 
@@ -104,7 +112,50 @@ serve(async (req: Request): Promise<Response> => {
       tipo_pago: tipo_pago || 'mensual',
       iban: iban || null,
       titular_cuenta: titular_cuenta || null,
+      metodo_pago: 'sepa',
     };
+
+    const metodoPago = solicitud.metodo_pago || 'sepa';
+
+    // If card payment: validate card is registered and create Stripe subscription BEFORE creating user
+    let stripeSubscriptionId: string | null = null;
+    if (metodoPago === 'tarjeta') {
+      if (!solicitud.stripe_customer_id || !solicitud.stripe_payment_method_id || !solicitud.tarjeta_lista) {
+        throw new Error("El socio aún no ha registrado su tarjeta. No se puede aprobar todavía.");
+      }
+      const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
+      if (!stripeKey) throw new Error("STRIPE_SECRET_KEY no configurada");
+      const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
+
+      const priceId = (solicitud.tipo_pago === 'anual') ? STRIPE_PRICE_ANUAL : STRIPE_PRICE_MENSUAL;
+
+      // Make sure the payment method is attached and set as default on the customer
+      try {
+        await stripe.paymentMethods.attach(solicitud.stripe_payment_method_id, {
+          customer: solicitud.stripe_customer_id,
+        });
+      } catch (e: any) {
+        // Already attached → ignore
+        if (!String(e?.message || "").includes("already been attached")) {
+          console.warn("attach payment_method warning:", e?.message);
+        }
+      }
+      await stripe.customers.update(solicitud.stripe_customer_id, {
+        invoice_settings: { default_payment_method: solicitud.stripe_payment_method_id },
+      });
+
+      const subscription = await stripe.subscriptions.create({
+        customer: solicitud.stripe_customer_id,
+        items: [{ price: priceId }],
+        default_payment_method: solicitud.stripe_payment_method_id,
+        metadata: { solicitud_id, dni },
+      });
+
+      stripeSubscriptionId = subscription.id;
+      console.log("Stripe subscription created:", stripeSubscriptionId);
+    }
+
+
 
     // Use DNI as the default password (cleaned, uppercase)
     const defaultPassword = dni.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
