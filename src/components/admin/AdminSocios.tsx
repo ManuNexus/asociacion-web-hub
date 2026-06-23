@@ -124,6 +124,7 @@ export const AdminSocios = () => {
   const [socialLinkedin, setSocialLinkedin] = useState("");
   
   const [syncingEmails, setSyncingEmails] = useState(false);
+  const [syncingStripe, setSyncingStripe] = useState(false);
   const bajaRequestInFlight = useRef(false);
   const { toast } = useToast();
 
