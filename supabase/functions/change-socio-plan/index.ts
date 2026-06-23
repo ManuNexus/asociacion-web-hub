@@ -91,6 +91,7 @@ serve(async (req) => {
       .from("socios")
       .update({
         tipo_pago: nuevo_tipo,
+        stripe_subscription_id: updated.id,
         proximo_pago_tarjeta: proximo,
         estado_suscripcion_stripe: updated.status,
         ultima_sync_stripe: new Date().toISOString(),
