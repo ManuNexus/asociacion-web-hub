@@ -1034,6 +1034,84 @@ const PanelSocios = () => {
                       })()}
                     </CardContent>
                   </Card>
+
+                  {/* Método de pago - Stripe card */}
+                  {(() => {
+                    const s = miSocio as any;
+                    if (!s) return null;
+                    const metodo = s.metodo_pago_activo || "sepa";
+                    const tarjetaLista = !!s.tarjeta_lista;
+                    const brand = s.tarjeta_brand as string | null;
+                    const last4 = s.tarjeta_last4 as string | null;
+
+                    const handleCardSetup = async () => {
+                      try {
+                        const { data, error } = await supabase.functions.invoke(
+                          "create-socio-card-setup",
+                          { body: {} }
+                        );
+                        if (error || data?.error) throw new Error(data?.error || error?.message || "Error");
+                        if (data?.url) {
+                          window.location.href = data.url;
+                        }
+                      } catch (e: any) {
+                        toast({
+                          title: "Error",
+                          description: e?.message || "No se pudo iniciar el registro de tarjeta",
+                          variant: "destructive",
+                        });
+                      }
+                    };
+
+                    return (
+                      <Card className="mt-6 border-secondary/30">
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-base flex items-center gap-2">
+                            <CreditCard className="h-4 w-4" />
+                            Método de pago
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          {metodo === "tarjeta" && tarjetaLista ? (
+                            <>
+                              <div className="flex items-center justify-between p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
+                                <div className="flex items-center gap-3">
+                                  <CreditCard className="h-5 w-5 text-emerald-600" />
+                                  <div>
+                                    <p className="font-medium text-sm">
+                                      {brand ? brand.toUpperCase() : "Tarjeta"} •••• {last4 || "····"}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">
+                                      Cobro automático con tarjeta
+                                    </p>
+                                  </div>
+                                </div>
+                                <Badge className="bg-emerald-600 hover:bg-emerald-700">Activa</Badge>
+                              </div>
+                              <Button onClick={handleCardSetup} variant="outline" className="w-full">
+                                Actualizar tarjeta
+                              </Button>
+                            </>
+                          ) : (
+                            <>
+                              <div className="p-3 bg-muted/50 border rounded-lg">
+                                <p className="text-sm">
+                                  Actualmente pagas mediante <strong>domiciliación bancaria (SEPA)</strong>.
+                                </p>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  Puedes cambiar a tarjeta para automatizar tus cobros. El primer cargo se hará en tu próxima fecha de pago habitual.
+                                </p>
+                              </div>
+                              <Button onClick={handleCardSetup} className="w-full">
+                                <CreditCard className="h-4 w-4 mr-2" />
+                                Pagar con tarjeta
+                              </Button>
+                            </>
+                          )}
+                        </CardContent>
+                      </Card>
+                    );
+                  })()}
                 </div>
               </div>
             </TabsContent>
