@@ -505,33 +505,14 @@ const HazteSocio = () => {
                     </div>
 
                     <div className="space-y-3 pt-2">
-                      <Label>¿Cómo prefieres pagar? *</Label>
-                      <RadioGroup
-                        value={formData.metodoPago}
-                        onValueChange={(value: "sepa" | "tarjeta") => {
-                          setFormData(prev => ({ ...prev, metodoPago: value }));
-                          if (formErrors.metodoPago) {
-                            setFormErrors(prev => ({ ...prev, metodoPago: "" }));
-                          }
-                        }}
-                        className="grid gap-3 md:grid-cols-2"
-                      >
-                        <div className={`flex items-start space-x-3 border rounded-lg p-4 cursor-pointer transition-colors ${formData.metodoPago === 'sepa' ? 'border-primary bg-primary/5' : 'border-border hover:border-muted-foreground'}`}>
-                          <RadioGroupItem value="sepa" id="metodo-sepa" className="mt-1" />
-                          <Label htmlFor="metodo-sepa" className="cursor-pointer flex-1">
-                            <div className="font-semibold flex items-center gap-2"><Building2 className="h-4 w-4" /> Domiciliación SEPA</div>
-                            <div className="text-xs text-muted-foreground mt-1">Te pediremos tu IBAN en el siguiente paso.</div>
-                          </Label>
+                      <Label>Método de pago</Label>
+                      <div className="flex items-start space-x-3 border rounded-lg p-4 border-primary bg-primary/5">
+                        <Building2 className="h-5 w-5 text-primary mt-0.5" />
+                        <div className="flex-1">
+                          <div className="font-semibold">Domiciliación SEPA</div>
+                          <div className="text-xs text-muted-foreground mt-1">Te pediremos tu IBAN en el siguiente paso. El pago con tarjeta no está disponible por el momento.</div>
                         </div>
-                        <div className={`flex items-start space-x-3 border rounded-lg p-4 cursor-pointer transition-colors ${formData.metodoPago === 'tarjeta' ? 'border-primary bg-primary/5' : 'border-border hover:border-muted-foreground'}`}>
-                          <RadioGroupItem value="tarjeta" id="metodo-tarjeta" className="mt-1" />
-                          <Label htmlFor="metodo-tarjeta" className="cursor-pointer flex-1">
-                            <div className="font-semibold flex items-center gap-2"><CreditCard className="h-4 w-4" /> Tarjeta (Stripe)</div>
-                            <div className="text-xs text-muted-foreground mt-1">Registras tu tarjeta de forma segura. No se cobrará nada hasta que la Junta apruebe tu solicitud.</div>
-                          </Label>
-                        </div>
-                      </RadioGroup>
-                      {formErrors.metodoPago && <p className="text-sm text-destructive">{formErrors.metodoPago}</p>}
+                      </div>
                     </div>
                   </div>
 
