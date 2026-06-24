@@ -451,15 +451,26 @@ const Auth = () => {
                   {mode === "login" ? "Iniciar Sesión" : "Enviar Email"}
                 </Button>
               </form>
-              <div className="mt-4 text-center text-sm">
+              <div className="mt-4 text-center text-sm space-y-2">
                 {mode === "login" ? (
-                  <button
-                    type="button"
-                    onClick={() => setMode("reset")}
-                    className="text-muted-foreground hover:text-primary hover:underline"
-                  >
-                    ¿Olvidaste tu contraseña?
-                  </button>
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setMode("reset")}
+                      className="text-muted-foreground hover:text-primary hover:underline"
+                    >
+                      ¿Olvidaste tu contraseña?
+                    </button>
+                    <div>
+                      <button
+                        type="button"
+                        onClick={() => navigate("/hazte-socio")}
+                        className="text-primary hover:underline font-semibold"
+                      >
+                        No eres socio? Únete ahora!
+                      </button>
+                    </div>
+                  </>
                 ) : (
                   <button
                     type="button"
