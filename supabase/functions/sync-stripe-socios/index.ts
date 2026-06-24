@@ -63,9 +63,13 @@ serve(async (req) => {
       try {
         const sub = await stripe.subscriptions.retrieve(s.stripe_subscription_id!);
         const estado = sub.status; // active, trialing, past_due, canceled, unpaid, incomplete...
-        const proximo = sub.current_period_end
-          ? new Date(sub.current_period_end * 1000).toISOString()
-          : null;
+        // En la API actual, current_period_end vive en el item, no en la suscripción.
+        const periodEnd =
+          (sub as any).current_period_end ??
+          sub.items?.data?.[0]?.current_period_end ??
+          (sub as any).trial_end ??
+          null;
+        const proximo = periodEnd ? new Date(periodEnd * 1000).toISOString() : null;
 
         // Get last successful payment
         let ultimo: string | null = null;
