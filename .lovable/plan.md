@@ -1,86 +1,40 @@
-## Resumen
+# Problema
 
-Permitir que **socios actuales** (que pagan por SEPA o que se dieron de alta antes) puedan añadir/cambiar una tarjeta en Stripe desde su perfil (`/panel-socios`). Cuando lo hagan:
+El workflow creó un caso duplicado sobre Ábalos/Koldo porque la deduplicación por `q=<título completo>` es demasiado estricta: exige que **todas** las palabras del nuevo título aparezcan en el título/descripción de un caso existente. Palabras como "Supremo", "mascarillas" o "condena" no estaban en los registros previos, así que `GET` devolvió `[]` y se creó igualmente.
 
-1. Se guarda el método de pago en Stripe **sin cobrar nada en ese momento**.
-2. Se crea una suscripción en Stripe cuya **primera fecha de cobro = próxima fecha de pago** que ya tenían (mes/año según `tipo_pago` y `dia_cobro`).
-3. En el panel de admin se ve claramente que el socio paga por **tarjeta** (Stripe) y no por SEPA.
+Buscar por título nunca va a ser fiable: cada medio redacta distinto la misma noticia. La señal única y estable es la **URL de la fuente** (`fuente_url`) — es la misma para el mismo artículo, y ya la estás guardando.
 
-## Cambios en BD (tabla `socios`)
+# Solución
 
-Añadir columnas (todas opcionales):
+Mover la deduplicación al servidor (Edge Function `api-semaforo`), usando `fuente_url` como clave. Así n8n hace **una sola llamada POST** y el backend decide si crea, ignora o actualiza. Se acaba el problema y el workflow queda más simple.
 
-- `stripe_payment_method_id` text
-- `stripe_setup_intent_id` text
-- `tarjeta_lista` boolean default false
-- `metodo_pago_activo` text — `'sepa'` (por defecto) o `'tarjeta'`. Esta es la fuente de verdad para el panel admin.
+## Cambios en la Edge Function `api-semaforo`
 
-(`stripe_customer_id` y `stripe_subscription_id` ya existen.)
+1. **POST con dedup automático por `fuente_url`:**
+   - Si el body trae `fuente_url` y ya existe un caso con esa URL exacta:
+     - Devolver `200` con `{ duplicate: true, data: <caso existente> }` en vez de crear.
+   - Si no existe → crear como ahora y devolver `201`.
+   - Si el body **no** trae `fuente_url` → crear siempre (comportamiento actual).
 
-## Flujo del socio en `/panel-socios`
+2. **Parámetro opcional `?mode=upsert`** en el POST:
+   - Si `duplicate` y `mode=upsert`: actualizar los campos entrantes (descripcion, gravedad, ambito, fecha) en vez de solo devolver el existente. Útil si una noticia se amplía después.
 
-Nueva sección "Método de pago" en la pestaña de cuenta:
+3. **Filtro GET por `fuente_url`** (bonus, por si lo necesitas manualmente):
+   - `GET ?fuente_url=<url>` devuelve el caso con esa URL exacta.
 
-```text
-Si metodo_pago_activo = 'sepa':
-   Muestra: "Actualmente pagas por domiciliación bancaria (SEPA)"
-   Botón: [Cambiar a tarjeta]
+## Cambios en el workflow de n8n
 
-Si metodo_pago_activo = 'tarjeta' y tarjeta_lista = true:
-   Muestra: "Pagas con tarjeta ****1234"
-   Botón: [Actualizar tarjeta]
-```
+- **Eliminar** los nodos `GET Buscar duplicado` y `IF ¿existe?`.
+- Dejar sólo el `POST Crear caso` apuntando a la función. La respuesta indicará si se creó (`201`) o era duplicado (`200` + `duplicate: true`).
+- Opcional: añadir `?mode=upsert` a la URL si quieres que sobrescriba con datos más nuevos.
 
-Al pulsar el botón:
+## Detalles técnicos
 
-1. Llama a nueva edge fn `create-socio-card-setup` con el `socio_id` (autenticado).
-2. La función crea/recupera el customer de Stripe, crea una Checkout Session `mode:'setup'` y devuelve la URL.
-3. Se abre Stripe Checkout en una pestaña nueva.
-4. Success URL → `/panel-socios/tarjeta-confirmada?session_id=...`
-5. Esa página llama a `confirm-socio-card-update`, que:
-   - Cancela la suscripción anterior si existía (`stripe_subscription_id` vigente).
-   - Marca el nuevo `payment_method` como default del customer.
-   - Calcula la **próxima fecha de pago** según `dia_cobro` y `tipo_pago` (ver más abajo) y crea la suscripción con `billing_cycle_anchor` = esa fecha y `proration_behavior: 'none'`. Así Stripe **no cobra hasta esa fecha**.
-   - Guarda `stripe_subscription_id`, `stripe_payment_method_id`, `tarjeta_lista=true`, `metodo_pago_activo='tarjeta'` en `socios`.
-6. Vuelve al panel con un toast "Tarjeta registrada. Próximo cobro: DD/MM/AAAA".
+- Tabla `casos_semaforo` ya tiene `fuente_url` (nullable). No hace falta migración obligatoria.
+- Recomendado (opcional): añadir índice único parcial `CREATE UNIQUE INDEX ON casos_semaforo (fuente_url) WHERE fuente_url IS NOT NULL;` para garantizar unicidad también a nivel BD. Requiere limpiar duplicados existentes primero — te lo digo antes de aplicarlo.
+- El chequeo en la función se hace con `SELECT ... WHERE fuente_url = $1 LIMIT 1` antes del `INSERT`.
 
-### Cálculo de "próxima fecha de pago"
+## Fuera de alcance
 
-- **Mensual**: el próximo día `dia_cobro` que esté en el futuro. Si `dia_cobro` ya pasó este mes → mes siguiente.
-- **Anual**: misma lógica pero con la fecha aniversario. Si el socio no tiene fecha aniversario clara, usamos `dia_cobro` del mes de `fecha_alta`; si ya pasó este año → año siguiente.
-
-Si por la razón que sea la fecha calculada está a menos de 24h, se desplaza al siguiente ciclo para evitar cobros inmediatos inesperados.
-
-## Cambios en panel de admin (`AdminSocios.tsx`)
-
-En la tabla de socios y en el diálogo de detalle:
-
-- Badge junto al socio: **"SEPA"** (azul) o **"Tarjeta"** (verde si `tarjeta_lista=true`, gris ⏳ si pendiente).
-- Filtro nuevo en la cabecera: "Método de pago: Todos / SEPA / Tarjeta".
-- En el detalle: si es tarjeta, mostrar `stripe_subscription_id` y la próxima fecha de cobro (si la podemos sacar del campo o vía función). Sencillo: solo mostrar el badge y los IDs.
-
-## Edge functions a crear
-
-1. `create-socio-card-setup` (`verify_jwt = true`)
-   - Valida que el usuario autenticado es ese socio (`socios.user_id = auth.uid()`).
-   - Crea customer si no existe, abre Checkout Session `mode:'setup'` con metadata `socio_id`.
-   - Devuelve `{ url }`.
-
-2. `confirm-socio-card-update` (`verify_jwt = true`)
-   - Recibe `session_id`.
-   - Valida que el `socio_id` del metadata pertenece al usuario.
-   - Cancela suscripción previa (si la hay).
-   - Crea nueva suscripción con `billing_cycle_anchor` calculado.
-   - Actualiza `socios`.
-
-## Lo que NO toca este cambio
-
-- Flujo público de `/hazte-socio` (sigue igual, ya implementado).
-- Flujo SEPA actual y cobros existentes (no se cancela nada de SEPA, solo se cambia la marca `metodo_pago_activo` cuando completan la tarjeta).
-- Webhooks de Stripe (no necesarios).
-
-## Preguntas antes de implementar
-
-1. Cuando un socio que pagaba por SEPA pasa a tarjeta, **¿quieres que el sistema marque automáticamente que ya no se le cobra por SEPA** (`metodo_pago_activo='tarjeta'`) o prefieres que admin lo confirme manualmente?
-2. ¿Mostramos también un botón "Volver a SEPA" en el panel del socio o eso solo lo gestiona admin?
-3. Para socios sin `dia_cobro` definido, ¿uso el día 1 del mes siguiente como fallback?
+- Deduplicación por similitud semántica de títulos (requeriría embeddings). Si más adelante quieres detectar cuándo dos URLs distintas cubren la misma noticia, lo abordamos aparte.
+- Limpieza retroactiva de los duplicados que ya haya en la tabla (te lo listo cuando quieras).
