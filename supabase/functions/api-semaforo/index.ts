@@ -70,6 +70,7 @@ Deno.serve(async (req) => {
       const gravedad = url.searchParams.get("gravedad");
       const ambito = url.searchParams.get("ambito");
       const q = url.searchParams.get("q");
+      const fuenteUrl = url.searchParams.get("fuente_url");
       const limit = parseInt(url.searchParams.get("limit") || "100");
 
       let query = supabase
@@ -78,6 +79,7 @@ Deno.serve(async (req) => {
         .order("fecha", { ascending: false })
         .limit(limit);
 
+      if (fuenteUrl) query = query.eq("fuente_url", fuenteUrl);
       if (q) {
         // Split into tokens; each token must match titulo OR descripcion (AND across tokens)
         const tokens = q.split(/\s+/).filter((t) => t.length > 1);
@@ -94,13 +96,46 @@ Deno.serve(async (req) => {
       return json(data);
     }
 
-    // POST — create
+    // POST — create (with dedup by fuente_url)
     if (req.method === "POST") {
       const body = await req.json();
       const { titulo, descripcion, fecha, gravedad, ambito, fuente_url } = body;
       if (!titulo || !gravedad) {
         return json({ error: "titulo and gravedad are required" }, 400);
       }
+
+      const mode = url.searchParams.get("mode"); // 'upsert' to overwrite on duplicate
+
+      // Dedup by fuente_url when provided
+      if (fuente_url) {
+        const { data: existing, error: findErr } = await supabase
+          .from("casos_semaforo")
+          .select("*")
+          .eq("fuente_url", fuente_url)
+          .maybeSingle();
+        if (findErr) throw findErr;
+
+        if (existing) {
+          if (mode === "upsert") {
+            const updatePayload: Record<string, unknown> = {};
+            if (titulo !== undefined) updatePayload.titulo = titulo;
+            if (descripcion !== undefined) updatePayload.descripcion = descripcion;
+            if (fecha !== undefined) updatePayload.fecha = fecha;
+            if (gravedad !== undefined) updatePayload.gravedad = gravedad;
+            if (ambito !== undefined) updatePayload.ambito = ambito;
+            const { data: updated, error: updErr } = await supabase
+              .from("casos_semaforo")
+              .update(updatePayload)
+              .eq("id", existing.id)
+              .select()
+              .single();
+            if (updErr) throw updErr;
+            return json({ duplicate: true, updated: true, data: updated }, 200);
+          }
+          return json({ duplicate: true, updated: false, data: existing }, 200);
+        }
+      }
+
       const payload = {
         titulo,
         descripcion: descripcion || null,
@@ -111,7 +146,7 @@ Deno.serve(async (req) => {
       };
       const { data, error } = await supabase.from("casos_semaforo").insert(payload).select().single();
       if (error) throw error;
-      return json(data, 201);
+      return json({ duplicate: false, data }, 201);
     }
 
     // PUT/PATCH — update by id
