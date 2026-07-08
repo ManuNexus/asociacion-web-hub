@@ -60,7 +60,7 @@ Deno.serve(async (req) => {
       // Similarity match check (para n8n: ¿existe ya un caso parecido?)
       const matchText = url.searchParams.get("match");
       if (matchText) {
-        const threshold = parseFloat(url.searchParams.get("threshold") || "0.8");
+        const threshold = parseFloat(url.searchParams.get("threshold") || "0.4");
         const matchLimit = parseInt(url.searchParams.get("limit") || "5");
         const { data, error } = await supabase.rpc("match_casos_semaforo", {
           _texto: matchText,
