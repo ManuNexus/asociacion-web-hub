@@ -55,8 +55,30 @@ Deno.serve(async (req) => {
       return json({ success: true, message: "CIVI analysis refreshed" });
     }
 
-    // GET — list all or get by id
+    // GET — list, get by id, or check similarity match
     if (req.method === "GET") {
+      // Similarity match check (para n8n: ¿existe ya un caso parecido?)
+      const matchText = url.searchParams.get("match");
+      if (matchText) {
+        const threshold = parseFloat(url.searchParams.get("threshold") || "0.6");
+        const matchLimit = parseInt(url.searchParams.get("limit") || "5");
+        const { data, error } = await supabase.rpc("match_casos_semaforo", {
+          _texto: matchText,
+          _threshold: threshold,
+          _limit: matchLimit,
+        });
+        if (error) throw error;
+        const filtered = (data || []).filter((r: any) => r.similarity >= threshold);
+        const best = filtered[0];
+        return json({
+          match: !!best,
+          best_similarity: best?.similarity ?? 0,
+          best_id: best?.id ?? null,
+          threshold,
+          results: filtered,
+        });
+      }
+
       if (id) {
         const { data, error } = await supabase
           .from("casos_semaforo")
