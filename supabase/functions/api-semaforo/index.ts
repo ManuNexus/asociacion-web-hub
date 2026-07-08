@@ -79,8 +79,12 @@ Deno.serve(async (req) => {
         .limit(limit);
 
       if (q) {
-        const pattern = `%${q}%`;
-        query = query.or(`titulo.ilike.${pattern},descripcion.ilike.${pattern}`);
+        // Split into tokens; each token must match titulo OR descripcion (AND across tokens)
+        const tokens = q.split(/\s+/).filter((t) => t.length > 1);
+        for (const t of tokens) {
+          const p = `%${t}%`;
+          query = query.or(`titulo.ilike.${p},descripcion.ilike.${p}`);
+        }
       }
       if (gravedad) query = query.eq("gravedad", gravedad);
       if (ambito) query = query.eq("ambito", ambito);
