@@ -1278,6 +1278,19 @@ export type Database = {
         }
         Returns: boolean
       }
+      match_casos_semaforo: {
+        Args: { _limit?: number; _texto: string; _threshold?: number }
+        Returns: {
+          created_at: string
+          descripcion: string
+          fuente_url: string
+          id: string
+          similarity: number
+          titulo: string
+        }[]
+      }
+      show_limit: { Args: never; Returns: number }
+      show_trgm: { Args: { "": string }; Returns: string[] }
     }
     Enums: {
       app_role: "admin" | "user" | "socio" | "junta"
