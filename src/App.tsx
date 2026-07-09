@@ -78,6 +78,7 @@ const App = () => (
                   <Route path="/contabilidad" element={<Contabilidad />} />
                   <Route path="/eventos" element={<Eventos />} />
                   <Route path="/semaforo-institucional" element={<SemaforoInstitucional />} />
+                  <Route path="/radar-politico" element={<RadarPolitico />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </PageTransition>
