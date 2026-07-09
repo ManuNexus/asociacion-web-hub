@@ -37,12 +37,11 @@ Deno.serve(async (req) => {
       await supabase.from("civi_cache").delete().eq("contexto", "semaforo_all");
 
       // Trigger regeneration
-      const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
       const civiRes = await fetch(`${supabaseUrl}/functions/v1/civi-summary`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${anonKey}`,
+          "Authorization": `Bearer ${serviceKey}`,
         },
         body: JSON.stringify({ contexto: "semaforo_all" }),
       });
