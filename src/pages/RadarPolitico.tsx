@@ -260,7 +260,7 @@ export default function RadarPolitico() {
 
   const reset = () => {
     setAnswers({});
-    setStep(0);
+    setStep(-1);
     setResultId(null);
     savedRef.current = false;
   };
