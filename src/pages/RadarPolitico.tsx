@@ -175,7 +175,7 @@ const SCALE = [
 export default function RadarPolitico() {
   const [parties, setParties] = useState<Party[]>([]);
   const [loadingParties, setLoadingParties] = useState(true);
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState(-1);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const resultsRef = useRef<HTMLDivElement>(null);
 
@@ -191,9 +191,12 @@ export default function RadarPolitico() {
     })();
   }, []);
 
+  const startTest = () => setStep(0);
+
   const total = QUESTIONS.length;
   const isFinished = step >= total;
-  const current = !isFinished ? QUESTIONS[step] : null;
+  const isLanding = step < 0;
+  const current = !isFinished && !isLanding ? QUESTIONS[step] : null;
   const currentAnswer = current ? answers[current.id] : undefined;
 
   const selectValue = (v: number) => {
@@ -257,7 +260,7 @@ export default function RadarPolitico() {
 
   const reset = () => {
     setAnswers({});
-    setStep(0);
+    setStep(-1);
     setResultId(null);
     savedRef.current = false;
   };
@@ -352,7 +355,7 @@ export default function RadarPolitico() {
     }
   };
 
-  const progress = isFinished ? 100 : (step / total) * 100;
+  const progress = isFinished ? 100 : isLanding ? 0 : (step / total) * 100;
 
   if (loadingParties) {
     return (
@@ -384,7 +387,65 @@ export default function RadarPolitico() {
 
       <div className="bg-slate-100 min-h-[calc(100vh-4rem)] py-6 md:py-10">
         <div className="container max-w-xl">
-          {!isFinished && current && (
+          {isLanding && (
+            <div className="bg-white rounded-[2rem] shadow-2xl shadow-primary/10 overflow-hidden border border-white flex flex-col">
+              <div className="bg-primary pt-8 pb-14 px-6 rounded-b-[2rem] relative">
+                <div className="flex justify-between items-center mb-4">
+                  <span className="text-secondary text-[10px] font-bold tracking-widest uppercase">
+                    Radar Político · AHORA
+                  </span>
+                  <div className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center">
+                    <div className="w-1.5 h-1.5 bg-secondary rounded-full" />
+                  </div>
+                </div>
+                <h1 className="text-primary-foreground text-2xl md:text-3xl font-bold leading-tight">
+                  Descubre con qué partido coincide tu voz
+                </h1>
+              </div>
+
+              <div className="px-5 -mt-8 z-10 flex flex-col pb-6">
+                <div className="bg-white rounded-3xl shadow-xl shadow-primary/5 p-6 border border-slate-50 flex flex-col">
+                  <p className="text-sm text-primary/80 leading-relaxed mb-4">
+                    El Radar Político es un test de posicionamiento ideológico basado en los programas electorales de PP, PSOE, VOX, SUMAR, PODEMOS y Ciudadanos.
+                  </p>
+                  <ul className="space-y-2 mb-6 text-sm text-primary/70">
+                    <li className="flex items-start gap-2">
+                      <span className="text-secondary font-bold">✓</span>
+                      <span>20 preguntas sobre economía, territorio, vivienda, inmigración, derechos y más.</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-secondary font-bold">✓</span>
+                      <span>Duración aproximada: 5 minutos.</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-secondary font-bold">✓</span>
+                      <span>Respuestas anónimas: no guardamos quién eres, solo la afinidad con cada partido.</span>
+                    </li>
+                  </ul>
+
+                  <div className="mb-6">
+                    <div className="flex justify-between items-end mb-2">
+                      <span className="text-[11px] font-semibold text-primary/60">PROGRESO</span>
+                      <span className="text-[11px] font-bold text-primary">0 de {total}</span>
+                    </div>
+                    <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                      <div className="h-full bg-secondary rounded-full transition-all duration-500" style={{ width: `${progress}%` }} />
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={startTest}
+                    className="w-full h-12 rounded-xl bg-secondary text-[13px] font-bold text-primary shadow-md hover:brightness-95 transition-all flex items-center justify-center gap-2"
+                  >
+                    <span>Empezar el test</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {!isFinished && !isLanding && current && (
 
             <div className="bg-white rounded-[2rem] shadow-2xl shadow-primary/10 overflow-hidden border border-white flex flex-col">
               <div className="bg-primary pt-8 pb-14 px-6 rounded-b-[2rem] relative">
