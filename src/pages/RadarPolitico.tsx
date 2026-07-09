@@ -355,7 +355,7 @@ export default function RadarPolitico() {
     }
   };
 
-  const progress = isFinished ? 100 : (step / total) * 100;
+  const progress = isFinished ? 100 : isLanding ? 0 : (step / total) * 100;
 
   if (loadingParties) {
     return (
