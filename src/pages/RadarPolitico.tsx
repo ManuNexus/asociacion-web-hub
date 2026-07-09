@@ -604,7 +604,7 @@ export default function RadarPolitico() {
                 Total de respuestas registradas: <span className="font-bold text-primary/60">{aggregate.reduce((a, b) => a + b.count, 0)}</span>
               </p>
             </div>
-          </>)}
+          </Fragment>)}
 
           {!isFinished && !isLanding && current && (
 
