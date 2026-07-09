@@ -5,6 +5,7 @@ import { SEO } from "@/components/SEO";
 import { Download, RotateCcw, ChevronRight, ChevronLeft, Loader2, Twitter } from "lucide-react";
 import html2canvas from "html2canvas";
 import { supabase } from "@/integrations/supabase/client";
+import radarIllustration from "@/assets/radar-illustration.jpg";
 import {
   ResponsiveContainer,
   BarChart,
