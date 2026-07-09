@@ -37,6 +37,7 @@ const PanelSocios = lazy(() => import("./pages/PanelSocios"));
 const Contabilidad = lazy(() => import("./pages/Contabilidad"));
 const Eventos = lazy(() => import("./pages/Eventos"));
 const SemaforoInstitucional = lazy(() => import("./pages/SemaforoInstitucional"));
+const RadarPolitico = lazy(() => import("./pages/RadarPolitico"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
