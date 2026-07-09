@@ -325,13 +325,8 @@ export default function RadarPolitico() {
 
       <div className="bg-slate-100 min-h-[calc(100vh-4rem)] py-6 md:py-10">
         <div className="container max-w-xl">
-          <div className="mb-4 text-center">
-            <span className="inline-block text-[10px] font-bold tracking-widest uppercase text-amber-700 bg-amber-100 border border-amber-200 px-3 py-1 rounded-full">
-              Entorno de pruebas interno · Datos provisionales
-            </span>
-          </div>
-
           {!isFinished && current && (
+
             <div className="bg-white rounded-[2rem] shadow-2xl shadow-primary/10 overflow-hidden border border-white flex flex-col">
               <div className="bg-primary pt-8 pb-14 px-6 rounded-b-[2rem] relative">
                 <div className="flex justify-between items-center mb-4">
