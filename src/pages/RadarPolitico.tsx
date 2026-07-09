@@ -259,6 +259,15 @@ export default function RadarPolitico() {
   const socialCardRef = useRef<HTMLDivElement>(null);
   const SHARE_URL = "https://ahoraorg.es/radar-politico";
   const HASHTAG = "#RadarPoliticoAHORA";
+  const PARTY_HANDLES: Record<string, string> = {
+    PP: "@ppopular",
+    PSOE: "@PSOE",
+    VOX: "@vox_es",
+    SUMAR: "@sumar",
+    PODEMOS: "@PODEMOS",
+    CIUDADANOS: "@CiudadanosCs",
+  };
+
 
   const buildSocialCanvas = async () => {
     if (!socialCardRef.current) return null;
@@ -288,7 +297,9 @@ export default function RadarPolitico() {
     if (!top) return;
     // También descargamos la imagen para que el usuario pueda adjuntarla al tweet
     await downloadImage();
-    const text = `Mi partido más afín según el Radar Político de @AhoraORG_es es ${top.nombre} con un ${top.affinity}% de afinidad. ¿Y el tuyo? ${HASHTAG}`;
+    const handle = PARTY_HANDLES[top.id];
+    const partyMention = handle ? `${top.nombre} (${handle})` : top.nombre;
+    const text = `Mi partido más afín según el Radar Político de @AhoraORG_es es ${partyMention} con un ${top.affinity}% de afinidad. ¿Y el tuyo? ${HASHTAG}`;
     const intent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(SHARE_URL)}`;
     window.open(intent, "_blank", "noopener,noreferrer");
   };
