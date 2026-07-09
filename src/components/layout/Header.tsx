@@ -24,6 +24,7 @@ const participaLinks = [
   { href: "/hazte-socio", label: "Hazte Socio" },
   { href: "/hazte-amigo", label: "Hazte Amigo" },
   { href: "/dona", label: "Dona" },
+  { href: "/radar-politico", label: "Radar Político" },
 ];
 
 interface SocioBasic {
