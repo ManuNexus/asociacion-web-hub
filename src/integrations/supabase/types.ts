@@ -839,6 +839,7 @@ export type Database = {
           ganador_afinidad: number
           ganador_partido_id: string
           id: string
+          image_url: string | null
           respuestas: Json
           resultados: Json
         }
@@ -847,6 +848,7 @@ export type Database = {
           ganador_afinidad: number
           ganador_partido_id: string
           id?: string
+          image_url?: string | null
           respuestas: Json
           resultados: Json
         }
@@ -855,6 +857,7 @@ export type Database = {
           ganador_afinidad?: number
           ganador_partido_id?: string
           id?: string
+          image_url?: string | null
           respuestas?: Json
           resultados?: Json
         }
