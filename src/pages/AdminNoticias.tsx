@@ -666,6 +666,10 @@ const AdminNoticias = () => {
                 <Eye className="h-4 w-4 shrink-0" />
                 <span>Semáforo</span>
               </TabsTrigger>
+              <TabsTrigger value="radar-politico" className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm shrink-0">
+                <Eye className="h-4 w-4 shrink-0" />
+                <span>Radar Político</span>
+              </TabsTrigger>
             </TabsList>
 
             {/* Tab Noticias */}
