@@ -1354,6 +1354,11 @@ const AdminNoticias = () => {
             <TabsContent value="semaforo">
               <AdminSemaforo />
             </TabsContent>
+
+            {/* Tab Radar Político */}
+            <TabsContent value="radar-politico">
+              <AdminRadarPolitico />
+            </TabsContent>
           </Tabs>
         </div>
       </section>
