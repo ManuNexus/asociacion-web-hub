@@ -235,28 +235,39 @@ export default function RadarPolitico() {
     setStep(0);
   };
 
+  const socialCardRef = useRef<HTMLDivElement>(null);
+  const SHARE_URL = "https://ahoraorg.es/radar-politico";
+  const HASHTAG = "#RadarPoliticoAHORA";
+
+  const buildSocialCanvas = async () => {
+    if (!socialCardRef.current) return null;
+    return await html2canvas(socialCardRef.current, {
+      backgroundColor: "#224172",
+      scale: 2,
+      width: 1200,
+      height: 630,
+      windowWidth: 1200,
+      windowHeight: 630,
+    });
+  };
+
   const downloadImage = async () => {
-    if (!resultsRef.current) return;
-    const canvas = await html2canvas(resultsRef.current, { backgroundColor: "#ffffff", scale: 2 });
+    const canvas = await buildSocialCanvas();
+    if (!canvas) return;
     const link = document.createElement("a");
-    link.download = "radar-politico.png";
+    link.download = "radar-politico-ahora.png";
     link.href = canvas.toDataURL("image/png");
     link.click();
   };
 
-  const shareResults = async () => {
+  const shareOnTwitter = async () => {
     const top = results[0];
     if (!top) return;
-    const text = `Mi Radar Político: ${top.nombre} (${top.affinity}% afinidad)`;
-    const url = window.location.href;
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: "Radar Político", text, url });
-      } catch { /* cancelled */ }
-    } else {
-      await navigator.clipboard.writeText(`${text} — ${url}`);
-      alert("Resultado copiado al portapapeles");
-    }
+    // También descargamos la imagen para que el usuario pueda adjuntarla al tweet
+    await downloadImage();
+    const text = `Mi partido más afín según el Radar Político de @AHORA_Org es ${top.nombre} con un ${top.affinity}% de afinidad. ¿Y el tuyo? ${HASHTAG}`;
+    const intent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(SHARE_URL)}`;
+    window.open(intent, "_blank", "noopener,noreferrer");
   };
 
   const progress = isFinished ? 100 : (step / total) * 100;
