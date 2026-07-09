@@ -650,39 +650,25 @@ export default function RadarPolitico() {
                   src={results[0].logo_url}
                   crossOrigin="anonymous"
                   alt={results[0].nombre}
-                  style={{ width: 96, height: 96, objectFit: "contain", background: "#fff", borderRadius: 12, padding: 8 }}
+                  style={{ width: 120, height: 120, objectFit: "contain", background: "#fff", borderRadius: 16, padding: 10 }}
                 />
               )}
-              <h1 style={{ fontSize: 76, fontWeight: 900, margin: 0, color: results[0].color, textShadow: "0 2px 20px rgba(0,0,0,0.3)", lineHeight: 1 }}>
+              <h1 style={{ fontSize: 80, fontWeight: 900, margin: 0, color: results[0].color, textShadow: "0 2px 20px rgba(0,0,0,0.3)", lineHeight: 1 }}>
                 {results[0].nombre}
               </h1>
             </div>
-            <p style={{ fontSize: 40, fontWeight: 700, margin: 0, marginBottom: 26 }}>
+            <p style={{ fontSize: 44, fontWeight: 700, margin: 0, marginBottom: 30 }}>
               <span style={{ color: "#EBAF0A" }}>{results[0].affinity}%</span>
-              <span style={{ fontSize: 24, fontWeight: 400, opacity: 0.85, marginLeft: 12 }}>de afinidad</span>
+              <span style={{ fontSize: 26, fontWeight: 400, opacity: 0.85, marginLeft: 12 }}>de afinidad</span>
             </p>
 
-            {/* Ranking top 5 en barras con logos */}
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {results.slice(0, 5).map((r) => (
-                <div key={r.id} style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  {r.logo_url ? (
-                    <img
-                      src={r.logo_url}
-                      crossOrigin="anonymous"
-                      alt={r.nombre}
-                      style={{ width: 32, height: 32, objectFit: "contain", background: "#fff", borderRadius: 6, padding: 3, flexShrink: 0 }}
-                    />
-                  ) : (
-                    <div style={{ width: 32, height: 32, borderRadius: 6, background: r.color, flexShrink: 0 }} />
-                  )}
-                  <div style={{ width: 110, fontSize: 15, fontWeight: 700 }}>{r.nombre}</div>
-                  <div style={{ flex: 1, height: 20, background: "rgba(255,255,255,0.12)", borderRadius: 999, overflow: "hidden" }}>
-                    <div style={{ width: `${r.affinity}%`, height: "100%", background: r.color, borderRadius: 999 }} />
-                  </div>
-                  <div style={{ width: 55, fontSize: 15, fontWeight: 700 }}>{r.affinity}%</div>
-                </div>
-              ))}
+            <div style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: 18, opacity: 0.85, maxWidth: 620 }}>
+              <p style={{ margin: 0 }}>
+                Descubre cuál es tu partido más afín con el Radar Político de AHORA.
+              </p>
+              <p style={{ margin: 0, fontSize: 16, opacity: 0.75 }}>
+                20 preguntas · Anónimo · 5 minutos
+              </p>
             </div>
 
             <div style={{ position: "absolute", bottom: 32, left: 56, right: 56, display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 15, opacity: 0.85 }}>
