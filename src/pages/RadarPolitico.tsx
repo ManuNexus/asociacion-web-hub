@@ -395,41 +395,37 @@ export default function RadarPolitico() {
     );
   };
 
-  const shareOnTwitter = async () => {
+  const shareOnTwitter = () => {
     const top = results[0];
     if (!top) return;
-    setSharing(true);
     const handle = PARTY_HANDLES[top.id];
     const partyMention = handle ? `${top.nombre} (${handle})` : top.nombre;
-    let shareUrl = "https://ahoraorg.es/radar-politico";
-
-    try {
-      const blob = await generateShareImage();
-      if (blob && resultId) {
-        const path = `radar-politico/${resultId}.png`;
-        const { error: upErr } = await supabase.storage
-          .from("mailing-images")
-          .upload(path, blob, { contentType: "image/png", upsert: true });
-        if (!upErr) {
-          const { data: pub } = supabase.storage.from("mailing-images").getPublicUrl(path);
-          if (pub?.publicUrl) {
-            await supabase
-              .from("radar_resultados")
-              .update({ image_url: pub.publicUrl })
-              .eq("id", resultId);
-            // URL de la edge function que devuelve OG tags con la imagen personalizada
-            shareUrl = `https://ihxczttkofjnyviqmxpl.supabase.co/functions/v1/radar-share?id=${resultId}`;
-          }
-        }
-      }
-    } catch (e) {
-      console.warn("No se pudo generar la imagen compartida", e);
-    }
-
+    const shareUrl = "https://ahoraorg.es/radar-politico";
     const text = `Mi partido más afín según el Radar Político de @AhoraORG_es es ${partyMention} con un ${top.affinity}% de afinidad. ¿Y el tuyo? ${HASHTAG}`;
     const intent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareUrl)}`;
     window.open(intent, "_blank", "noopener,noreferrer");
-    setSharing(false);
+  };
+
+  const downloadImage = async () => {
+    const top = results[0];
+    if (!top) return;
+    setSharing(true);
+    try {
+      const blob = await generateShareImage();
+      if (!blob) return;
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `radar-politico-${top.id.toLowerCase()}-${top.affinity}.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      console.warn("No se pudo descargar la imagen", e);
+    } finally {
+      setSharing(false);
+    }
   };
 
   const progress = isFinished ? 100 : isLanding ? 0 : (step / total) * 100;
