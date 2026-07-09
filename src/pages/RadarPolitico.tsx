@@ -179,6 +179,18 @@ export default function RadarPolitico() {
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const resultsRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from("radar_partidos")
+        .select("*")
+        .eq("activo", true)
+        .order("orden", { ascending: true });
+      setParties((data as Party[]) ?? []);
+      setLoadingParties(false);
+    })();
+  }, []);
+
   const startTest = () => setStep(0);
 
   const total = QUESTIONS.length;
