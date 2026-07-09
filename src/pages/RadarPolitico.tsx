@@ -2,7 +2,7 @@ import { useEffect, useState, useRef, useMemo } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { SEO } from "@/components/SEO";
-import { RotateCcw, ChevronRight, ChevronLeft, Loader2, Twitter } from "lucide-react";
+import { RotateCcw, ChevronRight, ChevronLeft, Loader2, Twitter, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import radarIllustration from "@/assets/radar-illustration.jpg";
 import logoAhoraWhite from "@/assets/logo-ahora-white.png";
