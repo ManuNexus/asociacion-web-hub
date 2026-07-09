@@ -231,6 +231,26 @@ export default function RadarPolitico() {
     return { x, y };
   }, [results, isFinished]);
 
+  // Guarda anónimamente el resultado (sin datos personales) una única vez al finalizar
+  const savedRef = useRef(false);
+  useEffect(() => {
+    if (!isFinished || results.length === 0 || savedRef.current) return;
+    savedRef.current = true;
+    const top = results[0];
+    supabase
+      .from("radar_resultados")
+      .insert({
+        ganador_partido_id: top.id,
+        ganador_afinidad: top.affinity,
+        resultados: results.map((r) => ({ id: r.id, nombre: r.nombre, affinity: r.affinity })),
+        respuestas: answers,
+      })
+      .then(({ error }) => {
+        if (error) console.warn("No se pudo registrar el resultado:", error.message);
+      });
+  }, [isFinished, results, answers]);
+
+
   const reset = () => {
     setAnswers({});
     setStep(0);
