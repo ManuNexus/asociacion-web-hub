@@ -37,6 +37,7 @@ const PanelSocios = lazy(() => import("./pages/PanelSocios"));
 const Contabilidad = lazy(() => import("./pages/Contabilidad"));
 const Eventos = lazy(() => import("./pages/Eventos"));
 const SemaforoInstitucional = lazy(() => import("./pages/SemaforoInstitucional"));
+const RadarPolitico = lazy(() => import("./pages/RadarPolitico"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -77,6 +78,7 @@ const App = () => (
                   <Route path="/contabilidad" element={<Contabilidad />} />
                   <Route path="/eventos" element={<Eventos />} />
                   <Route path="/semaforo-institucional" element={<SemaforoInstitucional />} />
+                  <Route path="/radar-politico" element={<RadarPolitico />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </PageTransition>
