@@ -248,6 +248,8 @@ export default function RadarPolitico() {
       height: 630,
       windowWidth: 1200,
       windowHeight: 630,
+      useCORS: true,
+      allowTaint: false,
     });
   };
 
@@ -486,24 +488,44 @@ export default function RadarPolitico() {
               <span style={{ fontSize: 14, opacity: 0.75 }}>{HASHTAG}</span>
             </div>
 
-            <h2 style={{ fontSize: 34, fontWeight: 300, margin: 0, marginBottom: 8, opacity: 0.9 }}>Mi partido más afín es</h2>
-            <h1 style={{ fontSize: 88, fontWeight: 900, margin: 0, marginBottom: 8, color: results[0].color, textShadow: "0 2px 20px rgba(0,0,0,0.3)" }}>
-              {results[0].nombre}
-            </h1>
-            <p style={{ fontSize: 44, fontWeight: 700, margin: 0, marginBottom: 32 }}>
+            <h2 style={{ fontSize: 28, fontWeight: 300, margin: 0, marginBottom: 8, opacity: 0.9 }}>Mi partido más afín es</h2>
+            <div style={{ display: "flex", alignItems: "center", gap: 20, marginBottom: 12 }}>
+              {results[0].logo_url && (
+                <img
+                  src={results[0].logo_url}
+                  crossOrigin="anonymous"
+                  alt={results[0].nombre}
+                  style={{ width: 96, height: 96, objectFit: "contain", background: "#fff", borderRadius: 12, padding: 8 }}
+                />
+              )}
+              <h1 style={{ fontSize: 76, fontWeight: 900, margin: 0, color: results[0].color, textShadow: "0 2px 20px rgba(0,0,0,0.3)", lineHeight: 1 }}>
+                {results[0].nombre}
+              </h1>
+            </div>
+            <p style={{ fontSize: 40, fontWeight: 700, margin: 0, marginBottom: 26 }}>
               <span style={{ color: "#EBAF0A" }}>{results[0].affinity}%</span>
-              <span style={{ fontSize: 28, fontWeight: 400, opacity: 0.85, marginLeft: 12 }}>de afinidad</span>
+              <span style={{ fontSize: 24, fontWeight: 400, opacity: 0.85, marginLeft: 12 }}>de afinidad</span>
             </p>
 
-            {/* Ranking top 5 en barras */}
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {/* Ranking top 5 en barras con logos */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {results.slice(0, 5).map((r) => (
-                <div key={r.id} style={{ display: "flex", alignItems: "center", gap: 14 }}>
-                  <div style={{ width: 130, fontSize: 16, fontWeight: 700, textAlign: "right" }}>{r.nombre}</div>
-                  <div style={{ flex: 1, height: 22, background: "rgba(255,255,255,0.12)", borderRadius: 999, overflow: "hidden" }}>
+                <div key={r.id} style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  {r.logo_url ? (
+                    <img
+                      src={r.logo_url}
+                      crossOrigin="anonymous"
+                      alt={r.nombre}
+                      style={{ width: 32, height: 32, objectFit: "contain", background: "#fff", borderRadius: 6, padding: 3, flexShrink: 0 }}
+                    />
+                  ) : (
+                    <div style={{ width: 32, height: 32, borderRadius: 6, background: r.color, flexShrink: 0 }} />
+                  )}
+                  <div style={{ width: 110, fontSize: 15, fontWeight: 700 }}>{r.nombre}</div>
+                  <div style={{ flex: 1, height: 20, background: "rgba(255,255,255,0.12)", borderRadius: 999, overflow: "hidden" }}>
                     <div style={{ width: `${r.affinity}%`, height: "100%", background: r.color, borderRadius: 999 }} />
                   </div>
-                  <div style={{ width: 60, fontSize: 16, fontWeight: 700 }}>{r.affinity}%</div>
+                  <div style={{ width: 55, fontSize: 15, fontWeight: 700 }}>{r.affinity}%</div>
                 </div>
               ))}
             </div>
