@@ -162,7 +162,7 @@ export default function RadarPolitico() {
       <SEO
         title="Radar Político — AHORA"
         description="Herramienta interna en pruebas"
-        noIndex
+        noindex
       />
       <div className="container max-w-3xl py-8 md:py-12">
         <div className="mb-4 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-800">
