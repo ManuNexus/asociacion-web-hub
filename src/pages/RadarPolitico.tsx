@@ -233,6 +233,7 @@ export default function RadarPolitico() {
 
   // Guarda anónimamente el resultado (sin datos personales) una única vez al finalizar
   const savedRef = useRef(false);
+  const [resultId, setResultId] = useState<string | null>(null);
   useEffect(() => {
     if (!isFinished || results.length === 0 || savedRef.current) return;
     savedRef.current = true;
@@ -242,11 +243,14 @@ export default function RadarPolitico() {
       .insert({
         ganador_partido_id: top.id,
         ganador_afinidad: top.affinity,
-        resultados: results.map((r) => ({ id: r.id, nombre: r.nombre, affinity: r.affinity })),
+        resultados: results.map((r) => ({ id: r.id, nombre: r.nombre, affinity: r.affinity, color: r.color })),
         respuestas: answers,
       })
-      .then(({ error }) => {
+      .select("id")
+      .single()
+      .then(({ data, error }) => {
         if (error) console.warn("No se pudo registrar el resultado:", error.message);
+        else if (data?.id) setResultId(data.id);
       });
   }, [isFinished, results, answers]);
 
@@ -254,10 +258,12 @@ export default function RadarPolitico() {
   const reset = () => {
     setAnswers({});
     setStep(0);
+    setResultId(null);
+    savedRef.current = false;
   };
 
   const socialCardRef = useRef<HTMLDivElement>(null);
-  const SHARE_URL = "https://ahoraorg.es/radar-politico";
+  const [sharing, setSharing] = useState(false);
   const HASHTAG = "#RadarPoliticoAHORA";
   const PARTY_HANDLES: Record<string, string> = {
     PP: "@ppopular",
@@ -283,6 +289,9 @@ export default function RadarPolitico() {
     });
   };
 
+  const canvasToBlob = (canvas: HTMLCanvasElement): Promise<Blob | null> =>
+    new Promise((resolve) => canvas.toBlob((b) => resolve(b), "image/png"));
+
   const downloadImage = async () => {
     const canvas = await buildSocialCanvas();
     if (!canvas) return;
@@ -292,16 +301,55 @@ export default function RadarPolitico() {
     link.click();
   };
 
+  /** Sube la imagen a Storage y actualiza el registro. Devuelve URL pública o null. */
+  const uploadShareImage = async (id: string): Promise<string | null> => {
+    const canvas = await buildSocialCanvas();
+    if (!canvas) return null;
+    const blob = await canvasToBlob(canvas);
+    if (!blob) return null;
+    const path = `radar-shares/${id}.png`;
+    const { error: upErr } = await supabase.storage
+      .from("mailing-images")
+      .upload(path, blob, { contentType: "image/png", upsert: true });
+    if (upErr) {
+      console.warn("Upload share image error:", upErr.message);
+      return null;
+    }
+    const { data: pub } = supabase.storage.from("mailing-images").getPublicUrl(path);
+    const image_url = pub.publicUrl;
+    await supabase.from("radar_resultados").update({ image_url }).eq("id", id);
+    return image_url;
+  };
+
   const shareOnTwitter = async () => {
     const top = results[0];
     if (!top) return;
-    // También descargamos la imagen para que el usuario pueda adjuntarla al tweet
-    await downloadImage();
-    const handle = PARTY_HANDLES[top.id];
-    const partyMention = handle ? `${top.nombre} (${handle})` : top.nombre;
-    const text = `Mi partido más afín según el Radar Político de @AhoraORG_es es ${partyMention} con un ${top.affinity}% de afinidad. ¿Y el tuyo? ${HASHTAG}`;
-    const intent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(SHARE_URL)}`;
-    window.open(intent, "_blank", "noopener,noreferrer");
+    setSharing(true);
+    try {
+      // Espera brevemente a que el insert devuelva id si aún no lo tenemos
+      let id = resultId;
+      for (let i = 0; i < 20 && !id; i++) {
+        await new Promise((r) => setTimeout(r, 150));
+        id = resultId;
+      }
+
+      // URL de preview con OG image (edge function radar-share)
+      // Twitter/X leerá og:image y mostrará la tarjeta automáticamente.
+      const projectRef = "ihxczttkofjnyviqmxpl";
+      let shareUrl = "https://ahoraorg.es/radar-politico";
+      if (id) {
+        await uploadShareImage(id);
+        shareUrl = `https://${projectRef}.supabase.co/functions/v1/radar-share?id=${id}`;
+      }
+
+      const handle = PARTY_HANDLES[top.id];
+      const partyMention = handle ? `${top.nombre} (${handle})` : top.nombre;
+      const text = `Mi partido más afín según el Radar Político de @AhoraORG_es es ${partyMention} con un ${top.affinity}% de afinidad. ¿Y el tuyo? ${HASHTAG}`;
+      const intent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareUrl)}`;
+      window.open(intent, "_blank", "noopener,noreferrer");
+    } finally {
+      setSharing(false);
+    }
   };
 
   const progress = isFinished ? 100 : (step / total) * 100;
@@ -493,8 +541,9 @@ export default function RadarPolitico() {
                 <Button onClick={downloadImage} variant="secondary">
                   <Download className="mr-2 h-4 w-4" /> Descargar imagen
                 </Button>
-                <Button onClick={shareOnTwitter} className="bg-[#1DA1F2] hover:bg-[#1a91da] text-white">
-                  <Twitter className="mr-2 h-4 w-4" /> Compartir en X
+                <Button onClick={shareOnTwitter} disabled={sharing} className="bg-[#1DA1F2] hover:bg-[#1a91da] text-white">
+                  {sharing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Twitter className="mr-2 h-4 w-4" />}
+                  {sharing ? "Preparando…" : "Compartir en X"}
                 </Button>
               </div>
             </div>
