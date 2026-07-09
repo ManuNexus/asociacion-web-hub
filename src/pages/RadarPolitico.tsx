@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useMemo } from "react";
+import { useEffect, useState, useRef, useMemo, Fragment } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { SEO } from "@/components/SEO";
@@ -177,6 +177,8 @@ export default function RadarPolitico() {
   const [loadingParties, setLoadingParties] = useState(true);
   const [step, setStep] = useState(-1);
   const [answers, setAnswers] = useState<Record<string, number>>({});
+  const [aggregate, setAggregate] = useState<{ id: string; nombre: string; color: string; count: number; pct: number }[]>([]);
+  const [loadingAggregate, setLoadingAggregate] = useState(true);
   const resultsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -188,6 +190,21 @@ export default function RadarPolitico() {
         .order("orden", { ascending: true });
       setParties((data as Party[]) ?? []);
       setLoadingParties(false);
+    })();
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      const { data, error } = await supabase.rpc("get_radar_affinity_counts");
+      if (error || !data) {
+        setLoadingAggregate(false);
+        return;
+      }
+      setAggregate(
+        (data as { id: string; nombre: string; color: string; count: number; pct: number }[])
+          .sort((a, b) => b.count - a.count),
+      );
+      setLoadingAggregate(false);
     })();
   }, []);
 
@@ -461,8 +478,9 @@ export default function RadarPolitico() {
       <div className="bg-slate-100 min-h-[calc(100vh-4rem)] py-6 md:py-10">
         <div className="container max-w-xl">
           {isLanding && (
-            <div className="bg-white rounded-[2rem] shadow-2xl shadow-primary/10 overflow-hidden border border-white flex flex-col">
-              <div className="bg-primary pt-8 pb-14 px-6 rounded-b-[2rem] relative">
+            <Fragment>
+              <div className="bg-white rounded-[2rem] shadow-2xl shadow-primary/10 overflow-hidden border border-white flex flex-col">
+                <div className="bg-primary pt-8 pb-14 px-6 rounded-b-[2rem] relative">
                 <div className="flex justify-between items-center mb-4">
                   <span className="text-secondary text-[10px] font-bold tracking-widest uppercase">
                     Radar Político · AHORA
@@ -516,7 +534,61 @@ export default function RadarPolitico() {
                 </div>
               </div>
             </div>
-          )}
+
+            {/* Gráfico en tiempo real de afinidades */}
+            <div className="mt-6 bg-white rounded-[2rem] shadow-2xl shadow-primary/10 overflow-hidden border border-white p-5 md:p-6">
+              <div className="flex items-center justify-between mb-1">
+                <h3 className="text-[11px] font-bold text-primary/60 uppercase tracking-widest">
+                  Afinidad de los participantes
+                </h3>
+                <span className="text-[10px] text-primary/40 font-medium">en tiempo real</span>
+              </div>
+              <p className="text-sm text-primary/70 mb-4">
+                Partido más afín según las personas que ya han completado el test.
+              </p>
+
+              {loadingAggregate ? (
+                <div className="h-40 flex items-center justify-center">
+                  <Loader2 className="w-6 h-6 animate-spin text-primary/40" />
+                </div>
+              ) : aggregate.length === 0 ? (
+                <div className="h-40 flex items-center justify-center text-sm text-primary/50">
+                  Aún no hay participantes. ¡Sé el primero!
+                </div>
+              ) : (
+                <div className="h-64 w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={aggregate} layout="vertical" margin={{ top: 5, right: 24, bottom: 5, left: 12 }}>
+                      <XAxis type="number" hide />
+                      <YAxis
+                        type="category"
+                        dataKey="nombre"
+                        width={80}
+                        tick={{ fontSize: 12, fontWeight: 700, fill: "#1e3a6d" }}
+                        axisLine={false}
+                        tickLine={false}
+                      />
+                      <Tooltip
+                        cursor={{ fill: "rgba(30,58,109,0.04)" }}
+                        contentStyle={{ borderRadius: "12px", border: "none", boxShadow: "0 10px 25px rgba(0,0,0,0.1)" }}
+                        formatter={(value: number, name: string, props: any) => [`${value} persona${value === 1 ? "" : "s"} (${props.payload.pct}%)`, "Más afín"]}
+                        labelStyle={{ color: "#1e3a6d", fontWeight: 700 }}
+                      />
+                      <Bar dataKey="count" radius={[0, 8, 8, 0]} barSize={24}>
+                        {aggregate.map((row) => (
+                          <Cell key={row.id} fill={row.color} />
+                        ))}
+                        <LabelList dataKey="count" position="right" formatter={(v: number) => `${v}`} style={{ fontSize: 12, fontWeight: 700, fill: "#1e3a6d" }} />
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
+              <p className="mt-3 text-[11px] text-center text-primary/40">
+                Total de respuestas registradas: <span className="font-bold text-primary/60">{aggregate.reduce((a, b) => a + b.count, 0)}</span>
+              </p>
+            </div>
+          </Fragment>)}
 
           {!isFinished && !isLanding && current && (
 
