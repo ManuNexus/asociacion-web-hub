@@ -266,8 +266,6 @@ export default function RadarPolitico() {
     savedRef.current = false;
   };
 
-  const socialCardRef = useRef<HTMLDivElement>(null);
-  const [sharing, setSharing] = useState(false);
   const HASHTAG = "#RadarPoliticoAHORA";
   const PARTY_HANDLES: Record<string, string> = {
     PP: "@ppopular",
@@ -278,82 +276,15 @@ export default function RadarPolitico() {
     CIUDADANOS: "@CiudadanosCs",
   };
 
-
-  const buildSocialCanvas = async () => {
-    if (!socialCardRef.current) return null;
-    return await html2canvas(socialCardRef.current, {
-      backgroundColor: "#224172",
-      scale: 2,
-      width: 1200,
-      height: 630,
-      windowWidth: 1200,
-      windowHeight: 630,
-      useCORS: true,
-      allowTaint: false,
-    });
-  };
-
-  const canvasToBlob = (canvas: HTMLCanvasElement): Promise<Blob | null> =>
-    new Promise((resolve) => canvas.toBlob((b) => resolve(b), "image/png"));
-
-  const downloadImage = async () => {
-    const canvas = await buildSocialCanvas();
-    if (!canvas) return;
-    const link = document.createElement("a");
-    link.download = "radar-politico-ahora.png";
-    link.href = canvas.toDataURL("image/png");
-    link.click();
-  };
-
-  /** Sube la imagen a Storage y actualiza el registro. Devuelve URL pública o null. */
-  const uploadShareImage = async (id: string): Promise<string | null> => {
-    const canvas = await buildSocialCanvas();
-    if (!canvas) return null;
-    const blob = await canvasToBlob(canvas);
-    if (!blob) return null;
-    const path = `radar-shares/${id}.png`;
-    const { error: upErr } = await supabase.storage
-      .from("mailing-images")
-      .upload(path, blob, { contentType: "image/png", upsert: true });
-    if (upErr) {
-      console.warn("Upload share image error:", upErr.message);
-      return null;
-    }
-    const { data: pub } = supabase.storage.from("mailing-images").getPublicUrl(path);
-    const image_url = pub.publicUrl;
-    await supabase.from("radar_resultados").update({ image_url }).eq("id", id);
-    return image_url;
-  };
-
-  const shareOnTwitter = async () => {
+  const shareOnTwitter = () => {
     const top = results[0];
     if (!top) return;
-    setSharing(true);
-    try {
-      // Espera brevemente a que el insert devuelva id si aún no lo tenemos
-      let id = resultId;
-      for (let i = 0; i < 20 && !id; i++) {
-        await new Promise((r) => setTimeout(r, 150));
-        id = resultId;
-      }
-
-      // URL de preview con OG image (edge function radar-share)
-      // Twitter/X leerá og:image y mostrará la tarjeta automáticamente.
-      const projectRef = "ihxczttkofjnyviqmxpl";
-      let shareUrl = "https://ahoraorg.es/radar-politico";
-      if (id) {
-        await uploadShareImage(id);
-        shareUrl = `https://${projectRef}.supabase.co/functions/v1/radar-share?id=${id}`;
-      }
-
-      const handle = PARTY_HANDLES[top.id];
-      const partyMention = handle ? `${top.nombre} (${handle})` : top.nombre;
-      const text = `Mi partido más afín según el Radar Político de @AhoraORG_es es ${partyMention} con un ${top.affinity}% de afinidad. ¿Y el tuyo? ${HASHTAG}`;
-      const intent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareUrl)}`;
-      window.open(intent, "_blank", "noopener,noreferrer");
-    } finally {
-      setSharing(false);
-    }
+    const handle = PARTY_HANDLES[top.id];
+    const partyMention = handle ? `${top.nombre} (${handle})` : top.nombre;
+    const shareUrl = "https://ahoraorg.es/radar-politico";
+    const text = `Mi partido más afín según el Radar Político de @AhoraORG_es es ${partyMention} con un ${top.affinity}% de afinidad. ¿Y el tuyo? ${HASHTAG}`;
+    const intent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareUrl)}`;
+    window.open(intent, "_blank", "noopener,noreferrer");
   };
 
   const progress = isFinished ? 100 : isLanding ? 0 : (step / total) * 100;
