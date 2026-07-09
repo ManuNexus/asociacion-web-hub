@@ -1,0 +1,2 @@
+ALTER TABLE public.radar_partidos ALTER COLUMN id SET DEFAULT gen_random_uuid();
+INSERT INTO public.radar_partidos (id, nombre, color, axis_x, axis_y, orden, activo) VALUES (gen_random_uuid(), 'CIUDADANOS', '#EB6109', 1, 0, 6, true);

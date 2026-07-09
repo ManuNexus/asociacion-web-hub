@@ -813,7 +813,7 @@ export type Database = {
           axis_y?: number
           color?: string
           created_at?: string
-          id: string
+          id?: string
           logo_url?: string | null
           nombre: string
           orden?: number
