@@ -6,6 +6,7 @@ import { Download, RotateCcw, ChevronRight, ChevronLeft, Loader2, Twitter } from
 import html2canvas from "html2canvas";
 import { supabase } from "@/integrations/supabase/client";
 import radarIllustration from "@/assets/radar-illustration.jpg";
+import logoAhoraWhite from "@/assets/logo-ahora-white.png";
 import {
   ResponsiveContainer,
   BarChart,
