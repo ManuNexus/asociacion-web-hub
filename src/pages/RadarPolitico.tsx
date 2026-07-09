@@ -395,7 +395,8 @@ export default function RadarPolitico() {
     // "de afinidad"
     ctx.fillStyle = "rgba(255,255,255,0.75)";
     ctx.font = "500 22px system-ui, -apple-system, Segoe UI, Roboto, sans-serif";
-    ctx.fillText("de coincidencia", textX + ctx.measureText(pctText).width + 16, 420);
+    ctx.fillText("de coincidencia", textX + ctx.measureText(pctText).width + 16, 460);
+
 
     // Pie: URL y hashtag
     ctx.fillStyle = "rgba(255,255,255,0.6)";
