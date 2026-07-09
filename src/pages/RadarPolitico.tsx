@@ -253,7 +253,6 @@ export default function RadarPolitico() {
 
   // Guarda anónimamente el resultado (sin datos personales) una única vez al finalizar
   const savedRef = useRef(false);
-  const [resultId, setResultId] = useState<string | null>(null);
   useEffect(() => {
     if (!isFinished || results.length === 0 || savedRef.current) return;
     savedRef.current = true;
@@ -266,13 +265,11 @@ export default function RadarPolitico() {
         resultados: results.map((r) => ({ id: r.id, nombre: r.nombre, affinity: r.affinity, color: r.color })),
         respuestas: answers,
       })
-      .select("id")
-      .single()
-      .then(({ data, error }) => {
+      .then(({ error }) => {
         if (error) console.warn("No se pudo registrar el resultado:", error.message);
-        else if (data?.id) setResultId(data.id);
       });
   }, [isFinished, results, answers]);
+
 
 
   const reset = () => {
