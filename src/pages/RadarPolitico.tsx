@@ -2,7 +2,7 @@ import { useEffect, useState, useRef, useMemo } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { SEO } from "@/components/SEO";
-import { Download, Share2, RotateCcw, ChevronRight, ChevronLeft, Loader2 } from "lucide-react";
+import { Download, RotateCcw, ChevronRight, ChevronLeft, Loader2, Twitter } from "lucide-react";
 import html2canvas from "html2canvas";
 import { supabase } from "@/integrations/supabase/client";
 import {
