@@ -436,32 +436,6 @@ export default function RadarPolitico() {
                     </div>
                   </section>
 
-                  <section>
-                    <h3 className="text-[11px] font-bold text-primary/60 uppercase tracking-widest mb-1">Mapa ideológico</h3>
-                    <p className="text-[11px] text-slate-500 mb-3">Izquierda ← → Derecha · Progresista ↓ ↑ Conservador</p>
-                    <div className="rounded-2xl bg-slate-50 border border-slate-100 p-2">
-                      <div style={{ width: "100%", height: 320 }}>
-                        <ResponsiveContainer>
-                          <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 10 }}>
-                            <XAxis type="number" dataKey="x" domain={[-2.2, 2.2]} tick={{ fontSize: 9, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
-                            <YAxis type="number" dataKey="y" domain={[-2.2, 2.2]} tick={{ fontSize: 9, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
-                            <ZAxis type="number" range={[220, 220]} />
-                            <ReferenceLine x={0} stroke="#cbd5e1" />
-                            <ReferenceLine y={0} stroke="#cbd5e1" />
-                            <Tooltip cursor={{ strokeDasharray: "3 3" }} />
-                            <Scatter data={parties.map((p) => ({ x: Number(p.axis_x), y: Number(p.axis_y), label: p.nombre, color: p.color, id: p.id }))}>
-                              {parties.map((p) => (<Cell key={p.id} fill={p.color} />))}
-                              <LabelList dataKey="label" position="top" style={{ fontSize: 10, fontWeight: 700, fill: "#224172" }} />
-                            </Scatter>
-                            <Scatter data={[{ x: userAxis.x, y: userAxis.y, label: "Tú" }]} shape="star">
-                              <Cell fill="#EBAF0A" />
-                              <LabelList dataKey="label" position="top" style={{ fontSize: 12, fontWeight: 800, fill: "#224172" }} />
-                            </Scatter>
-                          </ScatterChart>
-                        </ResponsiveContainer>
-                      </div>
-                    </div>
-                  </section>
                 </div>
               </div>
 
