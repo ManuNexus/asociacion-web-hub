@@ -248,6 +248,8 @@ export default function RadarPolitico() {
       height: 630,
       windowWidth: 1200,
       windowHeight: 630,
+      useCORS: true,
+      allowTaint: false,
     });
   };
 
