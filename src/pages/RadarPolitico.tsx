@@ -495,7 +495,7 @@ export default function RadarPolitico() {
       <div className="bg-slate-100 min-h-[calc(100vh-4rem)] py-6 md:py-10">
         <div className="container max-w-xl">
           {isLanding && (
-            <div className="bg-white rounded-[2rem] shadow-2xl shadow-primary/10 overflow-hidden border border-white flex flex-col">
+            <>
               <div className="bg-primary pt-8 pb-14 px-6 rounded-b-[2rem] relative">
                 <div className="flex justify-between items-center mb-4">
                   <span className="text-secondary text-[10px] font-bold tracking-widest uppercase">
