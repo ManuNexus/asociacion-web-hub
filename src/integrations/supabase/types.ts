@@ -833,6 +833,33 @@ export type Database = {
         }
         Relationships: []
       }
+      radar_resultados: {
+        Row: {
+          created_at: string
+          ganador_afinidad: number
+          ganador_partido_id: string
+          id: string
+          respuestas: Json
+          resultados: Json
+        }
+        Insert: {
+          created_at?: string
+          ganador_afinidad: number
+          ganador_partido_id: string
+          id?: string
+          respuestas: Json
+          resultados: Json
+        }
+        Update: {
+          created_at?: string
+          ganador_afinidad?: number
+          ganador_partido_id?: string
+          id?: string
+          respuestas?: Json
+          resultados?: Json
+        }
+        Relationships: []
+      }
       redes_sociales: {
         Row: {
           contrasena: string

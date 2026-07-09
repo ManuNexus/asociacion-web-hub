@@ -5,6 +5,7 @@ import { SEO } from "@/components/SEO";
 import { Download, RotateCcw, ChevronRight, ChevronLeft, Loader2, Twitter } from "lucide-react";
 import html2canvas from "html2canvas";
 import { supabase } from "@/integrations/supabase/client";
+import radarIllustration from "@/assets/radar-illustration.jpg";
 import {
   ResponsiveContainer,
   BarChart,
@@ -230,6 +231,26 @@ export default function RadarPolitico() {
     return { x, y };
   }, [results, isFinished]);
 
+  // Guarda anónimamente el resultado (sin datos personales) una única vez al finalizar
+  const savedRef = useRef(false);
+  useEffect(() => {
+    if (!isFinished || results.length === 0 || savedRef.current) return;
+    savedRef.current = true;
+    const top = results[0];
+    supabase
+      .from("radar_resultados")
+      .insert({
+        ganador_partido_id: top.id,
+        ganador_afinidad: top.affinity,
+        resultados: results.map((r) => ({ id: r.id, nombre: r.nombre, affinity: r.affinity })),
+        respuestas: answers,
+      })
+      .then(({ error }) => {
+        if (error) console.warn("No se pudo registrar el resultado:", error.message);
+      });
+  }, [isFinished, results, answers]);
+
+
   const reset = () => {
     setAnswers({});
     setStep(0);
@@ -304,13 +325,8 @@ export default function RadarPolitico() {
 
       <div className="bg-slate-100 min-h-[calc(100vh-4rem)] py-6 md:py-10">
         <div className="container max-w-xl">
-          <div className="mb-4 text-center">
-            <span className="inline-block text-[10px] font-bold tracking-widest uppercase text-amber-700 bg-amber-100 border border-amber-200 px-3 py-1 rounded-full">
-              Entorno de pruebas interno · Datos provisionales
-            </span>
-          </div>
-
           {!isFinished && current && (
+
             <div className="bg-white rounded-[2rem] shadow-2xl shadow-primary/10 overflow-hidden border border-white flex flex-col">
               <div className="bg-primary pt-8 pb-14 px-6 rounded-b-[2rem] relative">
                 <div className="flex justify-between items-center mb-4">
@@ -393,6 +409,24 @@ export default function RadarPolitico() {
               </div>
             </div>
           )}
+
+          {!isFinished && (
+            <div className="mt-10 flex flex-col items-center text-center animate-fade-in">
+              <img
+                src={radarIllustration}
+                alt="Ciudadanía participando en política"
+                width={1024}
+                height={1024}
+                loading="lazy"
+                className="w-full max-w-xs md:max-w-sm h-auto mix-blend-multiply select-none pointer-events-none"
+              />
+              <p className="mt-2 max-w-sm text-sm text-primary/70 font-medium">
+                Tu opinión cuenta. Al terminar, tus respuestas se suman <span className="font-bold">de forma anónima</span> a la radiografía política de AHORA.
+              </p>
+            </div>
+          )}
+
+
 
           {isFinished && results.length > 0 && (
             <div className="animate-fade-in space-y-4">
