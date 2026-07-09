@@ -175,25 +175,16 @@ const SCALE = [
 export default function RadarPolitico() {
   const [parties, setParties] = useState<Party[]>([]);
   const [loadingParties, setLoadingParties] = useState(true);
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState(-1);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const resultsRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    (async () => {
-      const { data } = await supabase
-        .from("radar_partidos")
-        .select("*")
-        .eq("activo", true)
-        .order("orden", { ascending: true });
-      setParties((data as Party[]) ?? []);
-      setLoadingParties(false);
-    })();
-  }, []);
+  const startTest = () => setStep(0);
 
   const total = QUESTIONS.length;
   const isFinished = step >= total;
-  const current = !isFinished ? QUESTIONS[step] : null;
+  const isLanding = step < 0;
+  const current = !isFinished && !isLanding ? QUESTIONS[step] : null;
   const currentAnswer = current ? answers[current.id] : undefined;
 
   const selectValue = (v: number) => {
