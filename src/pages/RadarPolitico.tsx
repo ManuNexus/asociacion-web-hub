@@ -1,10 +1,8 @@
 import { useState, useRef, useMemo } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { SEO } from "@/components/SEO";
-import { Download, Share2, RotateCcw } from "lucide-react";
+import { Download, Share2, RotateCcw, ChevronRight, ChevronLeft } from "lucide-react";
 import html2canvas from "html2canvas";
 import {
   ResponsiveContainer,
@@ -28,10 +26,7 @@ interface Party {
   id: PartyId;
   name: string;
   color: string;
-  // Posición en el eje bidimensional (-2 a +2)
-  // x: económico (-2 progresista/izquierda ↔ +2 conservador/derecha)
-  // y: social (-2 progresista ↔ +2 conservador)
-  axis: { x: number; y: number };
+  axis: { x: number; y: number }; // x: prog(-)↔cons(+), y: prog(-)↔cons(+)
 }
 
 const PARTIES: Party[] = [
@@ -47,7 +42,6 @@ interface Question {
   id: string;
   category: string;
   text: string;
-  // puntuación oficial 1-5 por partido
   scores: Record<PartyId, number>;
 }
 
@@ -78,46 +72,50 @@ const QUESTIONS: Question[] = [
   },
 ];
 
-const OPTIONS = [
-  { value: 1, label: "Totalmente en desacuerdo" },
-  { value: 2, label: "En desacuerdo" },
-  { value: 3, label: "Neutro" },
-  { value: 4, label: "De acuerdo" },
-  { value: 5, label: "Totalmente de acuerdo" },
+const SCALE = [
+  { value: 1, short: "Totalmente\nen desacuerdo" },
+  { value: 2, short: "En desacuerdo" },
+  { value: 3, short: "Neutro" },
+  { value: 4, short: "De acuerdo" },
+  { value: 5, short: "Totalmente\nde acuerdo" },
 ];
 
-// ============ COMPONENTE ============
 export default function RadarPolitico() {
-  const [step, setStep] = useState(0); // 0..QUESTIONS.length; length = resultados
+  const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const resultsRef = useRef<HTMLDivElement>(null);
 
   const total = QUESTIONS.length;
   const isFinished = step >= total;
+  const current = !isFinished ? QUESTIONS[step] : null;
+  const currentAnswer = current ? answers[current.id] : undefined;
 
-  const handleAnswer = (value: number) => {
-    const q = QUESTIONS[step];
-    setAnswers((prev) => ({ ...prev, [q.id]: value }));
-    setTimeout(() => setStep((s) => s + 1), 180);
+  const selectValue = (v: number) => {
+    if (!current) return;
+    setAnswers((prev) => ({ ...prev, [current.id]: v }));
   };
+
+  const next = () => {
+    if (currentAnswer == null) return;
+    setStep((s) => s + 1);
+  };
+  const prev = () => setStep((s) => Math.max(0, s - 1));
 
   const results = useMemo(() => {
     if (!isFinished) return [];
-    const maxDiff = 4 * QUESTIONS.length; // diferencia máxima por pregunta = 4
+    const maxDiff = 4 * QUESTIONS.length;
     return PARTIES.map((p) => {
-      const sumDiff = QUESTIONS.reduce((acc, q) => {
-        const user = answers[q.id] ?? 3;
-        return acc + Math.abs(user - q.scores[p.id]);
-      }, 0);
+      const sumDiff = QUESTIONS.reduce(
+        (acc, q) => acc + Math.abs((answers[q.id] ?? 3) - q.scores[p.id]),
+        0,
+      );
       const affinity = Math.round(100 * (1 - sumDiff / maxDiff));
       return { ...p, affinity };
     }).sort((a, b) => b.affinity - a.affinity);
   }, [isFinished, answers]);
 
-  // Posición del usuario en el eje bidimensional a partir de las respuestas
   const userAxis = useMemo(() => {
     if (!isFinished) return { x: 0, y: 0 };
-    // Estimamos posición del usuario como promedio ponderado de posiciones de partidos por afinidad
     const weights = results.map((r) => Math.max(r.affinity, 0));
     const wSum = weights.reduce((a, b) => a + b, 0) || 1;
     const x = results.reduce((acc, r, i) => acc + r.axis.x * weights[i], 0) / wSum;
@@ -132,7 +130,10 @@ export default function RadarPolitico() {
 
   const downloadImage = async () => {
     if (!resultsRef.current) return;
-    const canvas = await html2canvas(resultsRef.current, { backgroundColor: "#ffffff", scale: 2 });
+    const canvas = await html2canvas(resultsRef.current, {
+      backgroundColor: "#ffffff",
+      scale: 2,
+    });
     const link = document.createElement("a");
     link.download = "radar-politico.png";
     link.href = canvas.toDataURL("image/png");
@@ -159,147 +160,252 @@ export default function RadarPolitico() {
 
   return (
     <Layout>
-      <SEO
-        title="Radar Político — AHORA"
-        description="Herramienta interna en pruebas"
-        noindex
-      />
-      <div className="container max-w-3xl py-8 md:py-12">
-        <div className="mb-4 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-800">
-          Entorno de pruebas interno · Datos provisionales
-        </div>
+      <SEO title="Radar Político — AHORA" description="Herramienta interna en pruebas" noindex />
 
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl md:text-4xl font-bold text-primary">Radar Político</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Descubre con qué partido tienes mayor afinidad respondiendo unas preguntas.
-          </p>
-        </div>
-
-        {!isFinished && (
-          <>
-            <div className="mb-6">
-              <div className="mb-2 flex justify-between text-xs text-muted-foreground">
-                <span>Pregunta {step + 1} de {total}</span>
-                <span>{Math.round(progress)}%</span>
-              </div>
-              <Progress value={progress} className="h-2" />
-            </div>
-
-            <Card key={QUESTIONS[step].id} className="p-6 md:p-8 animate-fade-in">
-              <div className="text-xs font-semibold uppercase tracking-wider text-secondary mb-2">
-                {QUESTIONS[step].category}
-              </div>
-              <h2 className="text-lg md:text-xl font-semibold text-primary mb-6">
-                {QUESTIONS[step].text}
-              </h2>
-              <div className="flex flex-col gap-2">
-                {OPTIONS.map((o) => (
-                  <button
-                    key={o.value}
-                    onClick={() => handleAnswer(o.value)}
-                    className="w-full text-left rounded-md border border-border px-4 py-3 text-sm transition-all hover:border-secondary hover:bg-secondary/5 focus:outline-none focus:ring-2 focus:ring-secondary"
-                  >
-                    {o.label}
-                  </button>
-                ))}
-              </div>
-            </Card>
-
-            {step > 0 && (
-              <div className="mt-4 text-center">
-                <button
-                  onClick={() => setStep((s) => Math.max(0, s - 1))}
-                  className="text-xs text-muted-foreground hover:text-primary underline"
-                >
-                  ← Volver a la pregunta anterior
-                </button>
-              </div>
-            )}
-          </>
-        )}
-
-        {isFinished && (
-          <div className="animate-fade-in">
-            <div ref={resultsRef} className="bg-background p-4 md:p-6 rounded-lg">
-              <h2 className="text-2xl font-bold text-primary mb-1">Tus resultados</h2>
-              <p className="text-sm text-muted-foreground mb-6">
-                Afinidad calculada sobre {total} preguntas.
-              </p>
-
-              {/* Ranking de barras */}
-              <div className="mb-8" style={{ width: "100%", height: 320 }}>
-                <ResponsiveContainer>
-                  <BarChart data={results} layout="vertical" margin={{ left: 20, right: 40 }}>
-                    <XAxis type="number" domain={[0, 100]} tickFormatter={(v) => `${v}%`} />
-                    <YAxis type="category" dataKey="name" width={90} />
-                    <Tooltip formatter={(v: number) => `${v}%`} />
-                    <Bar dataKey="affinity" radius={[0, 6, 6, 0]}>
-                      {results.map((r) => (
-                        <Cell key={r.id} fill={r.color} />
-                      ))}
-                      <LabelList dataKey="affinity" position="right" formatter={(v: number) => `${v}%`} />
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-
-              {/* Eje bidimensional */}
-              <h3 className="text-lg font-semibold text-primary mb-2">Mapa ideológico</h3>
-              <p className="text-xs text-muted-foreground mb-3">
-                Eje horizontal: Progresista ← → Conservador · Eje vertical: Social
-              </p>
-              <div style={{ width: "100%", height: 360 }}>
-                <ResponsiveContainer>
-                  <ScatterChart margin={{ top: 20, right: 30, bottom: 20, left: 10 }}>
-                    <XAxis
-                      type="number"
-                      dataKey="x"
-                      domain={[-2.2, 2.2]}
-                      tick={{ fontSize: 10 }}
-                      label={{ value: "Progresista ← → Conservador", position: "insideBottom", offset: -5, fontSize: 11 }}
-                    />
-                    <YAxis
-                      type="number"
-                      dataKey="y"
-                      domain={[-2.2, 2.2]}
-                      tick={{ fontSize: 10 }}
-                    />
-                    <ZAxis type="number" range={[200, 200]} />
-                    <ReferenceLine x={0} stroke="#94a3b8" />
-                    <ReferenceLine y={0} stroke="#94a3b8" />
-                    <Tooltip cursor={{ strokeDasharray: "3 3" }} />
-                    <Scatter data={PARTIES.map((p) => ({ ...p, label: p.name }))}>
-                      {PARTIES.map((p) => (
-                        <Cell key={p.id} fill={p.color} />
-                      ))}
-                      <LabelList dataKey="label" position="top" style={{ fontSize: 10, fontWeight: 600 }} />
-                    </Scatter>
-                    <Scatter
-                      data={[{ x: userAxis.x, y: userAxis.y, label: "Tú" }]}
-                      shape="star"
-                    >
-                      <Cell fill="#EBAF0A" />
-                      <LabelList dataKey="label" position="top" style={{ fontSize: 12, fontWeight: 700, fill: "#224172" }} />
-                    </Scatter>
-                  </ScatterChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-
-            <div className="mt-6 flex flex-wrap gap-2 justify-center">
-              <Button onClick={reset} variant="outline">
-                <RotateCcw className="mr-2 h-4 w-4" /> Reiniciar el Radar
-              </Button>
-              <Button onClick={downloadImage} variant="secondary">
-                <Download className="mr-2 h-4 w-4" /> Descargar imagen
-              </Button>
-              <Button onClick={shareResults}>
-                <Share2 className="mr-2 h-4 w-4" /> Compartir
-              </Button>
-            </div>
+      <div className="bg-slate-100 min-h-[calc(100vh-4rem)] py-6 md:py-10">
+        <div className="container max-w-xl">
+          {/* Aviso interno */}
+          <div className="mb-4 text-center">
+            <span className="inline-block text-[10px] font-bold tracking-widest uppercase text-amber-700 bg-amber-100 border border-amber-200 px-3 py-1 rounded-full">
+              Entorno de pruebas interno · Datos provisionales
+            </span>
           </div>
-        )}
+
+          {!isFinished && current && (
+            <div className="bg-white rounded-[2rem] shadow-2xl shadow-primary/10 overflow-hidden border border-white flex flex-col">
+              {/* Hero */}
+              <div className="bg-primary pt-8 pb-14 px-6 rounded-b-[2rem] relative">
+                <div className="flex justify-between items-center mb-4">
+                  <span className="text-secondary text-[10px] font-bold tracking-widest uppercase">
+                    Radar Político · {current.category}
+                  </span>
+                  <div className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center">
+                    <div className="w-1.5 h-1.5 bg-secondary rounded-full" />
+                  </div>
+                </div>
+                <h1
+                  key={current.id}
+                  className="text-primary-foreground text-lg md:text-2xl font-bold leading-tight animate-fade-in"
+                >
+                  {current.text}
+                </h1>
+              </div>
+
+              {/* Card superpuesta */}
+              <div className="px-5 -mt-8 z-10 flex flex-col pb-6">
+                <div className="bg-white rounded-3xl shadow-xl shadow-primary/5 p-6 border border-slate-50 flex flex-col">
+                  {/* Progreso */}
+                  <div className="mb-8">
+                    <div className="flex justify-between items-end mb-2">
+                      <span className="text-[11px] font-semibold text-primary/60">PROGRESO</span>
+                      <span className="text-[11px] font-bold text-primary">
+                        {step + 1} de {total}
+                      </span>
+                    </div>
+                    <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-secondary rounded-full transition-all duration-500"
+                        style={{ width: `${progress}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Likert Slider */}
+                  <div className="py-4">
+                    <div className="relative flex justify-between items-center mb-6">
+                      <div className="absolute left-2 right-2 h-0.5 bg-slate-200 top-1/2 -translate-y-1/2 z-0" />
+                      {SCALE.map((opt) => {
+                        const selected = currentAnswer === opt.value;
+                        return (
+                          <button
+                            key={opt.value}
+                            onClick={() => selectValue(opt.value)}
+                            aria-label={opt.short.replace("\n", " ")}
+                            className={
+                              selected
+                                ? "w-10 h-10 rounded-full bg-secondary border-4 border-white shadow-lg shadow-secondary/40 z-20 relative transition-all scale-110"
+                                : "w-6 h-6 rounded-full bg-white border-2 border-slate-300 z-10 relative hover:border-primary hover:scale-110 transition-all"
+                            }
+                          />
+                        );
+                      })}
+                    </div>
+
+                    <div className="flex justify-between px-0 gap-1">
+                      {SCALE.map((opt) => {
+                        const selected = currentAnswer === opt.value;
+                        return (
+                          <div key={opt.value} className="text-center w-14">
+                            <p
+                              className={
+                                "text-[9px] font-bold uppercase leading-tight whitespace-pre-line " +
+                                (selected ? "text-primary" : "text-slate-400")
+                              }
+                            >
+                              {opt.short}
+                            </p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Nav */}
+                <div className="pt-5 flex gap-3 items-center">
+                  <button
+                    onClick={prev}
+                    disabled={step === 0}
+                    className="flex-1 h-12 rounded-xl text-[13px] font-bold text-primary border-2 border-slate-200 bg-white hover:bg-slate-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-1"
+                  >
+                    <ChevronLeft className="w-4 h-4" /> Anterior
+                  </button>
+                  <button
+                    onClick={next}
+                    disabled={currentAnswer == null}
+                    className="flex-[2] h-12 rounded-xl bg-secondary text-[13px] font-bold text-primary shadow-md hover:brightness-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <span>{step === total - 1 ? "Ver resultados" : "Continuar"}</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {isFinished && (
+            <div className="animate-fade-in space-y-4">
+              <div
+                ref={resultsRef}
+                className="bg-white rounded-[2rem] shadow-2xl shadow-primary/10 overflow-hidden border border-white"
+              >
+                <div className="bg-primary pt-8 pb-10 px-6 rounded-b-[2rem]">
+                  <span className="text-secondary text-[10px] font-bold tracking-widest uppercase">
+                    Tus resultados
+                  </span>
+                  <h2 className="text-primary-foreground text-2xl md:text-3xl font-bold mt-1">
+                    Mayor afinidad con{" "}
+                    <span style={{ color: results[0].color }}>{results[0].name}</span>
+                  </h2>
+                  <p className="text-primary-foreground/70 text-sm mt-2">
+                    {results[0].affinity}% de coincidencia · {total} preguntas
+                  </p>
+                </div>
+
+                <div className="p-5 md:p-6 space-y-8">
+                  {/* Ranking */}
+                  <section>
+                    <h3 className="text-[11px] font-bold text-primary/60 uppercase tracking-widest mb-3">
+                      Ranking de afinidad
+                    </h3>
+                    <div style={{ width: "100%", height: 280 }}>
+                      <ResponsiveContainer>
+                        <BarChart
+                          data={results}
+                          layout="vertical"
+                          margin={{ left: 4, right: 44, top: 4, bottom: 4 }}
+                        >
+                          <XAxis type="number" domain={[0, 100]} hide />
+                          <YAxis
+                            type="category"
+                            dataKey="name"
+                            width={90}
+                            tick={{ fontSize: 11, fontWeight: 700, fill: "#224172" }}
+                            axisLine={false}
+                            tickLine={false}
+                          />
+                          <Tooltip formatter={(v: number) => `${v}%`} cursor={{ fill: "#f1f5f9" }} />
+                          <Bar dataKey="affinity" radius={[0, 8, 8, 0]} barSize={22}>
+                            {results.map((r) => (
+                              <Cell key={r.id} fill={r.color} />
+                            ))}
+                            <LabelList
+                              dataKey="affinity"
+                              position="right"
+                              formatter={(v: number) => `${v}%`}
+                              style={{ fontSize: 11, fontWeight: 700, fill: "#224172" }}
+                            />
+                          </Bar>
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </section>
+
+                  {/* Mapa ideológico */}
+                  <section>
+                    <h3 className="text-[11px] font-bold text-primary/60 uppercase tracking-widest mb-1">
+                      Mapa ideológico
+                    </h3>
+                    <p className="text-[11px] text-slate-500 mb-3">
+                      Progresista ← → Conservador
+                    </p>
+                    <div className="rounded-2xl bg-slate-50 border border-slate-100 p-2">
+                      <div style={{ width: "100%", height: 320 }}>
+                        <ResponsiveContainer>
+                          <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 10 }}>
+                            <XAxis
+                              type="number"
+                              dataKey="x"
+                              domain={[-2.2, 2.2]}
+                              tick={{ fontSize: 9, fill: "#94a3b8" }}
+                              axisLine={false}
+                              tickLine={false}
+                            />
+                            <YAxis
+                              type="number"
+                              dataKey="y"
+                              domain={[-2.2, 2.2]}
+                              tick={{ fontSize: 9, fill: "#94a3b8" }}
+                              axisLine={false}
+                              tickLine={false}
+                            />
+                            <ZAxis type="number" range={[220, 220]} />
+                            <ReferenceLine x={0} stroke="#cbd5e1" />
+                            <ReferenceLine y={0} stroke="#cbd5e1" />
+                            <Tooltip cursor={{ strokeDasharray: "3 3" }} />
+                            <Scatter data={PARTIES.map((p) => ({ ...p, label: p.name }))}>
+                              {PARTIES.map((p) => (
+                                <Cell key={p.id} fill={p.color} />
+                              ))}
+                              <LabelList
+                                dataKey="label"
+                                position="top"
+                                style={{ fontSize: 10, fontWeight: 700, fill: "#224172" }}
+                              />
+                            </Scatter>
+                            <Scatter
+                              data={[{ x: userAxis.x, y: userAxis.y, label: "Tú" }]}
+                              shape="star"
+                            >
+                              <Cell fill="#EBAF0A" />
+                              <LabelList
+                                dataKey="label"
+                                position="top"
+                                style={{ fontSize: 12, fontWeight: 800, fill: "#224172" }}
+                              />
+                            </Scatter>
+                          </ScatterChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+                  </section>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap gap-2 justify-center pt-2">
+                <Button onClick={reset} variant="outline">
+                  <RotateCcw className="mr-2 h-4 w-4" /> Reiniciar el Radar
+                </Button>
+                <Button onClick={downloadImage} variant="secondary">
+                  <Download className="mr-2 h-4 w-4" /> Descargar imagen
+                </Button>
+                <Button onClick={shareResults}>
+                  <Share2 className="mr-2 h-4 w-4" /> Compartir
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </Layout>
   );
