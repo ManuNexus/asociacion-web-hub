@@ -1311,6 +1311,16 @@ export type Database = {
           nombre: string
         }[]
       }
+      get_radar_affinity_counts: {
+        Args: never
+        Returns: {
+          color: string
+          count: number
+          id: string
+          nombre: string
+          pct: number
+        }[]
+      }
       get_socios_for_junta: {
         Args: never
         Returns: {
