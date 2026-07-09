@@ -410,6 +410,24 @@ export default function RadarPolitico() {
             </div>
           )}
 
+          {!isFinished && (
+            <div className="mt-10 flex flex-col items-center text-center animate-fade-in">
+              <img
+                src={radarIllustration}
+                alt="Ciudadanía participando en política"
+                width={1024}
+                height={1024}
+                loading="lazy"
+                className="w-full max-w-xs md:max-w-sm h-auto mix-blend-multiply select-none pointer-events-none"
+              />
+              <p className="mt-2 max-w-sm text-sm text-primary/70 font-medium">
+                Tu opinión cuenta. Al terminar, tus respuestas se suman <span className="font-bold">de forma anónima</span> a la radiografía política de AHORA.
+              </p>
+            </div>
+          )}
+
+
+
           {isFinished && results.length > 0 && (
             <div className="animate-fade-in space-y-4">
               <div ref={resultsRef} className="bg-white rounded-[2rem] shadow-2xl shadow-primary/10 overflow-hidden border border-white">
