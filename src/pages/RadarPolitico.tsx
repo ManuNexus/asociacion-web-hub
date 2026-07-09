@@ -177,6 +177,8 @@ export default function RadarPolitico() {
   const [loadingParties, setLoadingParties] = useState(true);
   const [step, setStep] = useState(-1);
   const [answers, setAnswers] = useState<Record<string, number>>({});
+  const [aggregate, setAggregate] = useState<{ id: string; nombre: string; color: string; count: number; pct: number }[]>([]);
+  const [loadingAggregate, setLoadingAggregate] = useState(true);
   const resultsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -190,6 +192,38 @@ export default function RadarPolitico() {
       setLoadingParties(false);
     })();
   }, []);
+
+  useEffect(() => {
+    (async () => {
+      const { data, error } = await supabase
+        .from("radar_resultados")
+        .select("ganador_partido_id, ganador_afinidad");
+      if (error || !data) {
+        setLoadingAggregate(false);
+        return;
+      }
+      const total = data.length || 1;
+      const counts = data.reduce((acc, row) => {
+        const id = row.ganador_partido_id;
+        acc[id] = (acc[id] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+      const rows = Object.entries(counts)
+        .map(([id, count]) => {
+          const p = parties.find((x) => x.id === id);
+          return {
+            id,
+            nombre: p?.nombre ?? id,
+            color: p?.color ?? "#94a3b8",
+            count,
+            pct: Math.round((count / total) * 1000) / 10,
+          };
+        })
+        .sort((a, b) => b.count - a.count);
+      setAggregate(rows);
+      setLoadingAggregate(false);
+    })();
+  }, [parties]);
 
   const startTest = () => setStep(0);
 
