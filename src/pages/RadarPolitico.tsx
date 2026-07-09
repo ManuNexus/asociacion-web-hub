@@ -682,7 +682,6 @@ export default function RadarPolitico() {
 
             <div style={{ position: "absolute", bottom: 32, left: 56, right: 56, display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 15, opacity: 0.85 }}>
               <span>Haz tu test en ahoraorg.es/radar-politico</span>
-              <span style={{ fontWeight: 700 }}>#AHORA</span>
             </div>
           </div>
         </div>
