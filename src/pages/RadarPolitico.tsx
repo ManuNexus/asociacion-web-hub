@@ -275,9 +275,9 @@ export default function RadarPolitico() {
   const reset = () => {
     setAnswers({});
     setStep(-1);
-    setResultId(null);
     savedRef.current = false;
   };
+
 
   const HASHTAG = "#RadarPoliticoAHORA";
   const PARTY_HANDLES: Record<string, string> = {
