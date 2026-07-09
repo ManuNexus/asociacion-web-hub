@@ -794,6 +794,45 @@ export type Database = {
         }
         Relationships: []
       }
+      radar_partidos: {
+        Row: {
+          activo: boolean
+          axis_x: number
+          axis_y: number
+          color: string
+          created_at: string
+          id: string
+          logo_url: string | null
+          nombre: string
+          orden: number
+          updated_at: string
+        }
+        Insert: {
+          activo?: boolean
+          axis_x?: number
+          axis_y?: number
+          color?: string
+          created_at?: string
+          id: string
+          logo_url?: string | null
+          nombre: string
+          orden?: number
+          updated_at?: string
+        }
+        Update: {
+          activo?: boolean
+          axis_x?: number
+          axis_y?: number
+          color?: string
+          created_at?: string
+          id?: string
+          logo_url?: string | null
+          nombre?: string
+          orden?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       redes_sociales: {
         Row: {
           contrasena: string
