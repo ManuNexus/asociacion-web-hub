@@ -672,9 +672,13 @@ export default function RadarPolitico() {
                 <Button onClick={reset} variant="outline">
                   <RotateCcw className="mr-2 h-4 w-4" /> Reiniciar
                 </Button>
-                <Button onClick={shareOnTwitter} disabled={sharing} className="bg-[#1DA1F2] hover:bg-[#1a91da] text-white">
-                  {sharing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Twitter className="mr-2 h-4 w-4" />}
-                  {sharing ? "Generando…" : "Compartir en X"}
+                <Button onClick={downloadImage} disabled={sharing} variant="outline">
+                  {sharing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
+                  {sharing ? "Generando…" : "Descargar imagen"}
+                </Button>
+                <Button onClick={shareOnTwitter} className="bg-[#1DA1F2] hover:bg-[#1a91da] text-white">
+                  <Twitter className="mr-2 h-4 w-4" />
+                  Compartir en X
                 </Button>
               </div>
             </div>
