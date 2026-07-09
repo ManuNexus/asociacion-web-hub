@@ -50,6 +50,7 @@ import { AdminMailings } from "@/components/admin/AdminMailings";
 import { RedesSociales } from "@/components/junta/RedesSociales";
 import { BirthdayPopup } from "@/components/admin/BirthdayPopup";
 import AdminSemaforo from "@/components/admin/AdminSemaforo";
+import AdminRadarPolitico from "@/components/admin/AdminRadarPolitico";
 
 
 interface Categoria {
