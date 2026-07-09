@@ -259,6 +259,15 @@ export default function RadarPolitico() {
   const socialCardRef = useRef<HTMLDivElement>(null);
   const SHARE_URL = "https://ahoraorg.es/radar-politico";
   const HASHTAG = "#RadarPoliticoAHORA";
+  const PARTY_HANDLES: Record<string, string> = {
+    PP: "@ppopular",
+    PSOE: "@PSOE",
+    VOX: "@vox_es",
+    SUMAR: "@sumar",
+    PODEMOS: "@PODEMOS",
+    CIUDADANOS: "@CiudadanosCs",
+  };
+
 
   const buildSocialCanvas = async () => {
     if (!socialCardRef.current) return null;
