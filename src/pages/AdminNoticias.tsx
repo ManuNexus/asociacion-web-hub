@@ -50,6 +50,7 @@ import { AdminMailings } from "@/components/admin/AdminMailings";
 import { RedesSociales } from "@/components/junta/RedesSociales";
 import { BirthdayPopup } from "@/components/admin/BirthdayPopup";
 import AdminSemaforo from "@/components/admin/AdminSemaforo";
+import AdminRadarPolitico from "@/components/admin/AdminRadarPolitico";
 
 
 interface Categoria {
@@ -664,6 +665,10 @@ const AdminNoticias = () => {
               <TabsTrigger value="semaforo" className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm shrink-0">
                 <Eye className="h-4 w-4 shrink-0" />
                 <span>Semáforo</span>
+              </TabsTrigger>
+              <TabsTrigger value="radar-politico" className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm shrink-0">
+                <Eye className="h-4 w-4 shrink-0" />
+                <span>Radar Político</span>
               </TabsTrigger>
             </TabsList>
 
@@ -1348,6 +1353,11 @@ const AdminNoticias = () => {
             {/* Tab Semáforo */}
             <TabsContent value="semaforo">
               <AdminSemaforo />
+            </TabsContent>
+
+            {/* Tab Radar Político */}
+            <TabsContent value="radar-politico">
+              <AdminRadarPolitico />
             </TabsContent>
           </Tabs>
         </div>
