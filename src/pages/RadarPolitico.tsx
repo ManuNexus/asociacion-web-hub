@@ -275,15 +275,161 @@ export default function RadarPolitico() {
     CIUDADANOS: "@CiudadanosCs",
   };
 
-  const shareOnTwitter = () => {
+  const [sharing, setSharing] = useState(false);
+
+  const loadImage = (src: string): Promise<HTMLImageElement> =>
+    new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => resolve(img);
+      img.onerror = reject;
+      img.src = src;
+    });
+
+  const drawRoundedRect = (
+    ctx: CanvasRenderingContext2D,
+    x: number, y: number, w: number, h: number, r: number,
+  ) => {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  };
+
+  const generateShareImage = async (): Promise<Blob | null> => {
+    const top = results[0];
+    if (!top) return null;
+
+    const W = 1200, H = 630;
+    const canvas = document.createElement("canvas");
+    canvas.width = W; canvas.height = H;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return null;
+
+    // Fondo azul corporativo con degradado sutil
+    const bg = ctx.createLinearGradient(0, 0, 0, H);
+    bg.addColorStop(0, "#2A4E85");
+    bg.addColorStop(1, "#1B3560");
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, W, H);
+
+    // Acento amarillo en la esquina inferior izquierda
+    ctx.fillStyle = "#EBAF0A";
+    ctx.fillRect(0, H - 8, W, 8);
+
+    // Logo AHORA arriba a la derecha (proporción respetada)
+    try {
+      const ahora = await loadImage(logoAhoraWhite);
+      const targetH = 56;
+      const ratio = ahora.width / ahora.height;
+      const targetW = targetH * ratio;
+      ctx.drawImage(ahora, W - targetW - 48, 44, targetW, targetH);
+    } catch { /* ignore */ }
+
+    // Etiqueta pequeña arriba a la izquierda
+    ctx.fillStyle = "#EBAF0A";
+    ctx.font = "700 16px system-ui, -apple-system, Segoe UI, Roboto, sans-serif";
+    ctx.textBaseline = "top";
+    ctx.fillText("RADAR POLÍTICO", 60, 56);
+    ctx.fillStyle = "rgba(255,255,255,0.55)";
+    ctx.font = "500 14px system-ui, -apple-system, Segoe UI, Roboto, sans-serif";
+    ctx.fillText("Test de afinidad · 20 preguntas", 60, 82);
+
+    // Título
+    ctx.fillStyle = "rgba(255,255,255,0.85)";
+    ctx.font = "500 26px system-ui, -apple-system, Segoe UI, Roboto, sans-serif";
+    ctx.textBaseline = "alphabetic";
+    ctx.fillText("Mi partido más afín es", 60, 210);
+
+    // Tarjeta blanca con logo del partido
+    const cardX = 60, cardY = 240, cardSize = 200;
+    ctx.fillStyle = "#FFFFFF";
+    drawRoundedRect(ctx, cardX, cardY, cardSize, cardSize, 28);
+    ctx.fill();
+
+    if (top.logo_url) {
+      try {
+        const logo = await loadImage(top.logo_url);
+        const pad = 26;
+        const maxW = cardSize - pad * 2;
+        const maxH = cardSize - pad * 2;
+        const r = Math.min(maxW / logo.width, maxH / logo.height);
+        const w = logo.width * r, h = logo.height * r;
+        ctx.drawImage(logo, cardX + (cardSize - w) / 2, cardY + (cardSize - h) / 2, w, h);
+      } catch { /* ignore */ }
+    }
+
+    // Nombre del partido en su color
+    const textX = cardX + cardSize + 36;
+    ctx.fillStyle = top.color;
+    ctx.font = "800 64px system-ui, -apple-system, Segoe UI, Roboto, sans-serif";
+    ctx.textBaseline = "alphabetic";
+    ctx.fillText(top.nombre, textX, 310);
+
+    // Porcentaje grande
+    ctx.fillStyle = "#EBAF0A";
+    ctx.font = "900 128px system-ui, -apple-system, Segoe UI, Roboto, sans-serif";
+    const pctText = `${top.affinity}%`;
+    ctx.fillText(pctText, textX, 420);
+
+    // "de afinidad"
+    ctx.fillStyle = "rgba(255,255,255,0.75)";
+    ctx.font = "500 22px system-ui, -apple-system, Segoe UI, Roboto, sans-serif";
+    ctx.fillText("de coincidencia", textX + ctx.measureText(pctText).width + 16, 420);
+
+    // Pie: URL y hashtag
+    ctx.fillStyle = "rgba(255,255,255,0.6)";
+    ctx.font = "600 18px system-ui, -apple-system, Segoe UI, Roboto, sans-serif";
+    ctx.fillText("ahoraorg.es/radar-politico", 60, H - 40);
+
+    ctx.fillStyle = "#EBAF0A";
+    ctx.textAlign = "right";
+    ctx.fillText(HASHTAG, W - 60, H - 40);
+    ctx.textAlign = "left";
+
+    return await new Promise<Blob | null>((resolve) =>
+      canvas.toBlob((b) => resolve(b), "image/png", 0.95),
+    );
+  };
+
+  const shareOnTwitter = async () => {
     const top = results[0];
     if (!top) return;
+    setSharing(true);
     const handle = PARTY_HANDLES[top.id];
     const partyMention = handle ? `${top.nombre} (${handle})` : top.nombre;
-    const shareUrl = "https://ahoraorg.es/radar-politico";
+    let shareUrl = "https://ahoraorg.es/radar-politico";
+
+    try {
+      const blob = await generateShareImage();
+      if (blob && resultId) {
+        const path = `radar-politico/${resultId}.png`;
+        const { error: upErr } = await supabase.storage
+          .from("mailing-images")
+          .upload(path, blob, { contentType: "image/png", upsert: true });
+        if (!upErr) {
+          const { data: pub } = supabase.storage.from("mailing-images").getPublicUrl(path);
+          if (pub?.publicUrl) {
+            await supabase
+              .from("radar_resultados")
+              .update({ image_url: pub.publicUrl })
+              .eq("id", resultId);
+            // URL de la edge function que devuelve OG tags con la imagen personalizada
+            shareUrl = `https://ihxczttkofjnyviqmxpl.supabase.co/functions/v1/radar-share?id=${resultId}`;
+          }
+        }
+      }
+    } catch (e) {
+      console.warn("No se pudo generar la imagen compartida", e);
+    }
+
     const text = `Mi partido más afín según el Radar Político de @AhoraORG_es es ${partyMention} con un ${top.affinity}% de afinidad. ¿Y el tuyo? ${HASHTAG}`;
     const intent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareUrl)}`;
     window.open(intent, "_blank", "noopener,noreferrer");
+    setSharing(false);
   };
 
   const progress = isFinished ? 100 : isLanding ? 0 : (step / total) * 100;
