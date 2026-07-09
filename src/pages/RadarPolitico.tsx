@@ -6,6 +6,7 @@ import { Download, RotateCcw, ChevronRight, ChevronLeft, Loader2, Twitter } from
 import html2canvas from "html2canvas";
 import { supabase } from "@/integrations/supabase/client";
 import radarIllustration from "@/assets/radar-illustration.jpg";
+import logoAhoraWhite from "@/assets/logo-ahora-white.png";
 import {
   ResponsiveContainer,
   BarChart,
@@ -632,6 +633,14 @@ export default function RadarPolitico() {
             {/* Acento amarillo */}
             <div style={{ position: "absolute", top: 0, left: 0, width: 8, height: "100%", background: "#EBAF0A" }} />
             <div style={{ position: "absolute", top: -80, right: -80, width: 320, height: 320, borderRadius: "50%", background: "rgba(235,175,10,0.12)" }} />
+
+            {/* Logo AHORA arriba a la derecha */}
+            <img
+              src={logoAhoraWhite}
+              crossOrigin="anonymous"
+              alt="AHORA"
+              style={{ position: "absolute", top: 48, right: 56, width: 160, height: 56, objectFit: "contain" }}
+            />
 
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
