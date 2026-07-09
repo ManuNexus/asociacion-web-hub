@@ -2,7 +2,7 @@ import { useEffect, useState, useRef, useMemo } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { SEO } from "@/components/SEO";
-import { Download, Share2, RotateCcw, ChevronRight, ChevronLeft, Loader2 } from "lucide-react";
+import { Download, RotateCcw, ChevronRight, ChevronLeft, Loader2, Twitter } from "lucide-react";
 import html2canvas from "html2canvas";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -235,28 +235,39 @@ export default function RadarPolitico() {
     setStep(0);
   };
 
+  const socialCardRef = useRef<HTMLDivElement>(null);
+  const SHARE_URL = "https://ahoraorg.es/radar-politico";
+  const HASHTAG = "#RadarPoliticoAHORA";
+
+  const buildSocialCanvas = async () => {
+    if (!socialCardRef.current) return null;
+    return await html2canvas(socialCardRef.current, {
+      backgroundColor: "#224172",
+      scale: 2,
+      width: 1200,
+      height: 630,
+      windowWidth: 1200,
+      windowHeight: 630,
+    });
+  };
+
   const downloadImage = async () => {
-    if (!resultsRef.current) return;
-    const canvas = await html2canvas(resultsRef.current, { backgroundColor: "#ffffff", scale: 2 });
+    const canvas = await buildSocialCanvas();
+    if (!canvas) return;
     const link = document.createElement("a");
-    link.download = "radar-politico.png";
+    link.download = "radar-politico-ahora.png";
     link.href = canvas.toDataURL("image/png");
     link.click();
   };
 
-  const shareResults = async () => {
+  const shareOnTwitter = async () => {
     const top = results[0];
     if (!top) return;
-    const text = `Mi Radar Político: ${top.nombre} (${top.affinity}% afinidad)`;
-    const url = window.location.href;
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: "Radar Político", text, url });
-      } catch { /* cancelled */ }
-    } else {
-      await navigator.clipboard.writeText(`${text} — ${url}`);
-      alert("Resultado copiado al portapapeles");
-    }
+    // También descargamos la imagen para que el usuario pueda adjuntarla al tweet
+    await downloadImage();
+    const text = `Mi partido más afín según el Radar Político de @AHORA_Org es ${top.nombre} con un ${top.affinity}% de afinidad. ¿Y el tuyo? ${HASHTAG}`;
+    const intent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(SHARE_URL)}`;
+    window.open(intent, "_blank", "noopener,noreferrer");
   };
 
   const progress = isFinished ? 100 : (step / total) * 100;
@@ -461,14 +472,75 @@ export default function RadarPolitico() {
                 <Button onClick={downloadImage} variant="secondary">
                   <Download className="mr-2 h-4 w-4" /> Descargar imagen
                 </Button>
-                <Button onClick={shareResults}>
-                  <Share2 className="mr-2 h-4 w-4" /> Compartir
+                <Button onClick={shareOnTwitter} className="bg-[#1DA1F2] hover:bg-[#1a91da] text-white">
+                  <Twitter className="mr-2 h-4 w-4" /> Compartir en X
                 </Button>
               </div>
             </div>
           )}
         </div>
       </div>
+
+      {/* Tarjeta oculta para exportar imagen 1200x630 (formato redes sociales) */}
+      {isFinished && results.length > 0 && (
+        <div style={{ position: "fixed", left: -10000, top: 0, pointerEvents: "none" }} aria-hidden="true">
+          <div
+            ref={socialCardRef}
+            style={{
+              width: 1200,
+              height: 630,
+              background: "linear-gradient(135deg, #224172 0%, #1a3560 60%, #142a4d 100%)",
+              color: "#ffffff",
+              fontFamily: "Montserrat, system-ui, sans-serif",
+              padding: 56,
+              boxSizing: "border-box",
+              position: "relative",
+              overflow: "hidden",
+            }}
+          >
+            {/* Acento amarillo */}
+            <div style={{ position: "absolute", top: 0, left: 0, width: 8, height: "100%", background: "#EBAF0A" }} />
+            <div style={{ position: "absolute", top: -80, right: -80, width: 320, height: 320, borderRadius: "50%", background: "rgba(235,175,10,0.12)" }} />
+
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <span style={{ background: "#EBAF0A", color: "#224172", fontWeight: 800, fontSize: 14, padding: "6px 14px", borderRadius: 999, letterSpacing: 1 }}>
+                  RADAR POLÍTICO
+                </span>
+                <span style={{ opacity: 0.85, fontSize: 16 }}>AHORA · ahoraorg.es</span>
+              </div>
+              <span style={{ fontSize: 14, opacity: 0.75 }}>{HASHTAG}</span>
+            </div>
+
+            <h2 style={{ fontSize: 34, fontWeight: 300, margin: 0, marginBottom: 8, opacity: 0.9 }}>Mi partido más afín es</h2>
+            <h1 style={{ fontSize: 88, fontWeight: 900, margin: 0, marginBottom: 8, color: results[0].color, textShadow: "0 2px 20px rgba(0,0,0,0.3)" }}>
+              {results[0].nombre}
+            </h1>
+            <p style={{ fontSize: 44, fontWeight: 700, margin: 0, marginBottom: 32 }}>
+              <span style={{ color: "#EBAF0A" }}>{results[0].affinity}%</span>
+              <span style={{ fontSize: 28, fontWeight: 400, opacity: 0.85, marginLeft: 12 }}>de afinidad</span>
+            </p>
+
+            {/* Ranking top 5 en barras */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {results.slice(0, 5).map((r) => (
+                <div key={r.id} style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                  <div style={{ width: 130, fontSize: 16, fontWeight: 700, textAlign: "right" }}>{r.nombre}</div>
+                  <div style={{ flex: 1, height: 22, background: "rgba(255,255,255,0.12)", borderRadius: 999, overflow: "hidden" }}>
+                    <div style={{ width: `${r.affinity}%`, height: "100%", background: r.color, borderRadius: 999 }} />
+                  </div>
+                  <div style={{ width: 60, fontSize: 16, fontWeight: 700 }}>{r.affinity}%</div>
+                </div>
+              ))}
+            </div>
+
+            <div style={{ position: "absolute", bottom: 32, left: 56, right: 56, display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 15, opacity: 0.85 }}>
+              <span>Haz tu test en ahoraorg.es/radar-politico</span>
+              <span style={{ fontWeight: 700 }}>#AHORA</span>
+            </div>
+          </div>
+        </div>
+      )}
     </Layout>
   );
 }
