@@ -253,7 +253,6 @@ export default function RadarPolitico() {
 
   // Guarda anónimamente el resultado (sin datos personales) una única vez al finalizar
   const savedRef = useRef(false);
-  const [resultId, setResultId] = useState<string | null>(null);
   useEffect(() => {
     if (!isFinished || results.length === 0 || savedRef.current) return;
     savedRef.current = true;
@@ -266,21 +265,19 @@ export default function RadarPolitico() {
         resultados: results.map((r) => ({ id: r.id, nombre: r.nombre, affinity: r.affinity, color: r.color })),
         respuestas: answers,
       })
-      .select("id")
-      .single()
-      .then(({ data, error }) => {
+      .then(({ error }) => {
         if (error) console.warn("No se pudo registrar el resultado:", error.message);
-        else if (data?.id) setResultId(data.id);
       });
   }, [isFinished, results, answers]);
+
 
 
   const reset = () => {
     setAnswers({});
     setStep(-1);
-    setResultId(null);
     savedRef.current = false;
   };
+
 
   const HASHTAG = "#RadarPoliticoAHORA";
   const PARTY_HANDLES: Record<string, string> = {
@@ -395,7 +392,8 @@ export default function RadarPolitico() {
     // "de afinidad"
     ctx.fillStyle = "rgba(255,255,255,0.75)";
     ctx.font = "500 22px system-ui, -apple-system, Segoe UI, Roboto, sans-serif";
-    ctx.fillText("de coincidencia", textX + ctx.measureText(pctText).width + 16, 420);
+    ctx.fillText("de coincidencia", textX + ctx.measureText(pctText).width + 16, 460);
+
 
     // Pie: URL y hashtag
     ctx.fillStyle = "rgba(255,255,255,0.6)";
