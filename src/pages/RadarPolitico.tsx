@@ -81,7 +81,7 @@ const QUESTIONS: Question[] = [
   {
     id: "q7", category: "Vivienda",
     text: "El Estado debe intervenir y regular el precio máximo del alquiler en zonas tensionadas.",
-    scores: { PP: 1, PSOE: 5, VOX: 1, SUMAR: 5, PODEMOS: 5, CIUDADANOS: 2 },
+    scores: { PP: 1, PSOE: 5, VOX: 1, SUMAR: 5, PODEMOS: 5, CIUDADANOS: 3 },
   },
   {
     id: "q8", category: "Vivienda",
@@ -134,7 +134,7 @@ const QUESTIONS: Question[] = [
   {
     id: "q16", category: "Inmigración",
     text: "Hay que endurecer los controles migratorios y facilitar las deportaciones de irregulares.",
-    scores: { PP: 4, PSOE: 2, VOX: 5, SUMAR: 1, PODEMOS: 1, CIUDADANOS: 2 },
+    scores: { PP: 4, PSOE: 2, VOX: 5, SUMAR: 1, PODEMOS: 1, CIUDADANOS: 4 },
   },
   {
     id: "q17", category: "Inmigración",
