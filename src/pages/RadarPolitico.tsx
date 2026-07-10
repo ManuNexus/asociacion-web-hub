@@ -256,7 +256,7 @@ export default function RadarPolitico() {
     ctx.fillText("RADAR POLÍTICO", 60, 56);
     ctx.fillStyle = "rgba(255,255,255,0.55)";
     ctx.font = "500 14px system-ui, -apple-system, Segoe UI, Roboto, sans-serif";
-    ctx.fillText("`Test de afinidad · ${questions.length} preguntas`", 60, 82);
+    ctx.fillText(`Test de afinidad · ${questions.length} preguntas`, 60, 82);
 
     // Título
     ctx.fillStyle = "rgba(255,255,255,0.85)";
