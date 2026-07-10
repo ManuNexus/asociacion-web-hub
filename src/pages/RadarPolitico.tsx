@@ -47,120 +47,120 @@ const QUESTIONS: Question[] = [
   {
     id: "q1", category: "Economía",
     text: "Hay que reducir los impuestos directos a empresas y autónomos para estimular la actividad económica.",
-    scores: { CIUDADANOS: 5, PP: 5, VOX: 4, PSOE: 2, SUMAR: 1, PODEMOS: 1 },
+    scores: { PP: 5, PSOE: 2, VOX: 5, SUMAR: 1, PODEMOS: 1, CIUDADANOS: 5 },
   },
   {
     id: "q2", category: "Economía",
     text: "El salario mínimo interprofesional debe seguir subiendo hasta alcanzar el 60% del salario medio.",
-    scores: { PODEMOS: 5, SUMAR: 5, PSOE: 5, CIUDADANOS: 2, PP: 2, VOX: 3 },
+    scores: { PP: 2, PSOE: 5, VOX: 2, SUMAR: 5, PODEMOS: 5, CIUDADANOS: 3 },
   },
   {
     id: "q3", category: "Economía",
     text: "Debe implantarse una jornada laboral de 32-35 horas sin reducción salarial.",
-    scores: { PODEMOS: 5, SUMAR: 5, PSOE: 3, CIUDADANOS: 1, PP: 1, VOX: 2 },
+    scores: { PP: 1, PSOE: 4, VOX: 1, SUMAR: 5, PODEMOS: 5, CIUDADANOS: 2 },
   },
   {
     id: "q4", category: "Economía",
     text: "Grandes fortunas y bancos deben pagar impuestos extraordinarios permanentes.",
-    scores: { PODEMOS: 5, SUMAR: 5, PSOE: 4, CIUDADANOS: 1, PP: 1, VOX: 2 },
+    scores: { PP: 1, PSOE: 4, VOX: 1, SUMAR: 5, PODEMOS: 5, CIUDADANOS: 1 },
   },
 
   // MODELO TERRITORIAL (2)
   {
     id: "q5", category: "Modelo Territorial",
     text: "Es necesario recentralizar competencias autonómicas como educación o sanidad para asegurar la homogeneidad.",
-    scores: { VOX: 5, CIUDADANOS: 4, PP: 3, PSOE: 1, SUMAR: 1, PODEMOS: 1 },
+    scores: { PP: 3, PSOE: 1, VOX: 5, SUMAR: 1, PODEMOS: 1, CIUDADANOS: 3 },
   },
   {
     id: "q6", category: "Modelo Territorial",
     text: "Cataluña y País Vasco deberían poder celebrar referéndums de autodeterminación pactados con el Estado.",
-    scores: { PODEMOS: 5, SUMAR: 4, PSOE: 2, CIUDADANOS: 1, PP: 1, VOX: 1 },
+    scores: { PP: 1, PSOE: 1, VOX: 1, SUMAR: 2, PODEMOS: 4, CIUDADANOS: 1 },
   },
 
   // VIVIENDA (2)
   {
     id: "q7", category: "Vivienda",
     text: "El Estado debe intervenir y regular el precio máximo del alquiler en zonas tensionadas.",
-    scores: { PODEMOS: 5, SUMAR: 5, PSOE: 4, CIUDADANOS: 1, PP: 1, VOX: 1 },
+    scores: { PP: 1, PSOE: 5, VOX: 1, SUMAR: 5, PODEMOS: 5, CIUDADANOS: 1 },
   },
   {
     id: "q8", category: "Vivienda",
     text: "La solución al problema de vivienda pasa por liberar suelo y ayudar a comprar, no por regular alquileres.",
-    scores: { CIUDADANOS: 5, PP: 5, VOX: 4, PSOE: 2, SUMAR: 1, PODEMOS: 1 },
+    scores: { PP: 5, PSOE: 2, VOX: 4, SUMAR: 1, PODEMOS: 1, CIUDADANOS: 5 },
   },
 
   // ENERGÍA Y MEDIOAMBIENTE (2)
   {
     id: "q9", category: "Energía",
     text: "Debe prolongarse la vida útil de las centrales nucleares actuales como energía de transición.",
-    scores: { VOX: 5, PP: 5, CIUDADANOS: 5, PSOE: 2, SUMAR: 1, PODEMOS: 1 },
+    scores: { PP: 5, PSOE: 1, VOX: 4, SUMAR: 1, PODEMOS: 1, CIUDADANOS: 4 },
   },
   {
     id: "q10", category: "Medioambiente",
     text: "España debe acelerar el cierre del diésel/gasolina y priorizar coche eléctrico y transporte público.",
-    scores: { PODEMOS: 5, SUMAR: 5, PSOE: 4, CIUDADANOS: 4, PP: 2, VOX: 1 },
+    scores: { PP: 2, PSOE: 4, VOX: 1, SUMAR: 5, PODEMOS: 5, CIUDADANOS: 3 },
   },
 
   // SOCIAL / DERECHOS (3)
   {
     id: "q11", category: "Derechos LGTBI",
     text: "La ley trans (autodeterminación de género sin informe médico) debe mantenerse tal cual.",
-    scores: { PODEMOS: 5, SUMAR: 5, PSOE: 4, CIUDADANOS: 3, PP: 1, VOX: 1 },
+    scores: { PP: 1, PSOE: 4, VOX: 1, SUMAR: 5, PODEMOS: 5, CIUDADANOS: 1 },
   },
   {
     id: "q12", category: "Aborto y Eutanasia",
     text: "El derecho al aborto y a la eutanasia deben blindarse constitucionalmente.",
-    scores: { PODEMOS: 5, SUMAR: 5, PSOE: 5, CIUDADANOS: 5, PP: 2, VOX: 1 },
+    scores: { PP: 1, PSOE: 5, VOX: 1, SUMAR: 5, PODEMOS: 5, CIUDADANOS: 3 },
   },
   {
     id: "q13", category: "Seguridad",
     text: "Hay que endurecer las penas de cárcel y ampliar los efectivos policiales.",
-    scores: { VOX: 5, PP: 5, CIUDADANOS: 3, PSOE: 3, SUMAR: 2, PODEMOS: 1 },
+    scores: { PP: 5, PSOE: 2, VOX: 5, SUMAR: 1, PODEMOS: 1, CIUDADANOS: 4 },
   },
 
   // EDUCACIÓN (2)
   {
     id: "q14", category: "Educación",
     text: "La educación concertada debe recibir financiación pública en igualdad con la pública.",
-    scores: { VOX: 5, PP: 5, CIUDADANOS: 3, PSOE: 2, SUMAR: 1, PODEMOS: 1 },
+    scores: { PP: 5, PSOE: 2, VOX: 5, SUMAR: 1, PODEMOS: 1, CIUDADANOS: 4 },
   },
   {
     id: "q15", category: "Educación",
     text: "Debe eliminarse la asignatura de religión del horario lectivo en la escuela pública.",
-    scores: { PODEMOS: 5, SUMAR: 5, CIUDADANOS: 5, PSOE: 3, PP: 1, VOX: 1 },
+    scores: { PP: 1, PSOE: 3, VOX: 1, SUMAR: 4, PODEMOS: 5, CIUDADANOS: 3 },
   },
 
   // INMIGRACIÓN (2)
   {
     id: "q16", category: "Inmigración",
     text: "Hay que endurecer los controles migratorios y facilitar las deportaciones de irregulares.",
-    scores: { VOX: 5, PP: 4, CIUDADANOS: 2, PSOE: 2, SUMAR: 1, PODEMOS: 1 },
+    scores: { PP: 4, PSOE: 2, VOX: 5, SUMAR: 1, PODEMOS: 1, CIUDADANOS: 3 },
   },
   {
     id: "q17", category: "Inmigración",
     text: "Los inmigrantes en situación irregular deben tener acceso pleno a sanidad y servicios sociales.",
-    scores: { PODEMOS: 5, SUMAR: 5, PSOE: 4, CIUDADANOS: 4, PP: 2, VOX: 1 },
+    scores: { PP: 2, PSOE: 4, VOX: 1, SUMAR: 5, PODEMOS: 5, CIUDADANOS: 3 },
   },
 
   // JUSTICIA Y MEMORIA (1)
   {
     id: "q18", category: "Memoria Histórica",
     text: "La Ley de Memoria Democrática debe mantenerse y ampliarse.",
-    scores: { PODEMOS: 5, SUMAR: 5, PSOE: 5, CIUDADANOS: 3, PP: 2, VOX: 1 },
+    scores: { PP: 1, PSOE: 5, VOX: 1, SUMAR: 5, PODEMOS: 5, CIUDADANOS: 2 },
   },
 
   // UE / EXTERIOR (1)
   {
     id: "q19", category: "Unión Europea",
     text: "España debe aumentar su gasto militar hasta el 2% del PIB comprometido con la OTAN.",
-    scores: { PP: 5, VOX: 4, CIUDADANOS: 5, PSOE: 4, SUMAR: 1, PODEMOS: 1 },
+    scores: { PP: 5, PSOE: 3, VOX: 5, SUMAR: 1, PODEMOS: 1, CIUDADANOS: 4 },
   },
 
   // IGUALDAD (1)
   {
     id: "q20", category: "Igualdad",
     text: "Las políticas específicas de igualdad de género (Ministerio de Igualdad, leyes de paridad) son necesarias.",
-    scores: { PODEMOS: 5, SUMAR: 5, PSOE: 5, CIUDADANOS: 4, PP: 2, VOX: 1 },
+    scores: { PP: 2, PSOE: 5, VOX: 1, SUMAR: 5, PODEMOS: 5, CIUDADANOS: 3 },
   },
 ];
 
