@@ -162,6 +162,108 @@ const QUESTIONS: Question[] = [
     text: "Las políticas específicas de igualdad de género (Ministerio de Igualdad, leyes de paridad) son necesarias.",
     scores: { PP: 2, PSOE: 5, VOX: 1, SUMAR: 5, PODEMOS: 5, CIUDADANOS: 3 },
   },
+
+  // ============ PREGUNTAS ESPECÍFICAS PARA DIFERENCIAR PARTIDOS ============
+  // Extraídas de programas electorales y votaciones parlamentarias reales.
+
+  // Regeneración institucional — Cs se diferencia claramente de PP aquí
+  {
+    id: "q21", category: "Regeneración",
+    text: "Deben suprimirse las Diputaciones Provinciales por ser una duplicidad administrativa.",
+    scores: { PP: 1, PSOE: 2, VOX: 4, SUMAR: 4, PODEMOS: 5, CIUDADANOS: 5 },
+  },
+  {
+    id: "q22", category: "Regeneración",
+    text: "Hay que suprimir los aforamientos de políticos y altos cargos.",
+    scores: { PP: 2, PSOE: 3, VOX: 4, SUMAR: 5, PODEMOS: 5, CIUDADANOS: 5 },
+  },
+  {
+    id: "q23", category: "Sistema electoral",
+    text: "Debe implantarse un sistema de listas electorales abiertas y desbloqueadas.",
+    scores: { PP: 2, PSOE: 2, VOX: 3, SUMAR: 4, PODEMOS: 5, CIUDADANOS: 5 },
+  },
+  {
+    id: "q24", category: "Sistema electoral",
+    text: "El alcalde debe ser el cabeza de la lista más votada (elección directa).",
+    scores: { PP: 4, PSOE: 1, VOX: 3, SUMAR: 1, PODEMOS: 1, CIUDADANOS: 5 },
+  },
+
+  // Laicidad — Cs sí, PP no
+  {
+    id: "q25", category: "Laicidad",
+    text: "Debe derogarse el Concordato con la Santa Sede y avanzar hacia un Estado plenamente aconfesional.",
+    scores: { PP: 1, PSOE: 3, VOX: 1, SUMAR: 5, PODEMOS: 5, CIUDADANOS: 4 },
+  },
+
+  // Gestación subrogada — solo Cs la ha defendido abiertamente
+  {
+    id: "q26", category: "Derechos civiles",
+    text: "Debe legalizarse la gestación subrogada altruista (no comercial) en España.",
+    scores: { PP: 2, PSOE: 2, VOX: 2, SUMAR: 1, PODEMOS: 1, CIUDADANOS: 5 },
+  },
+
+  // MIR educativo — propuesta estrella histórica de Cs
+  {
+    id: "q27", category: "Educación",
+    text: "Debe implantarse un 'MIR educativo': examen y residencia obligatoria para acceder a docente.",
+    scores: { PP: 3, PSOE: 4, VOX: 2, SUMAR: 3, PODEMOS: 3, CIUDADANOS: 5 },
+  },
+
+  // Prostitución
+  {
+    id: "q28", category: "Igualdad",
+    text: "España debe adoptar un modelo abolicionista de la prostitución (penalizar al cliente).",
+    scores: { PP: 3, PSOE: 5, VOX: 2, SUMAR: 3, PODEMOS: 2, CIUDADANOS: 4 },
+  },
+
+  // Armonización fiscal — PP Madrid vs PSOE/izquierda
+  {
+    id: "q29", category: "Economía",
+    text: "Debe armonizarse la fiscalidad autonómica (Sucesiones, Patrimonio) para evitar competencia entre CCAA.",
+    scores: { PP: 1, PSOE: 5, VOX: 2, SUMAR: 5, PODEMOS: 5, CIUDADANOS: 2 },
+  },
+
+  // Tauromaquia
+  {
+    id: "q30", category: "Cultura",
+    text: "Debe retirarse toda subvención y financiación pública a la tauromaquia.",
+    scores: { PP: 1, PSOE: 3, VOX: 1, SUMAR: 5, PODEMOS: 5, CIUDADANOS: 3 },
+  },
+
+  // Ingreso Mínimo Vital
+  {
+    id: "q31", category: "Economía",
+    text: "El Ingreso Mínimo Vital debe ampliarse en cuantía y cobertura hasta erradicar la pobreza severa.",
+    scores: { PP: 2, PSOE: 5, VOX: 1, SUMAR: 5, PODEMOS: 5, CIUDADANOS: 3 },
+  },
+
+  // Ley violencia de género — VOX quiere derogar
+  {
+    id: "q32", category: "Igualdad",
+    text: "La Ley Integral contra la Violencia de Género (2004) debe mantenerse y reforzarse.",
+    scores: { PP: 3, PSOE: 5, VOX: 1, SUMAR: 5, PODEMOS: 5, CIUDADANOS: 5 },
+  },
+
+  // Monarquía / república
+  {
+    id: "q33", category: "Modelo de Estado",
+    text: "Debe celebrarse un referéndum sobre monarquía o república.",
+    scores: { PP: 1, PSOE: 1, VOX: 1, SUMAR: 4, PODEMOS: 5, CIUDADANOS: 2 },
+  },
+
+  // Empresa pública energética / bancaria
+  {
+    id: "q34", category: "Economía",
+    text: "Sectores estratégicos (energía, banca) deben tener una empresa pública que compita con las privadas.",
+    scores: { PP: 1, PSOE: 3, VOX: 1, SUMAR: 5, PODEMOS: 5, CIUDADANOS: 1 },
+  },
+
+  // Reducción parlamentarios
+  {
+    id: "q35", category: "Regeneración",
+    text: "Hay que reducir significativamente el número de diputados, senadores y cargos públicos.",
+    scores: { PP: 3, PSOE: 2, VOX: 5, SUMAR: 1, PODEMOS: 1, CIUDADANOS: 4 },
+  },
 ];
 
 const SCALE = [
