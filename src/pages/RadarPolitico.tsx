@@ -62,7 +62,7 @@ const QUESTIONS: Question[] = [
   {
     id: "q4", category: "Economía",
     text: "Grandes fortunas y bancos deben pagar impuestos extraordinarios permanentes.",
-    scores: { PP: 1, PSOE: 4, VOX: 1, SUMAR: 5, PODEMOS: 5, CIUDADANOS: 1 },
+    scores: { PP: 1, PSOE: 4, VOX: 1, SUMAR: 5, PODEMOS: 5, CIUDADANOS: 2 },
   },
 
   // MODELO TERRITORIAL (2)
