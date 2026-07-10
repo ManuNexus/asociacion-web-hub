@@ -38,16 +38,20 @@ interface SocioBasic {
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isParticipaOpen, setIsParticipaOpen] = useState(false);
+  const [isAccionesOpen, setIsAccionesOpen] = useState(false);
   const [isConocenosOpen, setIsConocenosOpen] = useState(false);
-  const [isMobileParticipaOpen, setIsMobileParticipaOpen] = useState(false);
+  const [isParticipaOpen, setIsParticipaOpen] = useState(false);
+  const [isMobileAccionesOpen, setIsMobileAccionesOpen] = useState(false);
   const [isMobileConocenosOpen, setIsMobileConocenosOpen] = useState(false);
+  const [isMobileParticipaOpen, setIsMobileParticipaOpen] = useState(false);
   const [socioData, setSocioData] = useState<SocioBasic | null>(null);
   const location = useLocation();
   const { user, isSocio, loading } = useAuth();
+  const accionesRef = useRef<HTMLDivElement>(null);
   const participaRef = useRef<HTMLDivElement>(null);
   const conocenosRef = useRef<HTMLDivElement>(null);
 
+  const isAccionesActive = accionesLinks.some((l) => location.pathname === l.href);
   const isParticipaActive = participaLinks.some((l) => location.pathname === l.href);
   const isConocenosActive = conocenosLinks.some((l) => location.pathname === l.href);
 
