@@ -39,7 +39,7 @@ interface Question {
   scores: Record<string, number>;
 }
 
-// ============ 35 PREGUNTAS (extraídas de programas 2023-2025) ============
+// ============ 36 PREGUNTAS (extraídas de programas 2023-2025) ============
 // Escala de respuesta: totalmente en desacuerdo → totalmente de acuerdo.
 // CIUDADANOS incluido como placeholder centrista-liberal por si el admin lo activa.
 const QUESTIONS: Question[] = [
@@ -65,7 +65,7 @@ const QUESTIONS: Question[] = [
     scores: { PP: 1, PSOE: 4, VOX: 1, SUMAR: 5, PODEMOS: 5, CIUDADANOS: 2 },
   },
 
-  // MODELO TERRITORIAL (2)
+  // MODELO TERRITORIAL (3)
   {
     id: "q5", category: "Modelo Territorial",
     text: "Es necesario recentralizar competencias autonómicas como educación o sanidad para asegurar la homogeneidad.",
@@ -263,6 +263,13 @@ const QUESTIONS: Question[] = [
     id: "q35", category: "Regeneración",
     text: "Hay que reducir significativamente el número de diputados, senadores y cargos públicos.",
     scores: { PP: 3, PSOE: 2, VOX: 5, SUMAR: 1, PODEMOS: 1, CIUDADANOS: 5 },
+  },
+
+  // Eliminación CC.AA.
+  {
+    id: "q36", category: "Modelo Territorial",
+    text: "Las comunidades autónomas deberían eliminarse y el Estado volver a ser fuertemente centralizado.",
+    scores: { PP: 2, PSOE: 1, VOX: 5, SUMAR: 1, PODEMOS: 1, CIUDADANOS: 2 },
   },
 ];
 
