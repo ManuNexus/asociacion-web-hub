@@ -719,38 +719,36 @@ export default function RadarPolitico() {
                     </div>
                   </div>
 
-                  <div className="py-4">
-                    <div className="relative flex justify-between items-center mb-6">
-                      <div className="absolute left-2 right-2 h-0.5 bg-slate-200 top-1/2 -translate-y-1/2 z-0" />
-                      {SCALE.map((opt) => {
-                        const selected = currentAnswer === opt.value;
-                        return (
-                          <button
-                            key={opt.value}
-                            onClick={() => selectValue(opt.value)}
-                            aria-label={opt.short.replace("\n", " ")}
-                            className={
-                              selected
-                                ? "w-10 h-10 rounded-full bg-secondary border-4 border-white shadow-lg shadow-secondary/40 z-20 relative transition-all scale-110"
-                                : "w-6 h-6 rounded-full bg-white border-2 border-slate-300 z-10 relative hover:border-primary hover:scale-110 transition-all"
-                            }
-                          />
-                        );
-                      })}
-                    </div>
-
-                    <div className="flex justify-between px-0 gap-1">
-                      {SCALE.map((opt) => {
-                        const selected = currentAnswer === opt.value;
-                        return (
-                          <div key={opt.value} className="text-center w-14">
-                            <p className={"text-[9px] font-bold uppercase leading-tight whitespace-pre-line " + (selected ? "text-primary" : "text-slate-400")}>
-                              {opt.short}
-                            </p>
+                  <div className="space-y-3">
+                    {SCALE.map((opt) => {
+                      const selected = currentAnswer === opt.value;
+                      const label = opt.short.replace("\n", " ");
+                      return (
+                        <button
+                          key={opt.value}
+                          onClick={() => selectValue(opt.value)}
+                          aria-label={label}
+                          className={
+                            "w-full py-4 px-5 rounded-2xl border-2 text-left transition-all active:scale-[0.98] " +
+                            (selected
+                              ? "border-primary bg-primary/5 text-primary"
+                              : "border-slate-100 bg-white text-slate-600 hover:border-primary/30")
+                          }
+                        >
+                          <div className="flex items-center gap-4">
+                            <div
+                              className={
+                                "w-3 h-3 rounded-full border-2 transition-colors " +
+                                (selected ? "bg-primary border-primary" : "border-slate-300")
+                              }
+                            />
+                            <span className={"text-sm " + (selected ? "font-bold" : "font-semibold")}>
+                              {label}
+                            </span>
                           </div>
-                        );
-                      })}
-                    </div>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
