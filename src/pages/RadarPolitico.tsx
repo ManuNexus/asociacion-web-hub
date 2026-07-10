@@ -35,12 +35,12 @@ interface Question {
   id: string;
   category: string;
   text: string;
-  /** Puntuación 1-5 de cada partido para esta pregunta. Claves = id partido en BD. */
+  /** Posición de cada partido en escala de acuerdo/desacuerdo con el enunciado. Claves = id partido en BD. */
   scores: Record<string, number>;
 }
 
-// ============ 20 PREGUNTAS (extraídas de programas 2023-2025) ============
-// Escala: 1 = totalmente en desacuerdo con el enunciado, 5 = totalmente de acuerdo.
+// ============ 35 PREGUNTAS (extraídas de programas 2023-2025) ============
+// Escala de respuesta: totalmente en desacuerdo → totalmente de acuerdo.
 // CIUDADANOS incluido como placeholder centrista-liberal por si el admin lo activa.
 const QUESTIONS: Question[] = [
   // ECONOMÍA (4)
@@ -269,7 +269,7 @@ const QUESTIONS: Question[] = [
 const SCALE = [
   { value: 1, short: "Totalmente\nen desacuerdo" },
   { value: 2, short: "En desacuerdo" },
-  { value: 3, short: "Neutro" },
+  { value: 3, short: "Ni de acuerdo\nni en desacuerdo" },
   { value: 4, short: "De acuerdo" },
   { value: 5, short: "Totalmente\nde acuerdo" },
 ];
