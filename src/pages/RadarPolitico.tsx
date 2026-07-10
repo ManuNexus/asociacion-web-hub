@@ -116,10 +116,10 @@ export default function RadarPolitico() {
 
   const startTest = () => setStep(0);
 
-  const total = QUESTIONS.length;
+  const total = questions.length;
   const isFinished = step >= total;
   const isLanding = step < 0;
-  const current = !isFinished && !isLanding ? QUESTIONS[step] : null;
+  const current = !isFinished && !isLanding ? questions[step] : null;
   const currentAnswer = current ? answers[current.id] : undefined;
 
   const selectValue = (v: number) => {
@@ -135,10 +135,10 @@ export default function RadarPolitico() {
 
   const results = useMemo(() => {
     if (!isFinished || parties.length === 0) return [];
-    const maxDiff = 4 * QUESTIONS.length;
+    const maxDiff = 4 * questions.length;
     return parties
       .map((p) => {
-        const sumDiff = QUESTIONS.reduce(
+        const sumDiff = questions.reduce(
           (acc, q) => acc + Math.abs((answers[q.id] ?? 3) - (q.scores[p.id] ?? 3)),
           0,
         );
