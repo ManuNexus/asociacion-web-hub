@@ -69,7 +69,7 @@ const QUESTIONS: Question[] = [
   {
     id: "q5", category: "Modelo Territorial",
     text: "Es necesario recentralizar competencias autonómicas como educación o sanidad para asegurar la homogeneidad.",
-    scores: { PP: 3, PSOE: 1, VOX: 5, SUMAR: 1, PODEMOS: 1, CIUDADANOS: 3 },
+    scores: { PP: 3, PSOE: 1, VOX: 5, SUMAR: 1, PODEMOS: 1, CIUDADANOS: 2 },
   },
   {
     id: "q6", category: "Modelo Territorial",
