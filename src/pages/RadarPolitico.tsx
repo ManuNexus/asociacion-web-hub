@@ -269,7 +269,7 @@ const QUESTIONS: Question[] = [
 const SCALE = [
   { value: 1, short: "Totalmente\nen desacuerdo" },
   { value: 2, short: "En desacuerdo" },
-  { value: 3, short: "Neutro" },
+  { value: 3, short: "Ni de acuerdo\nni en desacuerdo" },
   { value: 4, short: "De acuerdo" },
   { value: 5, short: "Totalmente\nde acuerdo" },
 ];
