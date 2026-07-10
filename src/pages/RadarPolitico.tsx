@@ -35,12 +35,13 @@ interface Question {
   id: string;
   category: string;
   text: string;
-  /** Posición de cada partido en escala de acuerdo/desacuerdo con el enunciado. Claves = id partido en BD. */
+  /** Posición de cada partido en escala 1-5. Claves = id partido en BD. */
   scores: Record<string, number>;
 }
 
 // Las preguntas se cargan dinámicamente desde la tabla `radar_preguntas`
 // y son editables desde el panel de administración (Admin → Radar Político → Preguntas).
+
 
 
 const SCALE = [
@@ -54,6 +55,8 @@ const SCALE = [
 export default function RadarPolitico() {
   const [parties, setParties] = useState<Party[]>([]);
   const [loadingParties, setLoadingParties] = useState(true);
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [loadingQuestions, setLoadingQuestions] = useState(true);
   const [step, setStep] = useState(-1);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [aggregate, setAggregate] = useState<{ id: string; nombre: string; color: string; count: number; pct: number }[]>([]);
@@ -71,6 +74,30 @@ export default function RadarPolitico() {
       setLoadingParties(false);
     })();
   }, []);
+
+  useEffect(() => {
+    (async () => {
+      const { data, error } = await supabase
+        .from("radar_preguntas")
+        .select("id,categoria,texto,scores,orden")
+        .eq("activa", true)
+        .order("orden", { ascending: true });
+      if (error || !data) {
+        setLoadingQuestions(false);
+        return;
+      }
+      setQuestions(
+        (data as any[]).map((q) => ({
+          id: q.id,
+          category: q.categoria,
+          text: q.texto,
+          scores: (q.scores ?? {}) as Record<string, number>,
+        })),
+      );
+      setLoadingQuestions(false);
+    })();
+  }, []);
+
 
   useEffect(() => {
     (async () => {
