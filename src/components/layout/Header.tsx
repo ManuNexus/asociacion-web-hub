@@ -12,7 +12,6 @@ const navLinks = [
   { href: "/", label: "Inicio" },
   { href: "/noticias", label: "Sala de Prensa" },
   { href: "/eventos", label: "Eventos" },
-  { href: "/semaforo-institucional", label: "Semáforo" },
 ];
 
 const conocenosLinks = [
@@ -20,11 +19,15 @@ const conocenosLinks = [
   { href: "/transparencia", label: "Transparencia" },
 ];
 
+const accionesLinks = [
+  { href: "/semaforo-institucional", label: "Semáforo" },
+  { href: "/radar-politico", label: "Radar Político" },
+];
+
 const participaLinks = [
   { href: "/hazte-socio", label: "Hazte Socio" },
   { href: "/hazte-amigo", label: "Hazte Amigo" },
   { href: "/dona", label: "Dona" },
-  { href: "/radar-politico", label: "Radar Político" },
 ];
 
 interface SocioBasic {
@@ -35,16 +38,20 @@ interface SocioBasic {
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isParticipaOpen, setIsParticipaOpen] = useState(false);
+  const [isAccionesOpen, setIsAccionesOpen] = useState(false);
   const [isConocenosOpen, setIsConocenosOpen] = useState(false);
-  const [isMobileParticipaOpen, setIsMobileParticipaOpen] = useState(false);
+  const [isParticipaOpen, setIsParticipaOpen] = useState(false);
+  const [isMobileAccionesOpen, setIsMobileAccionesOpen] = useState(false);
   const [isMobileConocenosOpen, setIsMobileConocenosOpen] = useState(false);
+  const [isMobileParticipaOpen, setIsMobileParticipaOpen] = useState(false);
   const [socioData, setSocioData] = useState<SocioBasic | null>(null);
   const location = useLocation();
   const { user, isSocio, loading } = useAuth();
+  const accionesRef = useRef<HTMLDivElement>(null);
   const participaRef = useRef<HTMLDivElement>(null);
   const conocenosRef = useRef<HTMLDivElement>(null);
 
+  const isAccionesActive = accionesLinks.some((l) => location.pathname === l.href);
   const isParticipaActive = participaLinks.some((l) => location.pathname === l.href);
   const isConocenosActive = conocenosLinks.some((l) => location.pathname === l.href);
 
@@ -67,6 +74,9 @@ export function Header() {
   // Close dropdowns on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
+      if (accionesRef.current && !accionesRef.current.contains(e.target as Node)) {
+        setIsAccionesOpen(false);
+      }
       if (participaRef.current && !participaRef.current.contains(e.target as Node)) {
         setIsParticipaOpen(false);
       }
@@ -80,9 +90,11 @@ export function Header() {
 
   // Close dropdown on route change
   useEffect(() => {
+    setIsAccionesOpen(false);
     setIsParticipaOpen(false);
     setIsConocenosOpen(false);
     setIsMenuOpen(false);
+    setIsMobileAccionesOpen(false);
     setIsMobileParticipaOpen(false);
     setIsMobileConocenosOpen(false);
   }, [location.pathname]);
@@ -109,6 +121,38 @@ export function Header() {
               {link.label}
             </Link>
           ))}
+
+          {/* Acciones Dropdown */}
+          <div className="relative" ref={accionesRef}>
+            <button
+              onClick={() => setIsAccionesOpen(!isAccionesOpen)}
+              className={`flex items-center gap-1 px-2.5 xl:px-4 py-2 text-sm font-medium transition-colors rounded-md hover:bg-ahora-yellow/20 hover:text-ahora-yellow whitespace-nowrap ${
+                isAccionesActive
+                  ? "text-ahora-yellow bg-ahora-yellow/15"
+                  : "text-muted-foreground"
+              }`}
+            >
+              Acciones
+              <ChevronDown className={`h-4 w-4 transition-transform ${isAccionesOpen ? "rotate-180" : ""}`} />
+            </button>
+            {isAccionesOpen && (
+              <div className="absolute top-full left-0 mt-1 w-48 rounded-lg border border-border bg-popover shadow-elevated animate-fade-in z-50">
+                {accionesLinks.map((link) => (
+                  <Link
+                    key={link.href}
+                    to={link.href}
+                    className={`block px-4 py-3 text-sm font-medium transition-colors first:rounded-t-lg last:rounded-b-lg hover:bg-ahora-yellow/10 hover:text-ahora-yellow ${
+                      location.pathname === link.href
+                        ? "text-ahora-yellow bg-ahora-yellow/5"
+                        : "text-muted-foreground"
+                    }`}
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
 
           {/* Conócenos Dropdown */}
           <div className="relative" ref={conocenosRef}>
@@ -229,6 +273,37 @@ export function Header() {
                 {link.label}
               </Link>
             ))}
+
+            {/* Acciones mobile */}
+            <button
+              onClick={() => setIsMobileAccionesOpen(!isMobileAccionesOpen)}
+              className={`flex items-center justify-between px-4 py-3 text-sm font-medium transition-colors rounded-md ${
+                isAccionesActive
+                  ? "text-ahora-yellow bg-ahora-yellow/15"
+                  : "text-muted-foreground hover:text-ahora-yellow hover:bg-ahora-yellow/20"
+              }`}
+            >
+              Acciones
+              <ChevronDown className={`h-4 w-4 transition-transform ${isMobileAccionesOpen ? "rotate-180" : ""}`} />
+            </button>
+            {isMobileAccionesOpen && (
+              <div className="ml-4 flex flex-col gap-1">
+                {accionesLinks.map((link) => (
+                  <Link
+                    key={link.href}
+                    to={link.href}
+                    onClick={() => setIsMenuOpen(false)}
+                    className={`px-4 py-2.5 text-sm font-medium transition-colors rounded-md ${
+                      location.pathname === link.href
+                        ? "text-ahora-yellow bg-ahora-yellow/15"
+                        : "text-muted-foreground hover:text-ahora-yellow hover:bg-ahora-yellow/20"
+                    }`}
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
+            )}
 
             {/* Conócenos mobile */}
             <button
