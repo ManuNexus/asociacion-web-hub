@@ -452,7 +452,7 @@ export default function RadarPolitico() {
     ctx.fillText("RADAR POLÍTICO", 60, 56);
     ctx.fillStyle = "rgba(255,255,255,0.55)";
     ctx.font = "500 14px system-ui, -apple-system, Segoe UI, Roboto, sans-serif";
-    ctx.fillText("Test de afinidad · 20 preguntas", 60, 82);
+    ctx.fillText("Test de afinidad · 35 preguntas", 60, 82);
 
     // Título
     ctx.fillStyle = "rgba(255,255,255,0.85)";
@@ -602,7 +602,7 @@ export default function RadarPolitico() {
                   <ul className="space-y-2 mb-6 text-sm text-primary/70">
                     <li className="flex items-start gap-2">
                       <span className="text-secondary font-bold">✓</span>
-                      <span>20 preguntas sobre economía, territorio, vivienda, inmigración, derechos y más.</span>
+                      <span>35 preguntas sobre economía, territorio, vivienda, inmigración, derechos y más.</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-secondary font-bold">✓</span>
