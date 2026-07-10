@@ -213,7 +213,7 @@ const QUESTIONS: Question[] = [
   {
     id: "q28", category: "Igualdad",
     text: "España debe adoptar un modelo abolicionista de la prostitución (penalizar al cliente).",
-    scores: { PP: 3, PSOE: 5, VOX: 2, SUMAR: 3, PODEMOS: 2, CIUDADANOS: 4 },
+    scores: { PP: 3, PSOE: 5, VOX: 2, SUMAR: 3, PODEMOS: 2, CIUDADANOS: 1 },
   },
 
   // Armonización fiscal — PP Madrid vs PSOE/izquierda
