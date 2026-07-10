@@ -122,6 +122,38 @@ export function Header() {
             </Link>
           ))}
 
+          {/* Acciones Dropdown */}
+          <div className="relative" ref={accionesRef}>
+            <button
+              onClick={() => setIsAccionesOpen(!isAccionesOpen)}
+              className={`flex items-center gap-1 px-2.5 xl:px-4 py-2 text-sm font-medium transition-colors rounded-md hover:bg-ahora-yellow/20 hover:text-ahora-yellow whitespace-nowrap ${
+                isAccionesActive
+                  ? "text-ahora-yellow bg-ahora-yellow/15"
+                  : "text-muted-foreground"
+              }`}
+            >
+              Acciones
+              <ChevronDown className={`h-4 w-4 transition-transform ${isAccionesOpen ? "rotate-180" : ""}`} />
+            </button>
+            {isAccionesOpen && (
+              <div className="absolute top-full left-0 mt-1 w-48 rounded-lg border border-border bg-popover shadow-elevated animate-fade-in z-50">
+                {accionesLinks.map((link) => (
+                  <Link
+                    key={link.href}
+                    to={link.href}
+                    className={`block px-4 py-3 text-sm font-medium transition-colors first:rounded-t-lg last:rounded-b-lg hover:bg-ahora-yellow/10 hover:text-ahora-yellow ${
+                      location.pathname === link.href
+                        ? "text-ahora-yellow bg-ahora-yellow/5"
+                        : "text-muted-foreground"
+                    }`}
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+
           {/* Conócenos Dropdown */}
           <div className="relative" ref={conocenosRef}>
             <button
