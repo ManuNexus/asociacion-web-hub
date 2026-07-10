@@ -162,12 +162,13 @@ ${casosResumen}`,
     const aiData = await aiResponse.json();
     const contenido = aiData.choices?.[0]?.message?.content || "No se pudo generar el análisis.";
 
-    // Save to cache (24h TTL)
+    // Save to cache with a very long TTL: CIVI only regenera cuando alguien
+    // borra el caché manualmente (botón "Sincronizar" o api-semaforo?action=refresh-civi).
     await supabase.from("civi_cache").upsert({
       contexto,
       contenido,
       datos_extra: stats,
-      expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+      expires_at: new Date(Date.now() + 100 * 365 * 24 * 60 * 60 * 1000).toISOString(),
     }, { onConflict: "contexto" });
 
     return new Response(JSON.stringify({ contenido, datos_extra: stats, cached: false, cached_at: new Date().toISOString() }), {
