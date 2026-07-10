@@ -12,7 +12,6 @@ const navLinks = [
   { href: "/", label: "Inicio" },
   { href: "/noticias", label: "Sala de Prensa" },
   { href: "/eventos", label: "Eventos" },
-  { href: "/semaforo-institucional", label: "Semáforo" },
 ];
 
 const conocenosLinks = [
@@ -20,11 +19,15 @@ const conocenosLinks = [
   { href: "/transparencia", label: "Transparencia" },
 ];
 
+const accionesLinks = [
+  { href: "/semaforo-institucional", label: "Semáforo" },
+  { href: "/radar-politico", label: "Radar Político" },
+];
+
 const participaLinks = [
   { href: "/hazte-socio", label: "Hazte Socio" },
   { href: "/hazte-amigo", label: "Hazte Amigo" },
   { href: "/dona", label: "Dona" },
-  { href: "/radar-politico", label: "Radar Político" },
 ];
 
 interface SocioBasic {
