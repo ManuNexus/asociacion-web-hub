@@ -134,7 +134,7 @@ const QUESTIONS: Question[] = [
   {
     id: "q16", category: "Inmigración",
     text: "Hay que endurecer los controles migratorios y facilitar las deportaciones de irregulares.",
-    scores: { PP: 4, PSOE: 2, VOX: 5, SUMAR: 1, PODEMOS: 1, CIUDADANOS: 3 },
+    scores: { PP: 4, PSOE: 2, VOX: 5, SUMAR: 1, PODEMOS: 1, CIUDADANOS: 2 },
   },
   {
     id: "q17", category: "Inmigración",
