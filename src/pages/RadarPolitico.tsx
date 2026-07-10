@@ -81,7 +81,7 @@ const QUESTIONS: Question[] = [
   {
     id: "q7", category: "Vivienda",
     text: "El Estado debe intervenir y regular el precio máximo del alquiler en zonas tensionadas.",
-    scores: { PP: 1, PSOE: 5, VOX: 1, SUMAR: 5, PODEMOS: 5, CIUDADANOS: 1 },
+    scores: { PP: 1, PSOE: 5, VOX: 1, SUMAR: 5, PODEMOS: 5, CIUDADANOS: 2 },
   },
   {
     id: "q8", category: "Vivienda",
