@@ -550,7 +550,7 @@ export default function RadarPolitico() {
   if (loadingParties) {
     return (
       <Layout>
-        <SEO title="Radar Político — AHORA" description="Test de afinidad política: descubre con qué partido coincides. 20 preguntas, anónimo, 5 minutos." />
+        <SEO title="Radar Político — AHORA" description="Test de afinidad política: descubre con qué partido coincides. 35 preguntas, anónimo, 5 minutos." />
         <div className="min-h-[60vh] flex items-center justify-center">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
@@ -561,7 +561,7 @@ export default function RadarPolitico() {
   if (parties.length === 0) {
     return (
       <Layout>
-        <SEO title="Radar Político — AHORA" description="Test de afinidad política: descubre con qué partido coincides. 20 preguntas, anónimo, 5 minutos." />
+        <SEO title="Radar Político — AHORA" description="Test de afinidad política: descubre con qué partido coincides. 35 preguntas, anónimo, 5 minutos." />
         <div className="min-h-[60vh] flex items-center justify-center px-4">
           <p className="text-center text-muted-foreground">
             No hay partidos activos configurados. Añádelos desde el panel de administración.
@@ -573,7 +573,7 @@ export default function RadarPolitico() {
 
   return (
     <Layout>
-      <SEO title="Radar Político — AHORA" description="Test de afinidad política: descubre con qué partido coincides. 20 preguntas, anónimo, 5 minutos." />
+      <SEO title="Radar Político — AHORA" description="Test de afinidad política: descubre con qué partido coincides. 35 preguntas, anónimo, 5 minutos." />
 
       <div className="bg-slate-100 min-h-[calc(100vh-4rem)] py-6 md:py-10">
         <div className="container max-w-xl">
