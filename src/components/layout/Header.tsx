@@ -274,6 +274,37 @@ export function Header() {
               </Link>
             ))}
 
+            {/* Acciones mobile */}
+            <button
+              onClick={() => setIsMobileAccionesOpen(!isMobileAccionesOpen)}
+              className={`flex items-center justify-between px-4 py-3 text-sm font-medium transition-colors rounded-md ${
+                isAccionesActive
+                  ? "text-ahora-yellow bg-ahora-yellow/15"
+                  : "text-muted-foreground hover:text-ahora-yellow hover:bg-ahora-yellow/20"
+              }`}
+            >
+              Acciones
+              <ChevronDown className={`h-4 w-4 transition-transform ${isMobileAccionesOpen ? "rotate-180" : ""}`} />
+            </button>
+            {isMobileAccionesOpen && (
+              <div className="ml-4 flex flex-col gap-1">
+                {accionesLinks.map((link) => (
+                  <Link
+                    key={link.href}
+                    to={link.href}
+                    onClick={() => setIsMenuOpen(false)}
+                    className={`px-4 py-2.5 text-sm font-medium transition-colors rounded-md ${
+                      location.pathname === link.href
+                        ? "text-ahora-yellow bg-ahora-yellow/15"
+                        : "text-muted-foreground hover:text-ahora-yellow hover:bg-ahora-yellow/20"
+                    }`}
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
+            )}
+
             {/* Conócenos mobile */}
             <button
               onClick={() => setIsMobileConocenosOpen(!isMobileConocenosOpen)}
