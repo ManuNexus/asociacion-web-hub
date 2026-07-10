@@ -51,6 +51,7 @@ import { RedesSociales } from "@/components/junta/RedesSociales";
 import { BirthdayPopup } from "@/components/admin/BirthdayPopup";
 import AdminSemaforo from "@/components/admin/AdminSemaforo";
 import AdminRadarPolitico from "@/components/admin/AdminRadarPolitico";
+import AdminRadarPreguntas from "@/components/admin/AdminRadarPreguntas";
 
 
 interface Categoria {
@@ -1357,7 +1358,10 @@ const AdminNoticias = () => {
 
             {/* Tab Radar Político */}
             <TabsContent value="radar-politico">
-              <AdminRadarPolitico />
+              <div className="space-y-6">
+                <AdminRadarPolitico />
+                <AdminRadarPreguntas />
+              </div>
             </TabsContent>
           </Tabs>
         </div>

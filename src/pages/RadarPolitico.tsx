@@ -35,243 +35,14 @@ interface Question {
   id: string;
   category: string;
   text: string;
-  /** Posición de cada partido en escala de acuerdo/desacuerdo con el enunciado. Claves = id partido en BD. */
+  /** Posición de cada partido en escala 1-5. Claves = id partido en BD. */
   scores: Record<string, number>;
 }
 
-// ============ 36 PREGUNTAS (extraídas de programas 2023-2025) ============
-// Escala de respuesta: totalmente en desacuerdo → totalmente de acuerdo.
-// CIUDADANOS incluido como placeholder centrista-liberal por si el admin lo activa.
-const QUESTIONS: Question[] = [
-  // ECONOMÍA (4)
-  {
-    id: "q1", category: "Economía",
-    text: "Hay que reducir los impuestos directos a empresas y autónomos para estimular la actividad económica.",
-    scores: { PP: 5, PSOE: 2, VOX: 5, SUMAR: 1, PODEMOS: 1, CIUDADANOS: 5 },
-  },
-  {
-    id: "q2", category: "Economía",
-    text: "El salario mínimo interprofesional debe seguir subiendo hasta alcanzar el 60% del salario medio.",
-    scores: { PP: 2, PSOE: 5, VOX: 2, SUMAR: 5, PODEMOS: 5, CIUDADANOS: 3 },
-  },
-  {
-    id: "q3", category: "Economía",
-    text: "Debe implantarse una jornada laboral de 32-35 horas sin reducción salarial.",
-    scores: { PP: 1, PSOE: 4, VOX: 1, SUMAR: 5, PODEMOS: 5, CIUDADANOS: 2 },
-  },
-  {
-    id: "q4", category: "Economía",
-    text: "Grandes fortunas y bancos deben pagar impuestos extraordinarios permanentes.",
-    scores: { PP: 1, PSOE: 4, VOX: 1, SUMAR: 5, PODEMOS: 5, CIUDADANOS: 2 },
-  },
+// Las preguntas se cargan dinámicamente desde la tabla `radar_preguntas`
+// y son editables desde el panel de administración (Admin → Radar Político → Preguntas).
 
-  // MODELO TERRITORIAL (3)
-  {
-    id: "q5", category: "Modelo Territorial",
-    text: "Es necesario recentralizar competencias autonómicas como educación o sanidad para asegurar la homogeneidad.",
-    scores: { PP: 3, PSOE: 1, VOX: 5, SUMAR: 1, PODEMOS: 1, CIUDADANOS: 2 },
-  },
-  {
-    id: "q6", category: "Modelo Territorial",
-    text: "Cataluña y País Vasco deberían poder celebrar referéndums de autodeterminación pactados con el Estado.",
-    scores: { PP: 1, PSOE: 1, VOX: 1, SUMAR: 2, PODEMOS: 4, CIUDADANOS: 1 },
-  },
 
-  // VIVIENDA (2)
-  {
-    id: "q7", category: "Vivienda",
-    text: "El Estado debe intervenir y regular el precio máximo del alquiler en zonas tensionadas.",
-    scores: { PP: 1, PSOE: 5, VOX: 1, SUMAR: 5, PODEMOS: 5, CIUDADANOS: 3 },
-  },
-  {
-    id: "q8", category: "Vivienda",
-    text: "La solución al problema de vivienda pasa por liberar suelo y ayudar a comprar, no por regular alquileres.",
-    scores: { PP: 5, PSOE: 2, VOX: 4, SUMAR: 1, PODEMOS: 1, CIUDADANOS: 5 },
-  },
-
-  // ENERGÍA Y MEDIOAMBIENTE (2)
-  {
-    id: "q9", category: "Energía",
-    text: "Debe prolongarse la vida útil de las centrales nucleares actuales como energía de transición.",
-    scores: { PP: 5, PSOE: 1, VOX: 4, SUMAR: 1, PODEMOS: 1, CIUDADANOS: 4 },
-  },
-  {
-    id: "q10", category: "Medioambiente",
-    text: "España debe acelerar el cierre del diésel/gasolina y priorizar coche eléctrico y transporte público.",
-    scores: { PP: 2, PSOE: 4, VOX: 1, SUMAR: 5, PODEMOS: 5, CIUDADANOS: 3 },
-  },
-
-  // SOCIAL / DERECHOS (3)
-  {
-    id: "q11", category: "Derechos LGTBI",
-    text: "La ley trans (autodeterminación de género sin informe médico) debe mantenerse tal cual.",
-    scores: { PP: 1, PSOE: 4, VOX: 1, SUMAR: 5, PODEMOS: 5, CIUDADANOS: 1 },
-  },
-  {
-    id: "q12", category: "Aborto y Eutanasia",
-    text: "El derecho al aborto y a la eutanasia deben blindarse constitucionalmente.",
-    scores: { PP: 1, PSOE: 5, VOX: 1, SUMAR: 5, PODEMOS: 5, CIUDADANOS: 3 },
-  },
-  {
-    id: "q13", category: "Seguridad",
-    text: "Hay que endurecer las penas de cárcel y ampliar los efectivos policiales.",
-    scores: { PP: 5, PSOE: 2, VOX: 5, SUMAR: 1, PODEMOS: 1, CIUDADANOS: 4 },
-  },
-
-  // EDUCACIÓN (2)
-  {
-    id: "q14", category: "Educación",
-    text: "La educación concertada debe recibir financiación pública en igualdad con la pública.",
-    scores: { PP: 5, PSOE: 2, VOX: 5, SUMAR: 1, PODEMOS: 1, CIUDADANOS: 4 },
-  },
-  {
-    id: "q15", category: "Educación",
-    text: "Debe eliminarse la asignatura de religión del horario lectivo en la escuela pública.",
-    scores: { PP: 1, PSOE: 3, VOX: 1, SUMAR: 4, PODEMOS: 5, CIUDADANOS: 3 },
-  },
-
-  // INMIGRACIÓN (2)
-  {
-    id: "q16", category: "Inmigración",
-    text: "Hay que endurecer los controles migratorios y facilitar las deportaciones de irregulares.",
-    scores: { PP: 4, PSOE: 2, VOX: 5, SUMAR: 1, PODEMOS: 1, CIUDADANOS: 4 },
-  },
-  {
-    id: "q17", category: "Inmigración",
-    text: "Los inmigrantes en situación irregular deben tener acceso pleno a sanidad y servicios sociales.",
-    scores: { PP: 2, PSOE: 4, VOX: 1, SUMAR: 5, PODEMOS: 5, CIUDADANOS: 3 },
-  },
-
-  // JUSTICIA Y MEMORIA (1)
-  {
-    id: "q18", category: "Memoria Histórica",
-    text: "La Ley de Memoria Democrática debe mantenerse y ampliarse.",
-    scores: { PP: 1, PSOE: 5, VOX: 1, SUMAR: 5, PODEMOS: 5, CIUDADANOS: 2 },
-  },
-
-  // UE / EXTERIOR (1)
-  {
-    id: "q19", category: "Unión Europea",
-    text: "España debe aumentar su gasto militar hasta el 2% del PIB comprometido con la OTAN.",
-    scores: { PP: 5, PSOE: 3, VOX: 5, SUMAR: 1, PODEMOS: 1, CIUDADANOS: 5 },
-  },
-
-  // IGUALDAD (1)
-  {
-    id: "q20", category: "Igualdad",
-    text: "Las políticas específicas de igualdad de género (Ministerio de Igualdad, leyes de paridad) son necesarias.",
-    scores: { PP: 2, PSOE: 5, VOX: 1, SUMAR: 5, PODEMOS: 5, CIUDADANOS: 3 },
-  },
-
-  // ============ PREGUNTAS ESPECÍFICAS PARA DIFERENCIAR PARTIDOS ============
-  // Extraídas de programas electorales y votaciones parlamentarias reales.
-
-  // Regeneración institucional — Cs se diferencia claramente de PP aquí
-  {
-    id: "q21", category: "Regeneración",
-    text: "Deben suprimirse las Diputaciones Provinciales por ser una duplicidad administrativa.",
-    scores: { PP: 1, PSOE: 2, VOX: 4, SUMAR: 4, PODEMOS: 5, CIUDADANOS: 5 },
-  },
-  {
-    id: "q22", category: "Regeneración",
-    text: "Hay que suprimir los aforamientos de políticos y altos cargos.",
-    scores: { PP: 2, PSOE: 3, VOX: 4, SUMAR: 5, PODEMOS: 5, CIUDADANOS: 5 },
-  },
-  {
-    id: "q23", category: "Sistema electoral",
-    text: "Debe implantarse un sistema de listas electorales abiertas y desbloqueadas.",
-    scores: { PP: 2, PSOE: 2, VOX: 3, SUMAR: 4, PODEMOS: 5, CIUDADANOS: 5 },
-  },
-  {
-    id: "q24", category: "Sistema electoral",
-    text: "El alcalde debe ser el cabeza de la lista más votada (elección directa).",
-    scores: { PP: 4, PSOE: 1, VOX: 3, SUMAR: 1, PODEMOS: 1, CIUDADANOS: 5 },
-  },
-
-  // Laicidad — Cs sí, PP no
-  {
-    id: "q25", category: "Laicidad",
-    text: "Debe derogarse el Concordato con la Santa Sede y avanzar hacia un Estado plenamente aconfesional.",
-    scores: { PP: 1, PSOE: 3, VOX: 1, SUMAR: 5, PODEMOS: 5, CIUDADANOS: 4 },
-  },
-
-  // Gestación subrogada — solo Cs la ha defendido abiertamente
-  {
-    id: "q26", category: "Derechos civiles",
-    text: "Debe legalizarse la gestación subrogada altruista (no comercial) en España.",
-    scores: { PP: 2, PSOE: 2, VOX: 2, SUMAR: 1, PODEMOS: 1, CIUDADANOS: 5 },
-  },
-
-  // MIR educativo — propuesta estrella histórica de Cs
-  {
-    id: "q27", category: "Educación",
-    text: "Debe implantarse un 'MIR educativo': examen y residencia obligatoria para acceder a docente.",
-    scores: { PP: 3, PSOE: 4, VOX: 2, SUMAR: 3, PODEMOS: 3, CIUDADANOS: 5 },
-  },
-
-  // Prostitución
-  {
-    id: "q28", category: "Igualdad",
-    text: "España debe adoptar un modelo abolicionista de la prostitución (penalizar al cliente).",
-    scores: { PP: 3, PSOE: 5, VOX: 2, SUMAR: 3, PODEMOS: 2, CIUDADANOS: 1 },
-  },
-
-  // Armonización fiscal — PP Madrid vs PSOE/izquierda
-  {
-    id: "q29", category: "Economía",
-    text: "Debe armonizarse la fiscalidad autonómica (Sucesiones, Patrimonio) para evitar competencia entre CCAA.",
-    scores: { PP: 1, PSOE: 5, VOX: 2, SUMAR: 5, PODEMOS: 5, CIUDADANOS: 2 },
-  },
-
-  // Tauromaquia
-  {
-    id: "q30", category: "Cultura",
-    text: "Debe retirarse toda subvención y financiación pública a la tauromaquia.",
-    scores: { PP: 1, PSOE: 3, VOX: 1, SUMAR: 5, PODEMOS: 5, CIUDADANOS: 3 },
-  },
-
-  // Ingreso Mínimo Vital
-  {
-    id: "q31", category: "Economía",
-    text: "El Ingreso Mínimo Vital debe ampliarse en cuantía y cobertura hasta erradicar la pobreza severa.",
-    scores: { PP: 2, PSOE: 5, VOX: 1, SUMAR: 5, PODEMOS: 5, CIUDADANOS: 3 },
-  },
-
-  // Ley violencia de género — VOX quiere derogar
-  {
-    id: "q32", category: "Igualdad",
-    text: "La Ley Integral contra la Violencia de Género (2004) debe mantenerse y reforzarse.",
-    scores: { PP: 3, PSOE: 5, VOX: 1, SUMAR: 5, PODEMOS: 5, CIUDADANOS: 5 },
-  },
-
-  // Monarquía / república
-  {
-    id: "q33", category: "Modelo de Estado",
-    text: "Debe celebrarse un referéndum sobre monarquía o república.",
-    scores: { PP: 1, PSOE: 1, VOX: 1, SUMAR: 4, PODEMOS: 5, CIUDADANOS: 2 },
-  },
-
-  // Empresa pública energética / bancaria
-  {
-    id: "q34", category: "Economía",
-    text: "Sectores estratégicos (energía, banca) deben tener una empresa pública que compita con las privadas.",
-    scores: { PP: 1, PSOE: 3, VOX: 1, SUMAR: 5, PODEMOS: 5, CIUDADANOS: 1 },
-  },
-
-  // Reducción parlamentarios
-  {
-    id: "q35", category: "Regeneración",
-    text: "Hay que reducir significativamente el número de diputados, senadores y cargos públicos.",
-    scores: { PP: 3, PSOE: 2, VOX: 5, SUMAR: 1, PODEMOS: 1, CIUDADANOS: 5 },
-  },
-
-  // Eliminación CC.AA.
-  {
-    id: "q36", category: "Modelo Territorial",
-    text: "Las comunidades autónomas deberían eliminarse y el Estado volver a ser fuertemente centralizado.",
-    scores: { PP: 2, PSOE: 1, VOX: 5, SUMAR: 1, PODEMOS: 1, CIUDADANOS: 2 },
-  },
-];
 
 const SCALE = [
   { value: 1, short: "Totalmente\nen desacuerdo" },
@@ -284,6 +55,8 @@ const SCALE = [
 export default function RadarPolitico() {
   const [parties, setParties] = useState<Party[]>([]);
   const [loadingParties, setLoadingParties] = useState(true);
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [loadingQuestions, setLoadingQuestions] = useState(true);
   const [step, setStep] = useState(-1);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [aggregate, setAggregate] = useState<{ id: string; nombre: string; color: string; count: number; pct: number }[]>([]);
@@ -304,6 +77,30 @@ export default function RadarPolitico() {
 
   useEffect(() => {
     (async () => {
+      const { data, error } = await supabase
+        .from("radar_preguntas")
+        .select("id,categoria,texto,scores,orden")
+        .eq("activa", true)
+        .order("orden", { ascending: true });
+      if (error || !data) {
+        setLoadingQuestions(false);
+        return;
+      }
+      setQuestions(
+        (data as any[]).map((q) => ({
+          id: q.id,
+          category: q.categoria,
+          text: q.texto,
+          scores: (q.scores ?? {}) as Record<string, number>,
+        })),
+      );
+      setLoadingQuestions(false);
+    })();
+  }, []);
+
+
+  useEffect(() => {
+    (async () => {
       const { data, error } = await supabase.rpc("get_radar_affinity_counts");
       if (error || !data) {
         setLoadingAggregate(false);
@@ -319,10 +116,10 @@ export default function RadarPolitico() {
 
   const startTest = () => setStep(0);
 
-  const total = QUESTIONS.length;
+  const total = questions.length;
   const isFinished = step >= total;
   const isLanding = step < 0;
-  const current = !isFinished && !isLanding ? QUESTIONS[step] : null;
+  const current = !isFinished && !isLanding ? questions[step] : null;
   const currentAnswer = current ? answers[current.id] : undefined;
 
   const selectValue = (v: number) => {
@@ -338,10 +135,10 @@ export default function RadarPolitico() {
 
   const results = useMemo(() => {
     if (!isFinished || parties.length === 0) return [];
-    const maxDiff = 4 * QUESTIONS.length;
+    const maxDiff = 4 * questions.length;
     return parties
       .map((p) => {
-        const sumDiff = QUESTIONS.reduce(
+        const sumDiff = questions.reduce(
           (acc, q) => acc + Math.abs((answers[q.id] ?? 3) - (q.scores[p.id] ?? 3)),
           0,
         );
@@ -459,7 +256,7 @@ export default function RadarPolitico() {
     ctx.fillText("RADAR POLÍTICO", 60, 56);
     ctx.fillStyle = "rgba(255,255,255,0.55)";
     ctx.font = "500 14px system-ui, -apple-system, Segoe UI, Roboto, sans-serif";
-    ctx.fillText("Test de afinidad · 36 preguntas", 60, 82);
+    ctx.fillText(`Test de afinidad · ${questions.length} preguntas`, 60, 82);
 
     // Título
     ctx.fillStyle = "rgba(255,255,255,0.85)";
@@ -609,7 +406,7 @@ export default function RadarPolitico() {
                   <ul className="space-y-2 mb-6 text-sm text-primary/70">
                     <li className="flex items-start gap-2">
                       <span className="text-secondary font-bold">✓</span>
-                      <span>36 preguntas sobre economía, territorio, vivienda, inmigración, derechos y más.</span>
+                      <span>{questions.length} preguntas sobre economía, territorio, vivienda, inmigración, derechos y más.</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-secondary font-bold">✓</span>

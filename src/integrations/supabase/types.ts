@@ -833,6 +833,39 @@ export type Database = {
         }
         Relationships: []
       }
+      radar_preguntas: {
+        Row: {
+          activa: boolean
+          categoria: string
+          created_at: string
+          id: string
+          orden: number
+          scores: Json
+          texto: string
+          updated_at: string
+        }
+        Insert: {
+          activa?: boolean
+          categoria: string
+          created_at?: string
+          id: string
+          orden?: number
+          scores?: Json
+          texto: string
+          updated_at?: string
+        }
+        Update: {
+          activa?: boolean
+          categoria?: string
+          created_at?: string
+          id?: string
+          orden?: number
+          scores?: Json
+          texto?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       radar_resultados: {
         Row: {
           created_at: string
