@@ -62,14 +62,14 @@ const QUESTIONS: Question[] = [
   {
     id: "q4", category: "Economía",
     text: "Grandes fortunas y bancos deben pagar impuestos extraordinarios permanentes.",
-    scores: { PP: 1, PSOE: 4, VOX: 1, SUMAR: 5, PODEMOS: 5, CIUDADANOS: 1 },
+    scores: { PP: 1, PSOE: 4, VOX: 1, SUMAR: 5, PODEMOS: 5, CIUDADANOS: 2 },
   },
 
   // MODELO TERRITORIAL (2)
   {
     id: "q5", category: "Modelo Territorial",
     text: "Es necesario recentralizar competencias autonómicas como educación o sanidad para asegurar la homogeneidad.",
-    scores: { PP: 3, PSOE: 1, VOX: 5, SUMAR: 1, PODEMOS: 1, CIUDADANOS: 3 },
+    scores: { PP: 3, PSOE: 1, VOX: 5, SUMAR: 1, PODEMOS: 1, CIUDADANOS: 2 },
   },
   {
     id: "q6", category: "Modelo Territorial",
@@ -81,7 +81,7 @@ const QUESTIONS: Question[] = [
   {
     id: "q7", category: "Vivienda",
     text: "El Estado debe intervenir y regular el precio máximo del alquiler en zonas tensionadas.",
-    scores: { PP: 1, PSOE: 5, VOX: 1, SUMAR: 5, PODEMOS: 5, CIUDADANOS: 1 },
+    scores: { PP: 1, PSOE: 5, VOX: 1, SUMAR: 5, PODEMOS: 5, CIUDADANOS: 2 },
   },
   {
     id: "q8", category: "Vivienda",
@@ -134,7 +134,7 @@ const QUESTIONS: Question[] = [
   {
     id: "q16", category: "Inmigración",
     text: "Hay que endurecer los controles migratorios y facilitar las deportaciones de irregulares.",
-    scores: { PP: 4, PSOE: 2, VOX: 5, SUMAR: 1, PODEMOS: 1, CIUDADANOS: 3 },
+    scores: { PP: 4, PSOE: 2, VOX: 5, SUMAR: 1, PODEMOS: 1, CIUDADANOS: 2 },
   },
   {
     id: "q17", category: "Inmigración",
@@ -153,7 +153,7 @@ const QUESTIONS: Question[] = [
   {
     id: "q19", category: "Unión Europea",
     text: "España debe aumentar su gasto militar hasta el 2% del PIB comprometido con la OTAN.",
-    scores: { PP: 5, PSOE: 3, VOX: 5, SUMAR: 1, PODEMOS: 1, CIUDADANOS: 4 },
+    scores: { PP: 5, PSOE: 3, VOX: 5, SUMAR: 1, PODEMOS: 1, CIUDADANOS: 5 },
   },
 
   // IGUALDAD (1)
@@ -213,7 +213,7 @@ const QUESTIONS: Question[] = [
   {
     id: "q28", category: "Igualdad",
     text: "España debe adoptar un modelo abolicionista de la prostitución (penalizar al cliente).",
-    scores: { PP: 3, PSOE: 5, VOX: 2, SUMAR: 3, PODEMOS: 2, CIUDADANOS: 4 },
+    scores: { PP: 3, PSOE: 5, VOX: 2, SUMAR: 3, PODEMOS: 2, CIUDADANOS: 1 },
   },
 
   // Armonización fiscal — PP Madrid vs PSOE/izquierda
@@ -262,7 +262,7 @@ const QUESTIONS: Question[] = [
   {
     id: "q35", category: "Regeneración",
     text: "Hay que reducir significativamente el número de diputados, senadores y cargos públicos.",
-    scores: { PP: 3, PSOE: 2, VOX: 5, SUMAR: 1, PODEMOS: 1, CIUDADANOS: 4 },
+    scores: { PP: 3, PSOE: 2, VOX: 5, SUMAR: 1, PODEMOS: 1, CIUDADANOS: 5 },
   },
 ];
 
