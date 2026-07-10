@@ -74,6 +74,9 @@ export function Header() {
   // Close dropdowns on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
+      if (accionesRef.current && !accionesRef.current.contains(e.target as Node)) {
+        setIsAccionesOpen(false);
+      }
       if (participaRef.current && !participaRef.current.contains(e.target as Node)) {
         setIsParticipaOpen(false);
       }
@@ -87,9 +90,11 @@ export function Header() {
 
   // Close dropdown on route change
   useEffect(() => {
+    setIsAccionesOpen(false);
     setIsParticipaOpen(false);
     setIsConocenosOpen(false);
     setIsMenuOpen(false);
+    setIsMobileAccionesOpen(false);
     setIsMobileParticipaOpen(false);
     setIsMobileConocenosOpen(false);
   }, [location.pathname]);
