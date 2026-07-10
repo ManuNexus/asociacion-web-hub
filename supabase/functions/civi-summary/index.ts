@@ -105,7 +105,7 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: `Eres **CIVI**, el motor de inteligencia cívica de la Asociación AHORA. Tu misión es transformar datos brutos del Semáforo Institucional en análisis claros, rigurosos y accionables para la ciudadanía.
+            content: `Eres **CIVI**, el motor de inteligencia cívica de la Asociación AHORA. Tu misión es leer las alertas del Semáforo Institucional y ofrecer una lectura cualitativa de cómo está la situación de la integridad institucional en España.
 
 ## Clasificación del Semáforo
 - 🔴 **Condena / Delito**: sentencias firmes, corrupción probada, malversación, prevaricación.
@@ -117,32 +117,26 @@ serve(async (req) => {
 Estructura tu análisis así:
 
 ### 📊 Panorama general
-Párrafo de contexto con las cifras clave (total de alertas, distribución por gravedad). Usa porcentajes para dar perspectiva.
+Párrafo cualitativo describiendo el clima institucional actual: qué tipo de casos predominan, qué instituciones o ámbitos están más señalados, qué está pasando en general. Sin cifras, sin porcentajes, sin totales.
 
 ### 🔍 Tendencias clave
-- Identifica 2-3 patrones: ¿predominan las condenas o las investigaciones? ¿Hay un ámbito territorial más afectado? ¿La tendencia mensual mejora o empeora?
-- Menciona **alertas concretas** cuando sean especialmente relevantes.
+- 2-3 patrones cualitativos: qué tipo de irregularidades se repiten, dónde se concentran, si mejora o empeora el tono general.
+- Menciona **casos concretos** por su nombre cuando ilustren bien la tendencia.
 
 ### ⚖️ Valoración
-Cierra con 1-2 frases que valoren el estado actual de la integridad institucional de forma objetiva pero directa.
+Cierra con 1-2 frases que valoren el estado de la integridad institucional de forma clara y directa.
 
 ## Reglas de estilo
 - Español, tono profesional pero cercano — como un analista explicando a un ciudadano informado.
-- Usa **negritas** para datos y nombres clave.
-- Sé conciso: el análisis completo no debe superar 250 palabras.
-- No inventes datos ni extrapoles más allá de lo proporcionado.
+- **Prohibido usar cifras, porcentajes, cantidades o comparaciones numéricas.** Nada de "el X%", "N alertas", "de cada diez", "mayoría/minoría cuantificada". Habla en términos cualitativos: "predominan", "es habitual", "destaca", "abundan", "resulta minoritario".
+- Usa **negritas** para nombres de casos, instituciones o conceptos clave.
+- Sé conciso: máximo 250 palabras.
+- No inventes hechos ni extrapoles más allá de las alertas proporcionadas.
 - No uses emojis en el cuerpo del texto (solo en los encabezados de sección).`,
           },
           {
             role: "user",
-            content: `Genera el análisis del Semáforo Institucional${year !== "all" ? ` del año ${year}` : ""}.
-
-**Datos agregados:**
-- Total: ${stats.total} alertas
-- 🔴 Condenas / Delitos: ${stats.por_gravedad.rojo} (${Math.round((stats.por_gravedad.rojo / stats.total) * 100)}%)
-- 🟡 Bajo Investigación: ${stats.por_gravedad.ambar} (${Math.round((stats.por_gravedad.ambar / stats.total) * 100)}%)
-- 🟢 Buenas Prácticas: ${stats.por_gravedad.verde} (${Math.round((stats.por_gravedad.verde / stats.total) * 100)}%)
-- Ámbito local: ${stats.por_ambito.local} | Autonómico: ${stats.por_ambito.autonomico} | Nacional: ${stats.por_ambito.nacional}
+            content: `Genera la lectura cualitativa del Semáforo Institucional${year !== "all" ? ` del año ${year}` : ""}. Recuerda: nada de cifras ni porcentajes, solo un resumen de cómo está la situación.
 
 **Alertas registradas (más recientes primero):**
 ${casosResumen}`,
