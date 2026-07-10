@@ -262,7 +262,7 @@ const QUESTIONS: Question[] = [
   {
     id: "q35", category: "Regeneración",
     text: "Hay que reducir significativamente el número de diputados, senadores y cargos públicos.",
-    scores: { PP: 3, PSOE: 2, VOX: 5, SUMAR: 1, PODEMOS: 1, CIUDADANOS: 4 },
+    scores: { PP: 3, PSOE: 2, VOX: 5, SUMAR: 1, PODEMOS: 1, CIUDADANOS: 5 },
   },
 ];
 
