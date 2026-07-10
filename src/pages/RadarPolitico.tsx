@@ -153,7 +153,7 @@ const QUESTIONS: Question[] = [
   {
     id: "q19", category: "Unión Europea",
     text: "España debe aumentar su gasto militar hasta el 2% del PIB comprometido con la OTAN.",
-    scores: { PP: 5, PSOE: 3, VOX: 5, SUMAR: 1, PODEMOS: 1, CIUDADANOS: 4 },
+    scores: { PP: 5, PSOE: 3, VOX: 5, SUMAR: 1, PODEMOS: 1, CIUDADANOS: 5 },
   },
 
   // IGUALDAD (1)
