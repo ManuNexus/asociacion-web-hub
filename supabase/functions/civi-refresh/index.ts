@@ -38,7 +38,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const years = [...new Set(casos.map((c: any) => c.fecha.substring(0, 4)))];
+    const years = ["all", ...new Set(casos.map((c: any) => c.fecha.substring(0, 4)))];
     console.log(`Refreshing CIVI cache for years: ${years.join(", ")}`);
 
     // Delete existing cache entries to force regeneration
