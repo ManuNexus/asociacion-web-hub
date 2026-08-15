@@ -56,6 +56,30 @@
     <priority>0.3</priority>
   </url>
   <url>
+    <loc>https://ahoraorg.es/noticias/0cc0e3f3-5380-4663-bb85-3ca84fb62da4</loc>
+    <lastmod>2026-08-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ahoraorg.es/noticias/41f61d83-a809-4648-8e40-79aeba7fdfe2</loc>
+    <lastmod>2026-08-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ahoraorg.es/noticias/ec24f2c8-dfbc-470f-b360-8f861501b8cd</loc>
+    <lastmod>2026-08-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ahoraorg.es/noticias/9fb787dd-d060-48b9-b953-a47641f9e076</loc>
+    <lastmod>2026-07-19</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://ahoraorg.es/noticias/b5ef88b8-4f80-4f52-a6c6-f9b9979cc06e</loc>
     <lastmod>2026-07-08</lastmod>
     <changefreq>monthly</changefreq>

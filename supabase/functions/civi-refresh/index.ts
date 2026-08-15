@@ -13,10 +13,13 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-    // Only allow service-role callers (cron / admin). Reject anon/user JWTs.
+    // Only allow service-role or admin-token callers (cron / admin). Reject anon/user JWTs.
     const auth = req.headers.get("Authorization") || "";
     const token = auth.replace(/^Bearer\s+/i, "");
-    if (token !== serviceKey) {
+    const adminToken = Deno.env.get("CIVI_ADMIN_TOKEN");
+    const headerAdmin = req.headers.get("x-admin-token");
+    const isAdmin = !!adminToken && headerAdmin === adminToken;
+    if (token !== serviceKey && !isAdmin) {
       return new Response(JSON.stringify({ error: "Forbidden" }), {
         status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -35,7 +38,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const years = [...new Set(casos.map((c: any) => c.fecha.substring(0, 4)))];
+    const years = ["all", ...new Set(casos.map((c: any) => c.fecha.substring(0, 4)))];
     console.log(`Refreshing CIVI cache for years: ${years.join(", ")}`);
 
     // Delete existing cache entries to force regeneration
