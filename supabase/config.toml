@@ -71,3 +71,7 @@ verify_jwt = false
 
 [functions.radar-share]
 verify_jwt = false
+
+[functions.add-amigo]
+verify_jwt = false
+
