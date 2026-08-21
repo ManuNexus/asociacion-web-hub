@@ -42,6 +42,10 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
 
+import { MaintenanceScreen } from "@/components/MaintenanceScreen";
+
+const isMaintenanceMode = import.meta.env.VITE_MAINTENANCE_MODE === "true";
+
 const App = () => (
   <ErrorBoundary>
   <HelmetProvider>
@@ -50,40 +54,44 @@ const App = () => (
         <AuthProvider>
           <Toaster />
           <Sonner />
-          <BrowserRouter>
-            <ScrollToTop />
-            <GoogleAnalytics />
-            <LoadingScreen />
-            <InAppBrowserBanner />
-            <CookieBanner />
-            <Suspense fallback={null}>
-              <PageTransition>
-                <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/nosotros" element={<Nosotros />} />
-                  <Route path="/noticias" element={<Noticias />} />
-                  <Route path="/noticias/:id" element={<NoticiaDetalle />} />
-                  <Route path="/transparencia" element={<Transparencia />} />
-                  <Route path="/hazte-socio" element={<HazteSocio />} />
-                  <Route path="/hazte-socio/tarjeta-confirmada" element={<TarjetaConfirmada />} />
-                  <Route path="/hazte-amigo" element={<HazteAmigo />} />
-                  <Route path="/dona" element={<Dona />} />
-                  <Route path="/completar-iban" element={<CompletarIban />} />
-                  <Route path="/politica-privacidad" element={<PoliticaPrivacidad />} />
-                  <Route path="/condiciones-afiliacion" element={<CondicionesAfiliacion />} />
-                  <Route path="/auth" element={<Auth />} />
-                  <Route path="/admin/noticias" element={<AdminNoticias />} />
-                  <Route path="/socios" element={<PanelSocios />} />
-                  <Route path="/socios/tarjeta-confirmada" element={<TarjetaSocioConfirmada />} />
-                  <Route path="/contabilidad" element={<Contabilidad />} />
-                  <Route path="/eventos" element={<Eventos />} />
-                  <Route path="/semaforo-institucional" element={<SemaforoInstitucional />} />
-                  <Route path="/radar-politico" element={<RadarPolitico />} />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </PageTransition>
-            </Suspense>
-          </BrowserRouter>
+          {isMaintenanceMode ? (
+            <MaintenanceScreen />
+          ) : (
+            <BrowserRouter>
+              <ScrollToTop />
+              <GoogleAnalytics />
+              <LoadingScreen />
+              <InAppBrowserBanner />
+              <CookieBanner />
+              <Suspense fallback={null}>
+                <PageTransition>
+                  <Routes>
+                    <Route path="/" element={<Index />} />
+                    <Route path="/nosotros" element={<Nosotros />} />
+                    <Route path="/noticias" element={<Noticias />} />
+                    <Route path="/noticias/:id" element={<NoticiaDetalle />} />
+                    <Route path="/transparencia" element={<Transparencia />} />
+                    <Route path="/hazte-socio" element={<HazteSocio />} />
+                    <Route path="/hazte-socio/tarjeta-confirmada" element={<TarjetaConfirmada />} />
+                    <Route path="/hazte-amigo" element={<HazteAmigo />} />
+                    <Route path="/dona" element={<Dona />} />
+                    <Route path="/completar-iban" element={<CompletarIban />} />
+                    <Route path="/politica-privacidad" element={<PoliticaPrivacidad />} />
+                    <Route path="/condiciones-afiliacion" element={<CondicionesAfiliacion />} />
+                    <Route path="/auth" element={<Auth />} />
+                    <Route path="/admin/noticias" element={<AdminNoticias />} />
+                    <Route path="/socios" element={<PanelSocios />} />
+                    <Route path="/socios/tarjeta-confirmada" element={<TarjetaSocioConfirmada />} />
+                    <Route path="/contabilidad" element={<Contabilidad />} />
+                    <Route path="/eventos" element={<Eventos />} />
+                    <Route path="/semaforo-institucional" element={<SemaforoInstitucional />} />
+                    <Route path="/radar-politico" element={<RadarPolitico />} />
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </PageTransition>
+              </Suspense>
+            </BrowserRouter>
+          )}
         </AuthProvider>
       </TooltipProvider>
     </QueryClientProvider>
