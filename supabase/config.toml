@@ -75,3 +75,6 @@ verify_jwt = false
 [functions.add-amigo]
 verify_jwt = false
 
+
+[functions.registro-mantenimiento]
+verify_jwt = false
