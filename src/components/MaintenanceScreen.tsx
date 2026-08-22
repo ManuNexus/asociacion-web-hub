@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -164,8 +165,22 @@ export function MaintenanceScreen() {
                         </div>
                         <div className="space-y-1.5">
                           <Label htmlFor="cuota" className="text-primary-foreground/80">Cuota deseada</Label>
-                          <Input id="cuota" name="cuota" value={form.cuota} onChange={handleChange} placeholder="5€/mes" maxLength={50}
-                            className="bg-primary-foreground/10 border-primary-foreground/20 text-primary-foreground placeholder:text-primary-foreground/40" />
+                          <Select
+                            name="cuota"
+                            value={form.cuota}
+                            onValueChange={(value) => setForm((prev) => ({ ...prev, cuota: value }))}
+                          >
+                            <SelectTrigger
+                              id="cuota"
+                              className="bg-primary-foreground/10 border-primary-foreground/20 text-primary-foreground focus:ring-secondary [&>span]:text-primary-foreground/40 data-[state=open]:bg-primary-foreground/10"
+                            >
+                              <SelectValue placeholder="Selecciona una cuota" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-primary-foreground/10 border-primary-foreground/20 text-primary-foreground">
+                              <SelectItem value="5€ mensual" className="focus:bg-primary-foreground/20 focus:text-primary-foreground">5€ mensual</SelectItem>
+                              <SelectItem value="50€ anual" className="focus:bg-primary-foreground/20 focus:text-primary-foreground">50€ anual</SelectItem>
+                            </SelectContent>
+                          </Select>
                         </div>
                       </div>
                     )}
